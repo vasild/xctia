@@ -1,5 +1,215 @@
-function init()
+var waypoints = new Array();
+
+/* Convert degrees:minutes:secondsN ([d]dd:mm:ssN) to fractional degrees.
+ * For example:
+ * '42:28:56N' -> 42.48222
+ * '42:28:56S' -> -42.48222
+ * '22:28:56E' -> 22.48222
+ * @return a fractional number
+ */
+function coord_convert_ddmmssN2ddd(
+    /* in: string in the form of '42:56:29N' */
+    ddmmssN)
 {
+    var ddmmss = ddmmssN.substr(0, ddmmssN.length - 1);
+    var direction = ddmmssN.substr(-1);
+    var f = ddmmss.split(/:/);
+
+    if (!f) {
+        return(0);
+    }
+
+    var sign;
+
+    if (direction == 'N' || direction == 'n' ||
+        direction == 'E' || direction == 'e') {
+        sign = 1;
+    } else {
+        sign = -1;
+    }
+
+    return(sign * (Number(f[0]) + Number(f[1]) / 60 + Number(f[2]) / 3600));
+}
+
+/* Convert decimal degrees to degrees:minutes:secondsN (dd:mm:ssN).
+ * For example:
+ * 42.48222, is_lat=true -> '42:28:56N'
+ * -42.48222, is_lat=true -> '42:28:56S'
+ * 22.48222, is_lat=false -> '22:28:56E'
+ * @return string in the form '42:28:56N'
+ */
+function coord_convert_ddd2ddmmssN(
+    /* in: a fractional number */
+    ddd,
+
+    /* in: true if the number represents a latitude */
+    is_lat)
+{
+    var direction;
+
+    if (ddd < 0) {
+        direction = is_lat ? 'S' : 'W';
+        ddd *= -1;
+    } else {
+        direction = is_lat ? 'N' : 'E';
+    }
+
+    var d = Math.floor(ddd);
+    var m = Math.floor((ddd - d) * 60);
+    var s = Math.floor((ddd - d - m / 60) * 3600);
+
+    return(zero_pad(d, is_lat ? 2 : 3) + ':' +
+           zero_pad(m, 2) + ':' +
+           zero_pad(s, 2) +
+           direction);
+}
+
+/* Create object of type 'new_obj_type', set its innerHTML to 'text' and
+ * append it to 'dest'.
+ */
+function html_append_obj_with_text(
+    /* in,out: HTML object to append to */
+    dest,
+
+    /* in: type of the newly created object */
+    new_obj_type,
+
+    /* in: text to set inside the newly created object */
+    text)
+{
+    var obj = document.createElement(new_obj_type);
+    obj.innerHTML = text;
+    dest.appendChild(obj);
+}
+
+/* Create a table in the menu area and fill it with the waypoints data. */
+function show_waypoints(
+    /* in: array of waypoints */
+    waypoints)
+{
+    var table = document.getElementById('waypoints_table');
+
+    table.style.display = 'table';
+
+    /* Header row */
+    var header_row_labels = ['Name/Comment', 'Lan/Lon', 'Alt', 'Type'];
+    var tr = document.createElement('tr');
+    for (var i in header_row_labels) {
+        html_append_obj_with_text(tr, 'th', header_row_labels[i]);
+    }
+    table.appendChild(tr);
+
+    for (var i = 0; i < waypoints.length; i++) {
+        var waypoint = waypoints[i];
+
+        tr = document.createElement('tr');
+
+        html_append_obj_with_text(tr, 'td', waypoint.name + '<br/>' + waypoint.comment);
+
+        html_append_obj_with_text(tr, 'td',
+                                  waypoint.lat.toFixed(5) + '<br/>' +
+                                  waypoint.lon.toFixed(5));
+
+        html_append_obj_with_text(tr, 'td', waypoint.alt);
+
+        html_append_obj_with_text(tr, 'td', waypoint.type);
+
+        table.appendChild(tr);
+    }
+}
+
+/* Parse the contents of a waypoints file in the
+ * "Cambridge/WinPilot (.dat)" format and push each waypoint to the global
+ * array 'waypoints'.
+ * @return the global 'waypoints' array
+ */
+function parser_waypoints(
+    /* in: file contents as a string */
+    str)
+{
+    var rows = str.split(/\r?\n/);
+
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+
+        if (row == "") {
+            continue;
+        }
+
+        /* 7,42:28:56N,022:45:18E,650M,T,Zemen,Comment */
+        var fields = row.split(/,/);
+
+        waypoints.push(
+            {
+                lat: coord_convert_ddmmssN2ddd(fields[1]),
+                lon: coord_convert_ddmmssN2ddd(fields[2]),
+                alt: fields[3],
+                type: fields[4],
+                name: fields[5],
+                comment: fields[6]
+            }
+        );
+    }
+
+    return(waypoints);
+}
+
+/* Generic function to parse a file in JavaScript, uploaded in a HTML form.
+ * The 'file' parameter must come from the files[] array from a HTML
+ * input type
+ */
+function parse_file(
+    /* in: file to parse, must come from the files[] array from a HTML
+     * <input type=file>
+     */
+    file,
+
+    /* in,out: a parser function which is given one parameter - the contents
+     * of the file as a string and it returns an object that is passed to the
+     * process_result() function
+     */
+    parser,
+
+    /* in,out: a function which is called with whatever is returned by the
+     * parser() function
+     */
+    process_result)
+{
+    var reader = new FileReader();
+
+    reader.onloadend = function (e) {
+        var str = this.result;
+
+        var result = parser(str);
+
+        process_result(result);
+    }
+
+    reader.readAsText(file);
+}
+
+/* Initialize the events:
+ * - clicking on the buttons
+ */
+function init_events()
+{
+    document.getElementById('load_waypoints_input').onchange =
+        function ()
+        {
+            parse_file(this.files[0], parser_waypoints, show_waypoints);
+        }
+
+    document.getElementById('load_waypoints_button').onclick =
+        function ()
+        {
+            document.getElementById('load_waypoints_input').click();
+        }
+}
+
+/* Initialize the map. */
+function init_map()
+{
+    /* Center the map in the middle of Bulgaria. */
     var map = L.map('map_div').setView([42.751046, 25.268555], 8);
 
     var max_zoom = 25;
@@ -79,7 +289,8 @@ function init()
     var layer_satellite_google = new L.Google();
 
     /* Add just the default layer to the map, the rest are added via the
-     * layers control. */
+     * layers control.
+     */
     layer_relief.addTo(map);
 
     L.control.layers(
@@ -103,6 +314,13 @@ function init()
             maxWidth: 300,
         }
     ).addTo(map);
+}
+
+/* Initialize everything. */
+function init()
+{
+    init_events();
+    init_map();
 }
 
 window.onload = init;

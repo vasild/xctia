@@ -5,9 +5,37 @@ body, html {
     /*font-size: 0.8em;*/
 }
 
+table {
+    border-collapse: collapse;
+}
+
+table, td, th {
+    border: 1px solid black;
+}
+
+td {
+    padding: 4px;
+}
+
+#load_waypoints_button {
+    margin: 4px;
+}
+
 #map_div {
+    float: right;
     height: 100%;
-    width: 100%;
+    width: 85%;
+}
+
+#menu_div {
+    float: left;
+    height: 100%;
+    overflow: scroll;
+    width: 15%;
+}
+
+#waypoints_table {
+    display: none;
 }
 
 /* vim: set shiftwidth=4 tabstop=4 expandtab: */
