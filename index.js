@@ -1,4 +1,108 @@
+/* Waypoint */
+function waypoint_t(
+    /* in: parameters, must contain:
+     * - id: unique identificator of this waypoint
+     * - lat: fractional number d.ddddd [degrees]
+     * - lng: fractional number d.ddddd [degrees]
+     * - altitude: integer altitude [meters]
+     * - type: string, describing the waypoint type:
+     *   - 'T': turnpoint
+     *   - 'L': landable
+     * - name: name of the waypoint
+     * - comment: waypoint comment */
+    p)
+{
+    /* Private member variables */
+
+    var m_id = p.id;
+
+    var m_lat;
+
+    var m_lng;
+
+    set_latlng(p.lat, p.lng);
+
+    var alt = Number(p.altitude.substr(0, p.altitude.length - 1));
+    var m_altitude = alt >= 0 ? alt : 0;
+
+    var m_type;
+    switch (p.type) {
+    case 'L':
+    case 'T':
+    case 'TH':
+        m_type = p.type;
+        break;
+    default:
+        m_type = '?';
+    }
+
+    var m_name = p.name;
+
+    var m_comment = p.comment;
+
+    /* Private methods */
+
+    function set_latlng(
+        lat,
+        lng)
+    {
+        m_lat = (-90 <= lat && lat <= 90) ? lat : 0;
+        m_lng = (-180 <= lng && lng <= 180) ? lng : 0;
+    }
+
+    /* Public methods */
+
+    return(
+        {
+            id: function ()
+            {
+                return('wp_' + m_id + '_tr');
+            },
+
+            lat: function ()
+            {
+                return(m_lat);
+            },
+
+            lng: function ()
+            {
+                return(m_lng);
+            },
+
+            altitude: function ()
+            {
+                return(m_altitude);
+            },
+
+            type: function ()
+            {
+                return(m_type);
+            },
+
+            name: function ()
+            {
+                return(m_name);
+            },
+
+            comment: function ()
+            {
+                return(m_comment);
+            },
+
+            title: function ()
+            {
+                return(m_name + (m_comment != '' ? ' (' + m_comment + ')' : ''));
+            },
+
+            set_latlng: set_latlng,
+        }
+    );
+}
+
+/* Array of objects of type waypoint_t. */
 var waypoints = new Array();
+
+var main_map;
 
 /* Convert degrees:minutes:secondsN ([d]dd:mm:ssN) to fractional degrees.
  * For example:
@@ -82,6 +186,17 @@ function html_append_obj_with_text(
     dest.appendChild(obj);
 }
 
+function on_marker_drag(e, waypoint)
+{
+    var latlng = e.target.getLatLng();
+
+    document.getElementById('wptr_' + waypoint.id()).children[1].innerHTML =
+        latlng.lat.toFixed(5) + '<br/>' +
+        latlng.lng.toFixed(5);
+
+    waypoint.set_latlng(latlng.lat, latlng.lng);
+}
+
 /* Create a table in the menu area and fill it with the waypoints data. */
 function show_waypoints(
     /* in: array of waypoints */
@@ -92,7 +207,7 @@ function show_waypoints(
     table.style.display = 'table';
 
     /* Header row */
-    var header_row_labels = ['Name/Comment', 'Lan/Lon', 'Alt', 'Type'];
+    var header_row_labels = ['Name/Comment', 'Lan/Lng', 'Alt', 'Type'];
     var tr = document.createElement('tr');
     for (var i in header_row_labels) {
         html_append_obj_with_text(tr, 'th', header_row_labels[i]);
@@ -103,18 +218,46 @@ function show_waypoints(
         var waypoint = waypoints[i];
 
         tr = document.createElement('tr');
+        tr.setAttribute('id', 'wptr_' + waypoint.id());
 
-        html_append_obj_with_text(tr, 'td', waypoint.name + '<br/>' + waypoint.comment);
+        html_append_obj_with_text(tr, 'td', waypoint.name() + '<br/>' + waypoint.comment());
 
         html_append_obj_with_text(tr, 'td',
-                                  waypoint.lat.toFixed(5) + '<br/>' +
-                                  waypoint.lon.toFixed(5));
+                                  waypoint.lat().toFixed(5) + '<br/>' +
+                                  waypoint.lng().toFixed(5));
 
-        html_append_obj_with_text(tr, 'td', waypoint.alt);
+        html_append_obj_with_text(tr, 'td', waypoint.altitude());
 
-        html_append_obj_with_text(tr, 'td', waypoint.type);
+        html_append_obj_with_text(tr, 'td', waypoint.type());
 
         table.appendChild(tr);
+
+        var marker = L.marker(
+            [waypoint.lat(), waypoint.lng()],
+            {
+                draggable: true,
+                icon: L.icon(
+                    {
+                        iconAnchor: [7, 7],
+                        iconSize: [15, 15],
+                        iconUrl: 'img/x-mark-015.png',
+                    }
+                ),
+                title: waypoint.title(),
+            }
+        );
+
+        /* http://en.wikipedia.org/wiki/Immediately-invoked_function_expression */
+        (function (p) {
+            marker.on(
+                'drag',
+                function (e) {
+                    on_marker_drag(e, p);
+                }
+            );
+        })(waypoint);
+
+        marker.addTo(main_map);
     }
 }
 
@@ -140,14 +283,17 @@ function parser_waypoints(
         var fields = row.split(/,/);
 
         waypoints.push(
-            {
-                lat: coord_convert_ddmmssN2ddd(fields[1]),
-                lon: coord_convert_ddmmssN2ddd(fields[2]),
-                alt: fields[3],
-                type: fields[4],
-                name: fields[5],
-                comment: fields[6]
-            }
+            waypoint_t(
+                {
+                    id: waypoints.length,
+                    lat: coord_convert_ddmmssN2ddd(fields[1]),
+                    lng: coord_convert_ddmmssN2ddd(fields[2]),
+                    altitude: fields[3],
+                    type: fields[4],
+                    name: fields[5],
+                    comment: fields[6],
+                }
+            )
         );
     }
 
@@ -210,7 +356,7 @@ function init_events()
 function init_map()
 {
     /* Center the map in the middle of Bulgaria. */
-    var map = L.map('map_div').setView([42.751046, 25.268555], 8);
+    main_map = L.map('map_div').setView([42.751046, 25.268555], 8);
 
     var max_zoom = 25;
 
@@ -291,7 +437,7 @@ function init_map()
     /* Add just the default layer to the map, the rest are added via the
      * layers control.
      */
-    layer_relief.addTo(map);
+    layer_relief.addTo(main_map);
 
     L.control.layers(
         {
@@ -306,14 +452,14 @@ function init_map()
             'Administrative': layer_administrative,
             'Topo': layer_topo,
         }
-    ).addTo(map);
+    ).addTo(main_map);
 
     L.control.scale(
         {
             imperial: false,
             maxWidth: 300,
         }
-    ).addTo(map);
+    ).addTo(main_map);
 }
 
 /* Initialize everything. */
