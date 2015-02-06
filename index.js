@@ -1,13 +1,17 @@
-/* Waypoint */
+var waypoint_types = {
+    T: 'Turnpoint',
+    L: 'Landing',
+    TH: 'Turnpoint (Home)',
+};
+
+/* A type that describes a waypoint */
 function waypoint_t(
     /* in: parameters, must contain:
      * - id: unique identificator of this waypoint
      * - lat: fractional number d.ddddd [degrees]
      * - lng: fractional number d.ddddd [degrees]
      * - altitude: integer altitude [meters]
-     * - type: string, describing the waypoint type:
-     *   - 'T': turnpoint
-     *   - 'L': landable
+     * - type: string, one of waypoint_types' keys
      * - name: name of the waypoint
      * - comment: waypoint comment */
     p)
@@ -22,23 +26,15 @@ function waypoint_t(
 
     set_latlng(p.lat, p.lng);
 
-    var alt = Number(p.altitude.substr(0, p.altitude.length - 1));
-    var m_altitude = alt >= 0 ? alt : 0;
+    var m_altitude = p.altitude >= 0 ? p.altitude : 0;
 
-    var m_type;
-    switch (p.type) {
-    case 'L':
-    case 'T':
-    case 'TH':
-        m_type = p.type;
-        break;
-    default:
-        m_type = '?';
-    }
+    var m_type = waypoint_types[p.type] ? p.type : 'T';
 
     var m_name = p.name;
 
     var m_comment = p.comment;
+
+    var m_marker = null;
 
     /* Private methods */
 
@@ -56,7 +52,7 @@ function waypoint_t(
         {
             id: function ()
             {
-                return('wp_' + m_id + '_tr');
+                return(m_id);
             },
 
             lat: function ()
@@ -89,18 +85,64 @@ function waypoint_t(
                 return(m_comment);
             },
 
+            marker: function ()
+            {
+                return(m_marker);
+            },
+
             title: function ()
             {
                 return(m_name + (m_comment != '' ? ' (' + m_comment + ')' : ''));
             },
 
             set_latlng: set_latlng,
+
+            set_marker: function (marker) {
+                m_marker = marker;
+            }
         }
     );
 }
 
-/* Array of objects of type waypoint_t. */
-var waypoints = new Array();
+/* A type that describes a set of waypoints */
+function waypoints_set_t()
+{
+    /* Private member variables */
+
+    var m_waypoints = new Array();
+
+    /* Public methods */
+
+    return(
+        {
+            add: function (
+                     p)
+            {
+                var i = m_waypoints.length;
+
+                m_waypoints[i] = waypoint_t(
+                    {
+                        id: i,
+                        lat: p.lat,
+                        lng: p.lng,
+                        altitude: p.altitude,
+                        type: p.type,
+                        name: p.name,
+                        comment: p.comment,
+                    }
+                );
+
+                show_waypoint(m_waypoints[i]);
+
+                return(i);
+            },
+        }
+    );
+}
+
+/* Global variables */
+
+var waypoints = waypoints_set_t();
 
 var main_map;
 
@@ -179,92 +221,159 @@ function html_append_obj_with_text(
     new_obj_type,
 
     /* in: text to set inside the newly created object */
-    text)
+    text,
+
+    /* in: attributes to set */
+    attributes)
 {
     var obj = document.createElement(new_obj_type);
     obj.innerHTML = text;
+    if (attributes) {
+        for (a in attributes) {
+            obj.setAttribute(a, attributes[a]);
+        }
+    }
     dest.appendChild(obj);
 }
 
-function on_marker_drag(e, waypoint)
+/* Create a row in the waypoints HTML table. */
+function waypoint_create_table_row(
+    /* in: a waypoint for which to create a row. An event handler is hooked
+     * to the lat/lng input boxes in the newly created row, so that when
+     * they are edited the waypoint's marked on the map is moved to the new
+     * coordinates
+     */
+    waypoint)
 {
-    var latlng = e.target.getLatLng();
+    var tr_inner = document.getElementById('{wptr_}').innerHTML;
+    /* Replace '{foo}' with 'fooN' were N is the waypoint id */
+    tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + waypoint.id());
 
-    document.getElementById('wptr_' + waypoint.id()).children[1].innerHTML =
-        latlng.lat.toFixed(5) + '<br/>' +
-        latlng.lng.toFixed(5);
+    var tr = document.createElement('tr');
+    tr.setAttribute('id', 'wptr_' + waypoint.id());
+    tr.innerHTML = tr_inner;
 
-    waypoint.set_latlng(latlng.lat, latlng.lng);
+    var new_waypoint_tr = document.getElementById('new_waypoint_tr');
+    new_waypoint_tr.parentNode.insertBefore(tr, new_waypoint_tr);
+
+    var id = waypoint.id();
+
+    document.getElementById('wp_lat_' + id).onchange =
+    document.getElementById('wp_lng_' + id).onchange =
+    function ()
+    {
+        var lat = document.getElementById('wp_lat_' + id).value;
+        var lng = document.getElementById('wp_lng_' + id).value;
+        waypoint.set_latlng(lat, lng);
+        waypoint.marker().setLatLng([lat, lng]);
+    }
 }
 
-/* Create a table in the menu area and fill it with the waypoints data. */
-function show_waypoints(
-    /* in: array of waypoints */
-    waypoints)
+/* Fill a given waypoint's row in the waypoints HTML table with the data
+ * from the waypoint.
+ */
+function waypoint_fill_table_row_values(
+    /* in: waypoint */
+    waypoint)
 {
-    var table = document.getElementById('waypoints_table');
+    var id = waypoint.id();
 
-    table.style.display = 'table';
+    document.getElementById('wp_name_' + id).value = waypoint.name();
+    document.getElementById('wp_comment_' + id).value = waypoint.comment();
+    document.getElementById('wp_lat_' + id).value = waypoint.lat().toFixed(5);
+    document.getElementById('wp_lng_' + id).value = waypoint.lng().toFixed(5);
+    document.getElementById('wp_altitude_' + id).value = waypoint.altitude();
 
-    /* Header row */
-    var header_row_labels = ['Name/Comment', 'Lan/Lng', 'Alt', 'Type'];
-    var tr = document.createElement('tr');
-    for (var i in header_row_labels) {
-        html_append_obj_with_text(tr, 'th', header_row_labels[i]);
+    var select = document.getElementById('wp_type_' + id);
+    for (t in waypoint_types) {
+        var attributes = {value: t};
+        if (t == waypoint.type()) {
+            attributes.selected = true;
+        }
+
+        html_append_obj_with_text(select, 'option', waypoint_types[t], attributes);
     }
-    table.appendChild(tr);
+}
 
-    for (var i = 0; i < waypoints.length; i++) {
-        var waypoint = waypoints[i];
-
-        tr = document.createElement('tr');
-        tr.setAttribute('id', 'wptr_' + waypoint.id());
-
-        html_append_obj_with_text(tr, 'td', waypoint.name() + '<br/>' + waypoint.comment());
-
-        html_append_obj_with_text(tr, 'td',
-                                  waypoint.lat().toFixed(5) + '<br/>' +
-                                  waypoint.lng().toFixed(5));
-
-        html_append_obj_with_text(tr, 'td', waypoint.altitude());
-
-        html_append_obj_with_text(tr, 'td', waypoint.type());
-
-        table.appendChild(tr);
-
-        var marker = L.marker(
-            [waypoint.lat(), waypoint.lng()],
-            {
-                draggable: true,
-                icon: L.icon(
-                    {
-                        iconAnchor: [7, 7],
-                        iconSize: [15, 15],
-                        iconUrl: 'img/x-mark-015.png',
-                    }
-                ),
-                title: waypoint.title(),
-            }
-        );
-
-        /* http://en.wikipedia.org/wiki/Immediately-invoked_function_expression */
-        (function (p) {
-            marker.on(
-                'drag',
-                function (e) {
-                    on_marker_drag(e, p);
+/* Create a marker on the map for a given waypoint. */
+function waypoint_create_marker(
+    /* in,out: waypoint, the newly created marker is assigned to the waypoint
+     * using waypoint.set_marker() */
+    waypoint)
+{
+    var marker = L.marker(
+        [waypoint.lat(), waypoint.lng()],
+        {
+            draggable: true,
+            icon: L.icon(
+                {
+                    iconAnchor: [7, 7],
+                    iconSize: [15, 15],
+                    iconUrl: 'img/x-mark-015.png',
                 }
-            );
-        })(waypoint);
+            ),
+            title: waypoint.title(),
+        }
+    );
 
-        marker.addTo(main_map);
-    }
+    marker.on(
+        'click',
+        function (e)
+        {
+            var id = waypoint.id();
+            /* Focus on the waypoint name */
+            document.getElementById('wp_name_' + id).focus();
+
+            /* Shake the whole table row */
+            var tr = document.getElementById('wptr_' + id);
+            tr.addEventListener(
+                'animationend',
+                function (e)
+                {
+                    this.classList.remove('animated');
+                    this.classList.remove('rubberBand');
+                },
+                false);
+            tr.classList.add('rubberBand');
+            tr.classList.add('animated');
+        }
+    );
+
+    marker.on(
+        'drag',
+        function (e)
+        {
+            var id = waypoint.id();
+            var ll = e.target.getLatLng();
+
+            document.getElementById('wp_lat_' + id).value = ll.lat.toFixed(5);
+            document.getElementById('wp_lng_' + id).value = ll.lng.toFixed(5);
+
+            waypoint.set_latlng(ll.lat, ll.lng);
+        }
+    );
+
+    marker.addTo(main_map);
+
+    waypoint.set_marker(marker);
+}
+
+/* Show a waypoint in the waypoints HTML table and associate a map marker
+ * with it.
+ */
+function show_waypoint(
+    /* in,out: waypoint to show */
+    waypoint)
+{
+    waypoint_create_table_row(waypoint);
+    waypoint_fill_table_row_values(waypoint);
+    waypoint_create_marker(waypoint);
 }
 
 /* Parse the contents of a waypoints file in the
- * "Cambridge/WinPilot (.dat)" format and push each waypoint to the global
- * array 'waypoints'.
- * @return the global 'waypoints' array
+ * "Cambridge/WinPilot (.dat)" format and add each waypoint to the global
+ * 'waypoints' set.
+ * @return null
  */
 function parser_waypoints(
     /* in: file contents as a string */
@@ -282,22 +391,22 @@ function parser_waypoints(
         /* 7,42:28:56N,022:45:18E,650M,T,Zemen,Comment */
         var fields = row.split(/,/);
 
-        waypoints.push(
-            waypoint_t(
-                {
-                    id: waypoints.length,
-                    lat: coord_convert_ddmmssN2ddd(fields[1]),
-                    lng: coord_convert_ddmmssN2ddd(fields[2]),
-                    altitude: fields[3],
-                    type: fields[4],
-                    name: fields[5],
-                    comment: fields[6],
-                }
-            )
+        var alt = fields[3];
+
+        waypoints.add(
+            {
+                lat: coord_convert_ddmmssN2ddd(fields[1]),
+                lng: coord_convert_ddmmssN2ddd(fields[2]),
+                /* Remove the trailing char, '123M' -> '123' */
+                altitude: Number(alt.substr(0, alt.length - 1)),
+                type: fields[4],
+                name: fields[5],
+                comment: fields[6],
+            }
         );
     }
 
-    return(waypoints);
+    return(null);
 }
 
 /* Generic function to parse a file in JavaScript, uploaded in a HTML form.
@@ -317,7 +426,7 @@ function parse_file(
     parser,
 
     /* in,out: a function which is called with whatever is returned by the
-     * parser() function
+     * parser() function, can be 'null' in which case it is ignored
      */
     process_result)
 {
@@ -328,7 +437,9 @@ function parse_file(
 
         var result = parser(str);
 
-        process_result(result);
+        if (process_result != null) {
+            process_result(result);
+        }
     }
 
     reader.readAsText(file);
@@ -342,13 +453,32 @@ function init_events()
     document.getElementById('load_waypoints_input').onchange =
         function ()
         {
-            parse_file(this.files[0], parser_waypoints, show_waypoints);
+            parse_file(this.files[0], parser_waypoints, null);
         }
 
     document.getElementById('load_waypoints_button').onclick =
         function ()
         {
             document.getElementById('load_waypoints_input').click();
+        }
+
+    document.getElementById('new_waypoint_button').onclick =
+        function ()
+        {
+            var table = document.getElementById('waypoints_table');
+            /* table -> tbody -> number of <tr>s */
+            var n = zero_pad(table.children[0].children.length, 3);
+            var map_center = main_map.getCenter();
+            waypoints.add(
+                {
+                    lat: map_center.lat,
+                    lng: map_center.lng,
+                    altitude: 0,
+                    type: Object.keys(waypoint_types)[0], // use the first by default
+                    name: 'wp' + n,
+                    comment: 'waypoint ' + n,
+                }
+            );
         }
 }
 

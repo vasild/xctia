@@ -1,12 +1,20 @@
 body, html {
     height: 100%;
     margin: 0;
-    font-family: monospace;
     /*font-size: 0.8em;*/
+}
+
+body, html, input[type='text'], input[type='number'], option {
+    font-family: monospace;
+}
+
+input[type='text'], input[type='number'] {
+    border-style: solid;
 }
 
 table {
     border-collapse: collapse;
+    margin: 4px;
 }
 
 table, td, th {
@@ -17,8 +25,21 @@ td {
     padding: 4px;
 }
 
+.altitude {
+    text-align: right;
+    width: 4em;
+}
+
+.wp_type {
+    width: 5em;
+}
+
 #load_waypoints_button {
     margin: 4px;
+}
+
+#new_waypoint_tr {
+    text-align: center;
 }
 
 #map_div {
@@ -32,10 +53,6 @@ td {
     height: 100%;
     overflow: scroll;
     width: 15%;
-}
-
-#waypoints_table {
-    display: none;
 }
 
 /* vim: set shiftwidth=4 tabstop=4 expandtab: */
