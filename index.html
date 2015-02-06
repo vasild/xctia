@@ -22,6 +22,7 @@
                     <th>Name/Comment</th>
                     <th>Lat/Lng</th>
                     <th>Alt[m]/Type</th>
+                    <th>&nbsp;</th>
                 </tr>
                 <!-- Waypoint row template -->
                 <tr style="display: none" id="{wptr_}">
@@ -38,9 +39,12 @@
                         <select id="{wp_type_}" class="wp_type">
                         </select>
                     </td>
+                    <td>
+                        <img id="{wp_del_}" src="img/del.png" class="del_wp">
+                    </td>
                 </tr>
                 <tr id="new_waypoint_tr">
-                    <td colspan="3">
+                    <td colspan="4">
                         <button id="new_waypoint_button">New waypoint</button>
                     </td>
                 </tr>

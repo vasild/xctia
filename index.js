@@ -132,9 +132,22 @@ function waypoints_set_t()
                     }
                 );
 
-                show_waypoint(m_waypoints[i]);
+                waypoint_show(m_waypoints[i]);
 
                 return(i);
+            },
+
+            del: function (
+                     waypoint)
+            {
+                waypoint_remove(waypoint);
+
+                for (var i = 0; i < m_waypoints.length; i++) {
+                    if (m_waypoints[i] == waypoint) {
+                        m_waypoints[i] = null;
+                        break;
+                    }
+                }
             },
         }
     );
@@ -249,24 +262,30 @@ function waypoint_create_table_row(
     /* Replace '{foo}' with 'fooN' were N is the waypoint id */
     tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + waypoint.id());
 
+    var id = waypoint.id();
+
     var tr = document.createElement('tr');
-    tr.setAttribute('id', 'wptr_' + waypoint.id());
+    tr.setAttribute('id', 'wptr_' + id);
     tr.innerHTML = tr_inner;
 
     var new_waypoint_tr = document.getElementById('new_waypoint_tr');
     new_waypoint_tr.parentNode.insertBefore(tr, new_waypoint_tr);
 
-    var id = waypoint.id();
-
     document.getElementById('wp_lat_' + id).onchange =
     document.getElementById('wp_lng_' + id).onchange =
-    function ()
-    {
-        var lat = document.getElementById('wp_lat_' + id).value;
-        var lng = document.getElementById('wp_lng_' + id).value;
-        waypoint.set_latlng(lat, lng);
-        waypoint.marker().setLatLng([lat, lng]);
-    }
+        function ()
+        {
+            var lat = document.getElementById('wp_lat_' + id).value;
+            var lng = document.getElementById('wp_lng_' + id).value;
+            waypoint.set_latlng(lat, lng);
+            waypoint.marker().setLatLng([lat, lng]);
+        }
+
+    document.getElementById('wp_del_' + id).onclick =
+        function ()
+        {
+            waypoints.del(waypoint);
+        }
 }
 
 /* Fill a given waypoint's row in the waypoints HTML table with the data
@@ -361,13 +380,26 @@ function waypoint_create_marker(
 /* Show a waypoint in the waypoints HTML table and associate a map marker
  * with it.
  */
-function show_waypoint(
+function waypoint_show(
     /* in,out: waypoint to show */
     waypoint)
 {
     waypoint_create_table_row(waypoint);
     waypoint_fill_table_row_values(waypoint);
     waypoint_create_marker(waypoint);
+}
+
+/* Remove a waypoint from the map (remove its marker) and delete its
+ * corresponding row from the HTML waypoints table.
+ */
+function waypoint_remove(
+    /* in: waypoint to remove */
+    waypoint)
+{
+    main_map.removeLayer(waypoint.marker());
+
+    var tr = document.getElementById('wptr_' + waypoint.id());
+    tr.parentNode.removeChild(tr);
 }
 
 /* Parse the contents of a waypoints file in the

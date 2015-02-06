@@ -30,6 +30,10 @@ td {
     width: 4em;
 }
 
+.del_wp {
+    cursor: pointer;
+}
+
 .wp_type {
     width: 5em;
 }
@@ -45,14 +49,14 @@ td {
 #map_div {
     float: right;
     height: 100%;
-    width: 85%;
+    width: 84%;
 }
 
 #menu_div {
     float: left;
     height: 100%;
     overflow: scroll;
-    width: 15%;
+    width: 16%;
 }
 
 /* vim: set shiftwidth=4 tabstop=4 expandtab: */
