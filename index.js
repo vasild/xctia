@@ -36,12 +36,43 @@ function waypoint_t(
 
     /* Private methods, some of them could be exported below. */
 
+    function title()
+    {
+        return(m_name + (m_comment != '' ? ' (' + m_comment + ')' : ''));
+    }
+
     function set_latlng(
         lat,
         lng)
     {
         m_lat = (-90 <= lat && lat <= 90) ? lat : 0;
         m_lng = (-180 <= lng && lng <= 180) ? lng : 0;
+    }
+
+    function set_altitude(
+        altitude)
+    {
+        m_altitude = altitude >= 0 ? altitude : 0;
+    }
+
+    function set_type(
+        type)
+    {
+        m_type = waypoint_types[type] ? type : 'T';
+    }
+
+    function set_name(
+        name)
+    {
+        m_name = name;
+        update_marker_title();
+    }
+
+    function set_comment(
+        comment)
+    {
+        m_comment = comment;
+        update_marker_title();
     }
 
     function import_from_obj(
@@ -51,15 +82,94 @@ function waypoint_t(
 
         set_latlng(p.lat, p.lng);
 
-        m_altitude = p.altitude >= 0 ? p.altitude : 0;
+        set_altitude(p.altitude);
 
-        m_type = waypoint_types[p.type] ? p.type : 'T';
+        set_type(p.type);
 
-        m_name = p.name;
+        set_name(p.name);
 
-        m_comment = p.comment;
+        set_comment(p.comment);
 
         m_marker = null;
+    }
+
+    /* Map related methods */
+
+    /* Create a marker on the map for this waypoint. */
+    function create_marker()
+    {
+        m_marker = L.marker(
+            [m_lat, m_lng],
+            {
+                draggable: true,
+                icon: L.icon(
+                    {
+                        iconAnchor: [7, 7],
+                        iconSize: [15, 15],
+                        iconUrl: 'img/x-mark-015.png',
+                    }
+                ),
+                title: title(),
+            }
+        );
+
+        m_marker.on(
+            'click',
+            function (e)
+            {
+                /* Focus on the waypoint name */
+                document.getElementById('wp_name_' + m_id).focus();
+
+                /* Shake the whole table row */
+                var tr = document.getElementById('wptr_' + m_id);
+                tr.addEventListener(
+                    'animationend',
+                    function (e)
+                    {
+                        this.classList.remove('animated');
+                        this.classList.remove('rubberBand');
+                    },
+                    false);
+                tr.classList.add('rubberBand');
+                tr.classList.add('animated');
+            }
+        );
+
+        m_marker.on(
+            'drag',
+            function (e)
+            {
+                var ll = e.target.getLatLng();
+
+                document.getElementById('wp_lat_' + m_id).value = ll.lat.toFixed(5);
+                document.getElementById('wp_lng_' + m_id).value = ll.lng.toFixed(5);
+
+                set_latlng(ll.lat, ll.lng);
+            }
+        );
+
+        m_marker.addTo(main_map);
+    }
+
+    /* Delete the waypoint's marker from the map. */
+    function delete_marker()
+    {
+        main_map.removeLayer(m_marker);
+        m_marker = null;
+    }
+
+    /* Update the title of a waypoint's marker. Used to regenerate the title
+     * after the name or comment of the waypoint has been changed.
+     */
+    function update_marker_title()
+    {
+        /* Leaflet does not provide a way to update a marker's title,
+         * so we remove the old marker and recreate it.
+         */
+        if (m_marker != null) {
+            delete_marker();
+            create_marker();
+        }
     }
 
     /* Public methods */
@@ -106,18 +216,15 @@ function waypoint_t(
                 return(m_marker);
             },
 
-            title: function ()
-            {
-                return(m_name + (m_comment != '' ? ' (' + m_comment + ')' : ''));
-            },
-
             set_latlng: set_latlng,
 
-            set_marker: function (
-                marker)
-            {
-                m_marker = marker;
-            },
+            set_altitude: set_altitude,
+
+            set_type: set_type,
+
+            set_name: set_name,
+
+            set_comment: set_comment,
 
             export_as_array: function ()
             {
@@ -149,6 +256,10 @@ function waypoint_t(
                     }
                 );
             },
+
+            create_marker: create_marker,
+
+            delete_marker: delete_marker,
         }
     );
 }
@@ -375,14 +486,42 @@ function waypoint_create_table_row(
     var new_waypoint_tr = document.getElementById('new_waypoint_tr');
     new_waypoint_tr.parentNode.insertBefore(tr, new_waypoint_tr);
 
-    document.getElementById('wp_lat_' + id).onchange =
-    document.getElementById('wp_lng_' + id).onchange =
+    var wp_lat = document.getElementById('wp_lat_' + id);
+    var wp_lng = document.getElementById('wp_lng_' + id);
+    wp_lat.onchange =
+    wp_lng.onchange =
         function ()
         {
-            var lat = document.getElementById('wp_lat_' + id).value;
-            var lng = document.getElementById('wp_lng_' + id).value;
-            waypoint.set_latlng(lat, lng);
-            waypoint.marker().setLatLng([lat, lng]);
+            waypoint.set_latlng(wp_lat.value, wp_lng.value);
+            waypoint.marker().setLatLng([wp_lat.value, wp_lng.value]);
+        }
+
+    var wp_altitude = document.getElementById('wp_altitude_' + id);
+    wp_altitude.onchange =
+        function ()
+        {
+            waypoint.set_altitude(wp_altitude.value);
+        }
+
+    var wp_type = document.getElementById('wp_type_' + id);
+    wp_type.onchange =
+        function ()
+        {
+            waypoint.set_type(wp_type.value);
+        }
+
+    var wp_name = document.getElementById('wp_name_' + id);
+    wp_name.onchange =
+        function ()
+        {
+            waypoint.set_name(wp_name.value);
+        }
+
+    var wp_comment = document.getElementById('wp_comment_' + id);
+    wp_comment.onchange =
+        function ()
+        {
+            waypoint.set_comment(wp_comment.value);
         }
 
     document.getElementById('wp_del_' + id).onclick =
@@ -418,69 +557,6 @@ function waypoint_fill_table_row_values(
     }
 }
 
-/* Create a marker on the map for a given waypoint. */
-function waypoint_create_marker(
-    /* in,out: waypoint, the newly created marker is assigned to the waypoint
-     * using waypoint.set_marker() */
-    waypoint)
-{
-    var marker = L.marker(
-        [waypoint.lat(), waypoint.lng()],
-        {
-            draggable: true,
-            icon: L.icon(
-                {
-                    iconAnchor: [7, 7],
-                    iconSize: [15, 15],
-                    iconUrl: 'img/x-mark-015.png',
-                }
-            ),
-            title: waypoint.title(),
-        }
-    );
-
-    marker.on(
-        'click',
-        function (e)
-        {
-            var id = waypoint.id();
-            /* Focus on the waypoint name */
-            document.getElementById('wp_name_' + id).focus();
-
-            /* Shake the whole table row */
-            var tr = document.getElementById('wptr_' + id);
-            tr.addEventListener(
-                'animationend',
-                function (e)
-                {
-                    this.classList.remove('animated');
-                    this.classList.remove('rubberBand');
-                },
-                false);
-            tr.classList.add('rubberBand');
-            tr.classList.add('animated');
-        }
-    );
-
-    marker.on(
-        'drag',
-        function (e)
-        {
-            var id = waypoint.id();
-            var ll = e.target.getLatLng();
-
-            document.getElementById('wp_lat_' + id).value = ll.lat.toFixed(5);
-            document.getElementById('wp_lng_' + id).value = ll.lng.toFixed(5);
-
-            waypoint.set_latlng(ll.lat, ll.lng);
-        }
-    );
-
-    marker.addTo(main_map);
-
-    waypoint.set_marker(marker);
-}
-
 /* Show a waypoint in the waypoints HTML table and associate a map marker
  * with it.
  */
@@ -490,7 +566,7 @@ function waypoint_show(
 {
     waypoint_create_table_row(waypoint);
     waypoint_fill_table_row_values(waypoint);
-    waypoint_create_marker(waypoint);
+    waypoint.create_marker();
 }
 
 /* Remove a waypoint from the map (remove its marker) and delete its
@@ -500,7 +576,7 @@ function waypoint_remove(
     /* in: waypoint to remove */
     waypoint)
 {
-    main_map.removeLayer(waypoint.marker());
+    waypoint.delete_marker();
 
     var tr = document.getElementById('wptr_' + waypoint.id());
     tr.parentNode.removeChild(tr);
