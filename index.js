@@ -738,9 +738,27 @@ function init_map()
  */
 function load_waypoints_from_url()
 {
+    if (window.location.search == "") {
+        return;
+    }
+
     var uri = window.location.search.replace(/^.*[?&]w=([^&]+)(&.*$|$)/, '$1');
+    if (uri == window.location.search) {
+        return;
+    }
+
     var arr_json = decompress_from_uri(uri);
-    var arr = JSON.parse(arr_json);
+    if (arr_json == "") {
+        return;
+    }
+
+    var arr;
+    try {
+        arr = JSON.parse(arr_json);
+    } catch (e) {
+        alert(e);
+        return;
+    }
 
     for (var i = 0; i < arr.length; i++) {
         waypoints.add(arr[i]);
