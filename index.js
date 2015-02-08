@@ -260,6 +260,19 @@ function waypoint_t(
             create_marker: create_marker,
 
             delete_marker: delete_marker,
+
+            export_as_dat_line: function ()
+            {
+                return(
+                    m_id + ',' +
+                    coord_convert_ddd2ddmmssN(m_lat, true) + ',' +
+                    coord_convert_ddd2ddmmssN(m_lng, false) + ',' +
+                    m_altitude + 'M,' +
+                    m_type + ',' +
+                    m_name + ',' +
+                    m_comment
+                );
+            },
         }
     );
 }
@@ -363,7 +376,23 @@ function waypoints_set_t()
                 var arr_json = JSON.stringify(arr);
 
                 return(url + '?v=1&w=' + compress_to_uri(arr_json));
-            }
+            },
+
+            dat_mime_type: function ()
+            {
+                return('application/dat');
+            },
+
+            export_as_dat: function ()
+            {
+                var dat = '';
+
+                for (var i = 0; i < m_waypoints.length; i++) {
+                    dat += m_waypoints[i].export_as_dat_line() + '\n';
+                }
+
+                return(dat);
+            },
         }
     );
 }
@@ -430,7 +459,7 @@ function coord_convert_ddd2ddmmssN(
 
     var d = Math.floor(ddd);
     var m = Math.floor((ddd - d) * 60);
-    var s = Math.floor((ddd - d - m / 60) * 3600);
+    var s = Math.round(ddd * 3600 - d * 3600 - m * 60);
 
     return(zero_pad(d, is_lat ? 2 : 3) + ':' +
            zero_pad(m, 2) + ':' +
@@ -657,6 +686,15 @@ function parse_file(
     reader.readAsText(file);
 }
 
+/* Save the waypoints in the global waypoints set to a local file on the
+ * user's computer.
+ */
+function save_waypoints()
+{
+    window.location.href = 'data:' + waypoints.dat_mime_type() + ';base64,' +
+        base64_encode(waypoints.export_as_dat());
+}
+
 /* Initialize the events:
  * - clicking on the buttons
  */
@@ -672,6 +710,12 @@ function init_events()
         function ()
         {
             document.getElementById('load_waypoints_input').click();
+        }
+
+    document.getElementById('save_waypoints_button').onclick =
+        function ()
+        {
+            save_waypoints();
         }
 
     document.getElementById('new_waypoint_button').onclick =
