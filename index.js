@@ -123,7 +123,6 @@ function waypoint_t(
             {
                 return(
                     [
-                        m_id,
                         m_lat,
                         m_lng,
                         m_altitude,
@@ -135,17 +134,18 @@ function waypoint_t(
             },
 
             import_from_array: function (
+                id,
                 arr)
             {
                 import_from_obj(
                     {
-                        id: arr[0],
-                        lat: arr[1],
-                        lng: arr[2],
-                        altitude: arr[3],
-                        type: arr[4],
-                        name: arr[5],
-                        comment: arr[6]
+                        id: id,
+                        lat: arr[0],
+                        lng: arr[1],
+                        altitude: arr[2],
+                        type: arr[3],
+                        name: arr[4],
+                        comment: arr[5]
                     }
                 );
             },
@@ -195,13 +195,14 @@ function waypoints_set_t()
                 /* Create a new element and get its index, hoping that
                  * this is atomic.
                  */
-                var i = m_waypoints.push(null);
+                var i = m_waypoints.push(null) - 1;
 
+                /* if 'p' is an array */
                 if (Object.prototype.toString.call(p) ===
                     Object.prototype.toString.call([])) {
 
                     m_waypoints[i] = waypoint_t(null);
-                    m_waypoints[i].import_from_array(p);
+                    m_waypoints[i].import_from_array(i, p);
                 } else {
                     m_waypoints[i] = waypoint_t(
                         {
@@ -210,7 +211,7 @@ function waypoints_set_t()
                             lng: p.lng,
                             altitude: p.altitude,
                             type: p.type,
-                            name: p.name,
+                            name: p.name ? p.name : 'wp' + zero_pad(i, 3),
                             comment: p.comment,
                         }
                     );
@@ -602,7 +603,6 @@ function init_events()
         {
             var table = document.getElementById('waypoints_table');
             /* table -> tbody -> number of <tr>s */
-            var n = zero_pad(table.children[0].children.length, 3);
             var map_center = main_map.getCenter();
             waypoints.add(
                 {
@@ -610,8 +610,7 @@ function init_events()
                     lng: map_center.lng,
                     altitude: 0,
                     type: Object.keys(waypoint_types)[0], // use the first by default
-                    name: 'wp' + n,
-                    comment: 'waypoint ' + n,
+                    comment: '',
                 }
             );
         }
