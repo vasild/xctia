@@ -696,6 +696,51 @@ function save_waypoints()
         base64_encode(waypoints.export_as_dat());
 }
 
+/* Shorten a given url, using a web service. */
+function shorten_url(
+    /* in: url to shorten */
+    url,
+    /* in,out: callback function to call with the result on success */
+    cb_ok,
+    /* in,out: callback function to call with the error message on failure */
+    cb_err)
+{
+    var xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange =
+        function ()
+        {
+            if (this.readyState == this.DONE) {
+                if (this.status == 200) {
+                    try {
+                        var res = JSON.parse(this.responseText);
+                        if (res.status_txt.toUpperCase() == 'OK') {
+                            cb_ok(res.data.url);
+                        } else {
+                            cb_err('Got an error from bitly.com: ' +
+                                   res.status_txt);
+                        }
+                    } catch (e) {
+                        cb_err('Cannot parse the reply from bitly.com: ' + e +
+                               this.responseText);
+                    }
+                } else {
+                    cb_err('Erroneous response from bitly.com: ' +
+                           'status=' + this.status +
+                           ', text=' + this.responseText);
+                }
+            }
+        }
+
+    xhr.open(
+        'GET',
+        'https://api-ssl.bitly.com/v3/shorten?' +
+        'access_token=ac0e9c4613eb8fd696893b9077e040bd7ff0c92b&longUrl=' +
+        encodeURIComponent(url),
+        true /* async */);
+    xhr.send();
+}
+
 /* Initialize the events:
  * - clicking on the buttons
  */
@@ -739,7 +784,47 @@ function init_events()
     document.getElementById('share_button').onclick =
         function ()
         {
-            document.getElementById('share_url').value = waypoints.gen_url();
+            var url = waypoints.gen_url();
+
+            document.getElementById('share_table').style.display = 'table';
+
+            shorten_url(
+                url,
+                /* success callback */
+                function (short_url)
+                {
+                    document.getElementById('share_url_short_input').value = short_url;
+                    document.getElementById('share_url_long_input').value = url;
+                    document.getElementById('share_qr_img').src =
+                        'http://api.qrserver.com/v1/create-qr-code/' +
+                        '?data=' + encodeURIComponent(short_url) +
+                        '&size=600x600' +
+                        '&qzone=1' +
+                        '&format=png';
+                },
+                /* failure callback */
+                function (error_msg)
+                {
+                    alert(error_msg);
+                    document.getElementById('share_table').style.display = 'none';
+                }
+            );
+        }
+
+    document.getElementById('share_table').onclick =
+        function ()
+        {
+            document.getElementById('share_table').style.display = 'none';
+        }
+
+    document.getElementById('share_url_short_input').onclick =
+    document.getElementById('share_url_long_input').onclick =
+        function (e)
+        {
+            /* Avoid the containing table's onclick event being fired because
+             * it hides the whole table.
+             */
+            e.stopPropagation();
         }
 }
 

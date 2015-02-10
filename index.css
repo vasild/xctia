@@ -59,4 +59,28 @@ td {
     width: 16%;
 }
 
+#share_table {
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none;
+    height: 100%;
+    margin: 0;
+    position: absolute;
+    width: 100%;
+    z-index: 9999;
+}
+
+#share_qr_img {
+    display: block;
+    height: 600px;
+    margin: auto;
+    width: 600px;
+}
+
+#share_url_short_input, #share_url_long_input {
+    display: block;
+    margin: auto;
+    margin-top: 48px;
+    width: 600px;
+}
+
 /* vim: set shiftwidth=4 tabstop=4 expandtab: */
