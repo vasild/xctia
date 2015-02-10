@@ -1,7 +1,8 @@
 var waypoint_types = {
     T: 'Turnpoint',
-    L: 'Landing',
+    L: 'Landable',
     TH: 'Turnpoint (Home)',
+    ATL: 'Airport',
 };
 
 /* A type that describes a waypoint */
