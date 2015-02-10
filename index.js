@@ -30,6 +30,7 @@ function waypoint_t(
     var m_name;
     var m_comment;
     var m_marker;
+    var m_map;
 
     if (p != null) {
         import_from_obj(p);
@@ -92,12 +93,16 @@ function waypoint_t(
         set_comment(p.comment);
 
         m_marker = null;
+
+        m_map = null;
     }
 
     /* Map related methods */
 
     /* Create a marker on the map for this waypoint. */
-    function create_marker()
+    function create_marker(
+        /* in,out: map where to add the pointer */
+        map)
     {
         m_marker = L.marker(
             [m_lat, m_lng],
@@ -149,13 +154,15 @@ function waypoint_t(
             }
         );
 
-        m_marker.addTo(main_map);
+        m_map = map;
+
+        m_marker.addTo(m_map);
     }
 
     /* Delete the waypoint's marker from the map. */
     function delete_marker()
     {
-        main_map.removeLayer(m_marker);
+        m_map.removeLayer(m_marker);
         m_marker = null;
     }
 
@@ -169,7 +176,7 @@ function waypoint_t(
          */
         if (m_marker != null) {
             delete_marker();
-            create_marker();
+            create_marker(m_map);
         }
     }
 
@@ -603,7 +610,7 @@ function waypoint_show(
 {
     waypoint_create_table_row(waypoint);
     waypoint_fill_table_row_values(waypoint);
-    waypoint.create_marker();
+    waypoint.create_marker(main_map);
 }
 
 /* Remove a waypoint from the map (remove its marker) and delete its
