@@ -868,7 +868,9 @@ function load_waypoints_from_url()
     }
 
     var arr_json = decompress_from_uri(uri);
-    if (arr_json == "") {
+    if (!arr_json) {
+        alert('Unable to decompress my URL. Was it truncated? ' +
+              'URL (' + document.URL.length + ' bytes): ' + document.URL);
         return;
     }
 
