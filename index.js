@@ -322,21 +322,26 @@ function waypoints_set_t()
                  */
                 var i = m_waypoints.push(null) - 1;
 
+                /* Count from 1, rather than from 0 because XCSoar seems to be
+                 * confused by a waypoint with id=0.
+                 */
+                var id = i + 1;
+
                 /* if 'p' is an array */
                 if (Object.prototype.toString.call(p) ===
                     Object.prototype.toString.call([])) {
 
                     m_waypoints[i] = waypoint_t(null);
-                    m_waypoints[i].import_from_array(i, p);
+                    m_waypoints[i].import_from_array(id, p);
                 } else {
                     m_waypoints[i] = waypoint_t(
                         {
-                            id: i,
+                            id: id,
                             lat: p.lat,
                             lng: p.lng,
                             altitude: p.altitude,
                             type: p.type,
-                            name: p.name ? p.name : 'wp' + zero_pad(i, 3),
+                            name: p.name ? p.name : 'wp' + zero_pad(id, 3),
                             comment: p.comment,
                         }
                     );
@@ -389,7 +394,9 @@ function waypoints_set_t()
                 var dat = '';
 
                 for (var i = 0; i < m_waypoints.length; i++) {
-                    dat += m_waypoints[i].export_as_dat_line() + '\n';
+                    if (m_waypoints[i] != null) {
+                        dat += m_waypoints[i].export_as_dat_line() + '\n';
+                    }
                 }
 
                 return(dat);
@@ -503,11 +510,11 @@ function waypoint_create_table_row(
      */
     waypoint)
 {
+    var id = waypoint.id();
+
     var tr_inner = document.getElementById('{wptr_}').innerHTML;
     /* Replace '{foo}' with 'fooN' were N is the waypoint id */
-    tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + waypoint.id());
-
-    var id = waypoint.id();
+    tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + id);
 
     var tr = document.createElement('tr');
     tr.setAttribute('id', 'wptr_' + id);
