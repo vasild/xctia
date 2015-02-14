@@ -1,6 +1,6 @@
 /* Global variables */
 
-var waypoints = waypoints_set_t();
+var waypoints;
 
 var main_map;
 
@@ -365,49 +365,15 @@ function init_map()
     ).addTo(main_map);
 }
 
-/* Load the waypoints from the URL of the current page, if any waypoints
- * data is passed there.
- */
-function load_waypoints_from_url()
-{
-    if (window.location.search == "") {
-        return;
-    }
-
-    var uri = window.location.search.replace(/^.*[?&]w=([^&]+)(&.*$|$)/, '$1');
-    if (uri == window.location.search) {
-        return;
-    }
-
-    var arr_json = compr_decompress_from_uri(uri);
-    if (!arr_json) {
-        alert('Unable to decompress my URL. Was it truncated? ' +
-              'URL (' + document.URL.length + ' bytes): ' + document.URL);
-        return;
-    }
-
-    var arr;
-    try {
-        arr = JSON.parse(arr_json);
-    } catch (e) {
-        alert(e);
-        return;
-    }
-
-    for (var i = 0; i < arr.length; i++) {
-
-        var waypoint = waypoint_t(waypoint_data_t(arr[i]));
-
-        waypoints.add(waypoint);
-    }
-}
-
 /* Initialize everything. */
 function init()
 {
     init_events();
+
     init_map();
-    load_waypoints_from_url();
+
+    waypoints = waypoints_set_t();
+    waypoints.load_from_url();
 }
 
 window.onload = init;

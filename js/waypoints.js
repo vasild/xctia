@@ -552,6 +552,44 @@ function waypoints_set_t()
     }
     /* @} */
 
+    /* Load the waypoints from the URL of the current page @{
+     * if any waypoints data is passed there.
+     */
+    function load_from_url()
+    {
+        if (window.location.search == "") {
+            return;
+	    }
+
+        var uri = window.location.search.replace(/^.*[?&]w=([^&]+)(&.*$|$)/, '$1');
+        if (uri == window.location.search) {
+            return;
+        }
+
+        var arr_json = compr_decompress_from_uri(uri);
+        if (!arr_json) {
+            alert('Unable to decompress my URL. Was it truncated? ' +
+                  'URL (' + document.URL.length + ' bytes): ' + document.URL);
+            return;
+        }
+
+        var arr;
+        try {
+            arr = JSON.parse(arr_json);
+        } catch (e) {
+            alert(e);
+            return;
+        }
+
+        for (var i = 0; i < arr.length; i++) {
+
+            var waypoint = waypoint_t(waypoint_data_t(arr[i]));
+
+            add(waypoint);
+        }
+    }
+    /* @} */
+
     /* Get the generated ".dat" file mime type. @{
      * @return a string representing the mime type
      */
@@ -584,6 +622,7 @@ function waypoints_set_t()
             add: add,
             del: del,
             gen_url: gen_url,
+            load_from_url: load_from_url,
             dat_mime_type: dat_mime_type,
             export_as_dat: export_as_dat,
         }
@@ -591,3 +630,5 @@ function waypoints_set_t()
     /* @} */
 }
 /* @} */
+
+/* vim: set shiftwidth=4 tabstop=4 expandtab foldmethod=marker foldmarker=@{,@}: */
