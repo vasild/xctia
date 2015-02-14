@@ -1,3 +1,5 @@
+/* Waypoints types @{ */
+
 var waypoint_types = {
     T: 'Turnpoint',
     L: 'Landable',
@@ -5,83 +7,43 @@ var waypoint_types = {
     ATL: 'Airport',
 };
 
-/* A type that describes a waypoint */
-function waypoint_t(
-    /* in: parameters, must contain:
-     * - id: unique identificator of this waypoint
-     * - lat: fractional number d.ddddd [degrees]
-     * - lng: fractional number d.ddddd [degrees]
-     * - altitude: integer altitude [meters]
-     * - type: string, one of waypoint_types' keys
-     * - name: name of the waypoint
-     * - comment: waypoint comment
-     * can be 'null' in which case the created waypoint object is left
-     * uninitialized and must later be initialized using the
-     * import_from_array() method */
-    p)
+/* Basic data fields of a waypoint (type) @{ */
+function waypoint_data_t(
+    /* in: parameters object or array, must contain:
+     * - lat or [0]: fractional number d.ddddd [degrees]
+     * - lng or [1]: fractional number d.ddddd [degrees]
+     * - altitude or [2]: integer altitude [meters]
+     * - type or [3]: string, one of waypoint_types' keys
+     * - name or [4]: name of the waypoint
+     * - comment or [5]: waypoint comment
+     */
+    data)
 {
     /* Private member variables */
 
-    var m_id
     var m_lat;
     var m_lng;
     var m_altitude;
     var m_type;
     var m_name;
     var m_comment;
-    var m_marker;
-    var m_map;
 
-    if (p != null) {
-        import_from_obj(p);
+    /* if 'data' is an array */
+    if (Object.prototype.toString.call(data) ===
+        Object.prototype.toString.call([])) {
+
+        import_from_array(data);
+    } else {
+        import_from_obj(data);
     }
 
     /* Private methods, some of them could be exported below. */
 
-    function title()
-    {
-        return(m_name + (m_comment != '' ? ' (' + m_comment + ')' : ''));
-    }
-
-    function set_latlng(
-        lat,
-        lng)
-    {
-        m_lat = (-90 <= lat && lat <= 90) ? lat : 0;
-        m_lng = (-180 <= lng && lng <= 180) ? lng : 0;
-    }
-
-    function set_altitude(
-        altitude)
-    {
-        m_altitude = altitude >= 0 ? altitude : 0;
-    }
-
-    function set_type(
-        type)
-    {
-        m_type = waypoint_types[type] ? type : 'T';
-    }
-
-    function set_name(
-        name)
-    {
-        m_name = name;
-        update_marker_title();
-    }
-
-    function set_comment(
-        comment)
-    {
-        m_comment = comment;
-        update_marker_title();
-    }
-
+    /* Set data members from an object. @{ */
     function import_from_obj(
+        /* in: object to get the data from */
         p)
     {
-        m_id = p.id;
-
         set_latlng(p.lat, p.lng);
 
         set_altitude(p.altitude);
@@ -91,21 +53,319 @@ function waypoint_t(
         set_name(p.name);
 
         set_comment(p.comment);
-
-        m_marker = null;
-
-        m_map = null;
     }
+    /* @} */
 
-    /* Map related methods */
+    /* Set data members from an array. @{ */
+    function import_from_array(
+        /* in: array to get the data from */
+        arr)
+    {
+        import_from_obj(
+            {
+                lat: arr[0],
+                lng: arr[1],
+                altitude: arr[2],
+                type: arr[3],
+                name: arr[4],
+                comment: arr[5],
+            }
+        );
+    }
+    /* @} */
 
-    /* Create a marker on the map for this waypoint. */
+    /* Set latitude and longtitude. @{ */
+    function set_latlng(
+        /* in: latitude */
+        lat,
+        /* in: longtitude */
+        lng)
+    {
+        m_lat = (-90 <= lat && lat <= 90) ? lat : 0;
+        m_lng = (-180 <= lng && lng <= 180) ? lng : 0;
+    }
+    /* @} */
+
+    /* Get latitude. @{ */
+    function lat()
+    {
+        return(m_lat);
+    }
+    /* @} */
+
+    /* Get longtitude. @{ */
+    function lng()
+    {
+        return(m_lng);
+    }
+    /* @} */
+
+    /* Set altitude. @{ */
+    function set_altitude(
+        altitude)
+    {
+        m_altitude = altitude >= 0 ? altitude : 0;
+    }
+    /* @} */
+
+    /* Get altitude. @{ */
+    function altitude()
+    {
+        return(m_altitude);
+    }
+    /* @} */
+
+    /* Set type. @{ */
+    function set_type(
+        type)
+    {
+        m_type = waypoint_types[type] ? type : Object.keys(waypoint_types)[0];
+    }
+    /* @} */
+
+    /* Get type. @{ */
+    function type()
+    {
+        return(m_type);
+    }
+    /* @} */
+
+    /* Set name. @{ */
+    function set_name(
+        name)
+    {
+        m_name = name ? name : 'wp';
+    }
+    /* @} */
+
+    /* Get name. @{ */
+    function name()
+    {
+        return(m_name);
+    }
+    /* @} */
+
+    /* Set comment. @{ */
+    function set_comment(
+        comment)
+    {
+        m_comment = comment;
+    }
+    /* @} */
+
+    /* Get comment. @{ */
+    function comment()
+    {
+        return(m_comment);
+    }
+    /* @} */
+
+    /* Get title. @{ */
+    function title()
+    {
+        return(m_name + (m_comment != '' ? ' (' + m_comment + ')' : ''));
+    }
+    /* @} */
+
+    /* Export as array. @{ */
+    function export_as_array()
+    {
+        return(
+            [
+                m_lat,
+                m_lng,
+                m_altitude,
+                m_type,
+                m_name,
+                m_comment,
+            ]
+        );
+    }
+    /* @} */
+
+    /* Export as a part of a ".dat" line (without the leading "id,"). @{ */
+    function export_as_part_of_dat_line()
+    {
+        return(
+            coord_convert_ddd2ddmmssN(m_lat, true) + ',' +
+            coord_convert_ddd2ddmmssN(m_lng, false) + ',' +
+            m_altitude + 'M,' +
+            m_type + ',' +
+            m_name + ',' +
+            m_comment
+        );
+    }
+    /* @} */
+
+    /* Export some of the methods as public. @{ */
+    return(
+        {
+            set_latlng: set_latlng,
+            lat: lat,
+            lng: lng,
+            set_altitude: set_altitude,
+            altitude: altitude,
+            set_type: set_type,
+            type: type,
+            set_name: set_name,
+            name: name,
+            set_comment: set_comment,
+            comment: comment,
+            title: title,
+            export_as_array: export_as_array,
+            export_as_part_of_dat_line: export_as_part_of_dat_line,
+        }
+    );
+    /* @} */
+}
+/* @} */
+
+/* Waypoint, including marker on the map (type) @{ */
+function waypoint_t(
+    /* in: waypoint data */
+    waypoint_data)
+{
+    /* Private member variables */
+
+    var m_id;
+    var m_waypoint_data = waypoint_data;
+    var m_marker;
+    var m_map;
+
+    /* Private methods, some of them could be exported below. */
+
+    /* Set/change the id of the waypoint. @{ */
+    function set_id(
+        /* in: new id */
+        id)
+    {
+        m_id = id;
+    }
+    /* @} */
+
+    /* Get the id of the waypoint. @{ */
+    function id()
+    {
+        return(m_id);
+    }
+    /* @} */
+
+    /* Set/change the name of the waypoint. @{ */
+    function set_name(
+        /* in: new name */
+        name)
+    {
+        m_waypoint_data.set_name(name);
+        update_marker_title();
+    }
+    /* @} */
+
+    /* Set/change the comment of the waypoint. @{ */
+    function set_comment(
+        /* in: new comment */
+        comment)
+    {
+        m_waypoint_data.set_comment(comment);
+        update_marker_title();
+    }
+    /* @} */
+
+    /* Create a row in the waypoints HTML table. @{
+     * An event handler is hooked to the input boxes in the newly created row,
+     * so that when they are edited the waypoint's marker on the map is
+     * refreshed accordingly.
+     */
+    function create_table_row()
+    {
+        var tr_inner = document.getElementById('{wptr_}').innerHTML;
+        /* Replace '{foo}' with 'fooN' were N is the waypoint id */
+        tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + m_id);
+
+        var tr = document.createElement('tr');
+        tr.setAttribute('id', 'wptr_' + m_id);
+        tr.innerHTML = tr_inner;
+
+        var new_waypoint_tr = document.getElementById('new_waypoint_tr');
+        new_waypoint_tr.parentNode.insertBefore(tr, new_waypoint_tr);
+
+        var wp_lat = document.getElementById('wp_lat_' + m_id);
+        var wp_lng = document.getElementById('wp_lng_' + m_id);
+        wp_lat.onchange =
+        wp_lng.onchange =
+            function ()
+            {
+                m_waypoint_data.set_latlng(wp_lat.value, wp_lng.value);
+                m_marker.setLatLng([wp_lat.value, wp_lng.value]);
+            }
+
+        document.getElementById('wp_altitude_' + m_id).onchange =
+            function ()
+            {
+                m_waypoint_data.set_altitude(this.value);
+            }
+
+        document.getElementById('wp_type_' + m_id).onchange =
+            function ()
+            {
+                m_waypoint_data.set_type(this.value);
+            }
+
+        document.getElementById('wp_name_' + m_id).onchange =
+            function ()
+            {
+                set_name(this.value);
+            }
+
+        document.getElementById('wp_comment_' + m_id).onchange =
+            function ()
+            {
+                set_comment(this.value);
+            }
+
+        document.getElementById('wp_del_' + m_id).onclick =
+            function ()
+            {
+                delete_marker();
+
+                delete_table_row();
+
+                waypoints.del(m_id);
+            }
+
+        document.getElementById('wp_name_' + m_id).value = m_waypoint_data.name();
+        document.getElementById('wp_comment_' + m_id).value = m_waypoint_data.comment();
+        document.getElementById('wp_lat_' + m_id).value = m_waypoint_data.lat().toFixed(5);
+        document.getElementById('wp_lng_' + m_id).value = m_waypoint_data.lng().toFixed(5);
+        document.getElementById('wp_altitude_' + m_id).value = m_waypoint_data.altitude();
+
+        var select = document.getElementById('wp_type_' + m_id);
+        for (t in waypoint_types) {
+            var attributes = {value: t};
+            if (t == m_waypoint_data.type()) {
+                attributes.selected = true;
+            }
+
+            html_append_obj_with_text(select, 'option', waypoint_types[t],
+                                      attributes);
+        }
+    }
+    /* @} */
+
+    /* Delete the row of this waypoint from the waypoints HTML table. @{ */
+    function delete_table_row()
+    {
+        var tr = document.getElementById('wptr_' + m_id);
+        tr.parentNode.removeChild(tr);
+    }
+    /* @} */
+
+    /* Create a marker on the map for this waypoint. @{ */
     function create_marker(
         /* in,out: map where to add the pointer */
         map)
     {
         m_marker = L.marker(
-            [m_lat, m_lng],
+            [m_waypoint_data.lat(), m_waypoint_data.lng()],
             {
                 draggable: true,
                 icon: L.icon(
@@ -115,7 +375,7 @@ function waypoint_t(
                         iconUrl: 'img/x-mark-015.png',
                     }
                 ),
-                title: title(),
+                title: m_waypoint_data.title(),
             }
         );
 
@@ -150,7 +410,7 @@ function waypoint_t(
                 document.getElementById('wp_lat_' + m_id).value = ll.lat.toFixed(5);
                 document.getElementById('wp_lng_' + m_id).value = ll.lng.toFixed(5);
 
-                set_latlng(ll.lat, ll.lng);
+                m_waypoint_data.set_latlng(ll.lat, ll.lng);
             }
         );
 
@@ -158,16 +418,26 @@ function waypoint_t(
 
         m_marker.addTo(m_map);
     }
+    /* @} */
 
-    /* Delete the waypoint's marker from the map. */
+    /* Delete this waypoint's marker from the map. @{ */
     function delete_marker()
     {
         m_map.removeLayer(m_marker);
         m_marker = null;
     }
+    /* @} */
 
-    /* Update the title of a waypoint's marker. Used to regenerate the title
-     * after the name or comment of the waypoint has been changed.
+    /* Get this waypoint's marker. @{ */
+    function marker()
+    {
+        return(m_marker);
+    }
+    /* @} */
+
+    /* Update the title of this waypoint's marker. @{
+     * Used to regenerate the title after the name or comment of the waypoint
+     * has been changed.
      */
     function update_marker_title()
     {
@@ -179,111 +449,154 @@ function waypoint_t(
             create_marker(m_map);
         }
     }
+    /* @} */
 
-    /* Public methods */
+    /* Generate a string that represents one line from a ".dat" file @{ */
+    function export_as_dat_line()
+    {
+        return(m_id + ',' + m_waypoint_data.export_as_part_of_dat_line());
+    }
+    /* @} */
 
+    /* Export as array. @{ */
+    function export_as_array()
+    {
+        return(m_waypoint_data.export_as_array());
+    }
+    /* @} */
+
+    /* Export some of the methods as public. @{ */
     return(
         {
-            id: function ()
-            {
-                return(m_id);
-            },
-
-            lat: function ()
-            {
-                return(m_lat);
-            },
-
-            lng: function ()
-            {
-                return(m_lng);
-            },
-
-            altitude: function ()
-            {
-                return(m_altitude);
-            },
-
-            type: function ()
-            {
-                return(m_type);
-            },
-
-            name: function ()
-            {
-                return(m_name);
-            },
-
-            comment: function ()
-            {
-                return(m_comment);
-            },
-
-            marker: function ()
-            {
-                return(m_marker);
-            },
-
-            set_latlng: set_latlng,
-
-            set_altitude: set_altitude,
-
-            set_type: set_type,
-
+            id: id,
+            set_id: set_id,
             set_name: set_name,
-
             set_comment: set_comment,
-
-            export_as_array: function ()
-            {
-                return(
-                    [
-                        m_lat,
-                        m_lng,
-                        m_altitude,
-                        m_type,
-                        m_name,
-                        m_comment,
-                    ]
-                );
-            },
-
-            import_from_array: function (
-                id,
-                arr)
-            {
-                import_from_obj(
-                    {
-                        id: id,
-                        lat: arr[0],
-                        lng: arr[1],
-                        altitude: arr[2],
-                        type: arr[3],
-                        name: arr[4],
-                        comment: arr[5]
-                    }
-                );
-            },
-
+            create_table_row: create_table_row,
             create_marker: create_marker,
-
-            delete_marker: delete_marker,
-
-            export_as_dat_line: function ()
-            {
-                return(
-                    m_id + ',' +
-                    coord_convert_ddd2ddmmssN(m_lat, true) + ',' +
-                    coord_convert_ddd2ddmmssN(m_lng, false) + ',' +
-                    m_altitude + 'M,' +
-                    m_type + ',' +
-                    m_name + ',' +
-                    m_comment
-                );
-            },
+            marker: marker,
+            export_as_dat_line: export_as_dat_line,
+            export_as_array: export_as_array,
         }
     );
+    /* @} */
 }
+/* @} */
+
+/* Waypoints set (type) @{ */
+function waypoints_set_t()
+{
+    /* Private member variables */
+
+    var m_waypoints = new Array();
+
+    /* Private methods, some of them could be exported below. */
+
+    /* Add a new waypoint to the set. @{ */
+    function add(
+        /* in: waypoint to add */
+        waypoint)
+    {
+        /* Create a new element and get its index, hoping that this is
+         * atomic.
+         */
+        var i = m_waypoints.push(null) - 1;
+
+        /* Count from 1, rather than from 0 because XCSoar seems to be
+         * confused by a waypoint with id=0.
+         */
+        var id = i + 1;
+
+        m_waypoints[i] = waypoint;
+        m_waypoints[i].set_id(id);
+        m_waypoints[i].create_table_row();
+        m_waypoints[i].create_marker(main_map);
+    }
+    /* @} */
+
+    /* Delete a waypoint from the set. @{ */
+    function del(
+        /* in: id of the waypoint to delete */
+        waypoint_id)
+    {
+        for (var i = 0; i < m_waypoints.length; i++) {
+
+            if (m_waypoints[i] != null &&
+                m_waypoints[i].id() == waypoint_id) {
+
+                m_waypoints[i] = null;
+                break;
+            }
+        }
+    }
+    /* @} */
+
+    /* Generate an URL which contains all waypoints' data (share). @{ */
+    function gen_url()
+    {
+        /* Extract
+         * http://pg.v5d.org/task/ out of
+         * http://pg.v5d.org/task/?whatever...
+         */
+        var url = document.URL.replace(/^([^?]+).*$/, '$1');
+
+        var arr = new Array();
+
+        for (var i = 0; i < m_waypoints.length; i++) {
+            if (m_waypoints[i] != null) {
+                arr.push(m_waypoints[i].export_as_array());
+            }
+        }
+
+        var arr_json = JSON.stringify(arr);
+
+        return(url + '?v=1&w=' + compress_to_uri(arr_json));
+    }
+    /* @} */
+
+    /* Get the generated ".dat" file mime type. @{
+     * @return a string representing the mime type
+     */
+    function dat_mime_type()
+    {
+        return('application/dat');
+    }
+    /* @} */
+
+    /* Export as a ".dat" file. @{
+     * @return a string that is the file's contents
+     */
+    function export_as_dat()
+    {
+        var dat = '';
+
+        for (var i = 0; i < m_waypoints.length; i++) {
+            if (m_waypoints[i] != null) {
+                dat += m_waypoints[i].export_as_dat_line() + '\n';
+            }
+        }
+
+        return(dat);
+    }
+    /* @} */
+
+    /* Export some of the methods as public. @{ */
+    return(
+        {
+            add: add,
+            del: del,
+            gen_url: gen_url,
+            dat_mime_type: dat_mime_type,
+            export_as_dat: export_as_dat,
+        }
+    );
+    /* @} */
+}
+/* @} */
+
+/* @} */
+
+/* Compression/decompression functions @{ */
 
 /* Compress a string and encode the result as a valid URI component.
  * @return compressed str, URI-encoded */
@@ -310,107 +623,7 @@ function decompress_from_uri(
     return(LZString.decompressFromEncodedURIComponent(uri));
 }
 
-/* A type that describes a set of waypoints */
-function waypoints_set_t()
-{
-    /* Private member variables */
-
-    var m_waypoints = new Array();
-
-    /* Public methods */
-
-    return(
-        {
-            add: function (
-                p)
-            {
-                /* Create a new element and get its index, hoping that
-                 * this is atomic.
-                 */
-                var i = m_waypoints.push(null) - 1;
-
-                /* Count from 1, rather than from 0 because XCSoar seems to be
-                 * confused by a waypoint with id=0.
-                 */
-                var id = i + 1;
-
-                /* if 'p' is an array */
-                if (Object.prototype.toString.call(p) ===
-                    Object.prototype.toString.call([])) {
-
-                    m_waypoints[i] = waypoint_t(null);
-                    m_waypoints[i].import_from_array(id, p);
-                } else {
-                    m_waypoints[i] = waypoint_t(
-                        {
-                            id: id,
-                            lat: p.lat,
-                            lng: p.lng,
-                            altitude: p.altitude,
-                            type: p.type,
-                            name: p.name ? p.name : 'wp' + zero_pad(id, 3),
-                            comment: p.comment,
-                        }
-                    );
-                }
-
-                waypoint_show(m_waypoints[i]);
-            },
-
-            del: function (
-                     waypoint)
-            {
-                waypoint_remove(waypoint);
-
-                for (var i = 0; i < m_waypoints.length; i++) {
-                    if (m_waypoints[i] == waypoint) {
-                        m_waypoints[i] = null;
-                        break;
-                    }
-                }
-            },
-
-            gen_url: function ()
-            {
-                /* Extract
-                 * http://pg.v5d.org/task/ out of
-                 * http://pg.v5d.org/task/?whatever...
-                 */
-                var url = document.URL.replace(/^([^?]+).*$/, '$1');
-
-                var arr = new Array();
-
-                for (var i = 0; i < m_waypoints.length; i++) {
-                    if (m_waypoints[i] != null) {
-                        arr.push(m_waypoints[i].export_as_array());
-                    }
-                }
-
-                var arr_json = JSON.stringify(arr);
-
-                return(url + '?v=1&w=' + compress_to_uri(arr_json));
-            },
-
-            dat_mime_type: function ()
-            {
-                return('application/dat');
-            },
-
-            export_as_dat: function ()
-            {
-                var dat = '';
-
-                for (var i = 0; i < m_waypoints.length; i++) {
-                    if (m_waypoints[i] != null) {
-                        dat += m_waypoints[i].export_as_dat_line() + '\n';
-                    }
-                }
-
-                return(dat);
-            },
-        }
-    );
-}
+/* @} */
 
 /* Global variables */
 
@@ -508,124 +721,6 @@ function html_append_obj_with_text(
     dest.appendChild(obj);
 }
 
-/* Create a row in the waypoints HTML table. */
-function waypoint_create_table_row(
-    /* in: a waypoint for which to create a row. An event handler is hooked
-     * to the lat/lng input boxes in the newly created row, so that when
-     * they are edited the waypoint's marked on the map is moved to the new
-     * coordinates
-     */
-    waypoint)
-{
-    var id = waypoint.id();
-
-    var tr_inner = document.getElementById('{wptr_}').innerHTML;
-    /* Replace '{foo}' with 'fooN' were N is the waypoint id */
-    tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + id);
-
-    var tr = document.createElement('tr');
-    tr.setAttribute('id', 'wptr_' + id);
-    tr.innerHTML = tr_inner;
-
-    var new_waypoint_tr = document.getElementById('new_waypoint_tr');
-    new_waypoint_tr.parentNode.insertBefore(tr, new_waypoint_tr);
-
-    var wp_lat = document.getElementById('wp_lat_' + id);
-    var wp_lng = document.getElementById('wp_lng_' + id);
-    wp_lat.onchange =
-    wp_lng.onchange =
-        function ()
-        {
-            waypoint.set_latlng(wp_lat.value, wp_lng.value);
-            waypoint.marker().setLatLng([wp_lat.value, wp_lng.value]);
-        }
-
-    var wp_altitude = document.getElementById('wp_altitude_' + id);
-    wp_altitude.onchange =
-        function ()
-        {
-            waypoint.set_altitude(wp_altitude.value);
-        }
-
-    var wp_type = document.getElementById('wp_type_' + id);
-    wp_type.onchange =
-        function ()
-        {
-            waypoint.set_type(wp_type.value);
-        }
-
-    var wp_name = document.getElementById('wp_name_' + id);
-    wp_name.onchange =
-        function ()
-        {
-            waypoint.set_name(wp_name.value);
-        }
-
-    var wp_comment = document.getElementById('wp_comment_' + id);
-    wp_comment.onchange =
-        function ()
-        {
-            waypoint.set_comment(wp_comment.value);
-        }
-
-    document.getElementById('wp_del_' + id).onclick =
-        function ()
-        {
-            waypoints.del(waypoint);
-        }
-}
-
-/* Fill a given waypoint's row in the waypoints HTML table with the data
- * from the waypoint.
- */
-function waypoint_fill_table_row_values(
-    /* in: waypoint */
-    waypoint)
-{
-    var id = waypoint.id();
-
-    document.getElementById('wp_name_' + id).value = waypoint.name();
-    document.getElementById('wp_comment_' + id).value = waypoint.comment();
-    document.getElementById('wp_lat_' + id).value = waypoint.lat().toFixed(5);
-    document.getElementById('wp_lng_' + id).value = waypoint.lng().toFixed(5);
-    document.getElementById('wp_altitude_' + id).value = waypoint.altitude();
-
-    var select = document.getElementById('wp_type_' + id);
-    for (t in waypoint_types) {
-        var attributes = {value: t};
-        if (t == waypoint.type()) {
-            attributes.selected = true;
-        }
-
-        html_append_obj_with_text(select, 'option', waypoint_types[t], attributes);
-    }
-}
-
-/* Show a waypoint in the waypoints HTML table and associate a map marker
- * with it.
- */
-function waypoint_show(
-    /* in,out: waypoint to show */
-    waypoint)
-{
-    waypoint_create_table_row(waypoint);
-    waypoint_fill_table_row_values(waypoint);
-    waypoint.create_marker(main_map);
-}
-
-/* Remove a waypoint from the map (remove its marker) and delete its
- * corresponding row from the HTML waypoints table.
- */
-function waypoint_remove(
-    /* in: waypoint to remove */
-    waypoint)
-{
-    waypoint.delete_marker();
-
-    var tr = document.getElementById('wptr_' + waypoint.id());
-    tr.parentNode.removeChild(tr);
-}
-
 /* Parse the contents of a waypoints file in the
  * "Cambridge/WinPilot (.dat)" format and add each waypoint to the global
  * 'waypoints' set.
@@ -650,15 +745,19 @@ function parser_waypoints(
         var alt = fields[3];
 
         waypoints.add(
-            {
-                lat: coord_convert_ddmmssN2ddd(fields[1]),
-                lng: coord_convert_ddmmssN2ddd(fields[2]),
-                /* Remove the trailing char, '123M' -> '123' */
-                altitude: Number(alt.substr(0, alt.length - 1)),
-                type: fields[4],
-                name: fields[5],
-                comment: fields[6],
-            }
+            waypoint_t(
+                waypoint_data_t(
+                    {
+                        lat: coord_convert_ddmmssN2ddd(fields[1]),
+                        lng: coord_convert_ddmmssN2ddd(fields[2]),
+                        /* Remove the trailing char, '123M' -> '123' */
+                        altitude: Number(alt.substr(0, alt.length - 1)),
+                        type: fields[4],
+                        name: fields[5],
+                        comment: fields[6],
+                    }
+                )
+            )
         );
     }
 
@@ -785,13 +884,18 @@ function init_events()
             /* table -> tbody -> number of <tr>s */
             var map_center = main_map.getCenter();
             waypoints.add(
-                {
-                    lat: map_center.lat,
-                    lng: map_center.lng,
-                    altitude: 0,
-                    type: Object.keys(waypoint_types)[0], // use the first by default
-                    comment: '',
-                }
+                waypoint_t(
+                    waypoint_data_t(
+                        {
+                            lat: map_center.lat,
+                            lng: map_center.lng,
+                            altitude: 0,
+                            /* use the first waypoint type by default */
+                            type: Object.keys(waypoint_types)[0],
+                            comment: '',
+                        }
+                    )
+                )
             );
         }
 
@@ -982,7 +1086,10 @@ function load_waypoints_from_url()
     }
 
     for (var i = 0; i < arr.length; i++) {
-        waypoints.add(arr[i]);
+
+        var waypoint = waypoint_t(waypoint_data_t(arr[i]));
+
+        waypoints.add(waypoint);
     }
 }
 
@@ -996,4 +1103,4 @@ function init()
 
 window.onload = init;
 
-/* vim: set shiftwidth=4 tabstop=4 expandtab: */
+/* vim: set shiftwidth=4 tabstop=4 expandtab foldmethod=marker foldmarker=@{,@}: */
