@@ -548,7 +548,7 @@ function waypoints_set_t()
 
         var arr_json = JSON.stringify(arr);
 
-        return(url + '?v=1&w=' + compress_to_uri(arr_json));
+        return(url + '?v=1&w=' + compr_compress_to_uri(arr_json));
     }
     /* @} */
 
