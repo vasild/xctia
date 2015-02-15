@@ -30,6 +30,70 @@ function html_append_obj_with_text(
     dest.appendChild(obj);
 }
 
+/* Find a CSS rule by its name, type and key. @{
+ * For example if there is this in the CSS:
+ * @keyframes foldup {
+ *     0% {
+ *         height: 123px;
+ *     }
+ *     100% {
+ *         height: 0px;
+ *     }
+ * }
+ * then html_find_css_rule('foldup', CSSRule.KEYFRAMES_RULE, '0%') will return
+ * the first nested rule where one can use rule.style.height to access the
+ * '123px' value or rule.style.height='...' to change it.
+ * @return the css rule or null if not found
+ */
+function html_find_css_rule(
+    /* in: name of the CSS rule */
+    name,
+    /* in: type of the CSS rule */
+    type,
+    /* in: key of the CSS rule */
+    key)
+{
+    /* For all style sheets specified in the HTML with
+     * <link type="text/css" rel="stylesheet" href="...">
+     */
+    for (var i = 0; i < document.styleSheets.length; i++) {
+        var ss = document.styleSheets[i];
+        try {
+            /* We get a security exception in FF if we try to access a
+             * stylesheet that is loaded from another domain. We skip those.
+             */
+            ss.cssRules;
+        } catch (e) {
+            continue;
+        }
+        /* In Chrome foreign CSSs are just null, no exception. */
+        if (ss.cssRules == null) {
+            continue;
+        }
+
+        /* For each rule in the file. */
+        for (var j = 0; j < ss.cssRules.length; j++) {
+            var rule = ss.cssRules[j];
+            /* Some rules may not have name or type. */
+            if (rule.name && rule.name == name &&
+                rule.type && rule.type == type) {
+                var r;
+                for (var k = 0; k < rule.cssRules.length; k++) {
+                    r = rule.cssRules[k];
+                    if (r.keyText == key) {
+                        return(r);
+                    }
+                }
+
+                return(null);
+            }
+        }
+    }
+
+    return(null);
+}
+/* @} */
+
 /* Parse the contents of a waypoints file in the
  * "Cambridge/WinPilot (.dat)" format and add each waypoint to the global
  * 'waypoints' set.
@@ -163,6 +227,75 @@ function shorten_url(
     xhr.send();
 }
 
+/* Setup events on two elements so that when the first is clicked
+ * (click_html_element_id) the second one (fold_html_element_id) is folded
+ * up according to the animation rules in animation_up_css_name and
+ * animation_down_css_name. After fold down/up is completed call
+ * after_folddown_action()/after_foldup_action().
+ */
+function init_foldupdown(
+    /* in: id of the element that triggers the animation by being clicked */
+    click_html_element_id,
+    /* in: id of the element to fold down/up */
+    fold_html_element_id,
+    /* in: @keyframes css animation name for up */
+    animation_up_css_name,
+    /* in: @keyframes css animation name for down */
+    animation_down_css_name,
+    /* in: function to call when fold down is completed */
+    after_folddown_action,
+    /* in: function to call when fold up is completed */
+    after_foldup_action)
+{
+    function onanimatinend(
+        e)
+    {
+        if (this.style.animationName == animation_down_css_name ||
+            this.style.webkitAnimationName == animation_down_css_name) {
+            /* Cancel the animation so that the object restores its
+             * original state when no animations are active of height=''
+             */
+            this.style.animationName =
+            this.style.webkitAnimationName = '';
+
+            after_folddown_action();
+        } else {
+            after_foldup_action();
+        }
+    }
+
+    var fold_html_element = document.getElementById(fold_html_element_id);
+
+    fold_html_element.addEventListener('animationend', onanimatinend);
+    fold_html_element.addEventListener('webkitAnimationEnd', onanimatinend);
+
+    document.getElementById(click_html_element_id).onclick =
+        function ()
+        {
+            var height = fold_html_element.scrollHeight;
+
+            if (fold_html_element.style.animationName == animation_down_css_name ||
+                fold_html_element.style.animationName == '' ||
+                fold_html_element.style.webkitAnimationName == animation_down_css_name ||
+                fold_html_element.style.webkitAnimationName == '') {
+
+                var rule = html_find_css_rule(animation_up_css_name, CSSRule.KEYFRAMES_RULE, '0%');
+                if (rule) {
+                    rule.style.height = height + 'px';
+                    fold_html_element.style.animationName =
+                    fold_html_element.style.webkitAnimationName = animation_up_css_name;
+                }
+            } else {
+                var rule = html_find_css_rule(animation_down_css_name, CSSRule.KEYFRAMES_RULE, '100%');
+                if (rule) {
+                    rule.style.height = height + 'px';
+                    fold_html_element.style.animationName =
+                    fold_html_element.style.webkitAnimationName = animation_down_css_name;
+                }
+            }
+        };
+}
+
 /* Initialize the events:
  * - clicking on the buttons
  */
@@ -207,6 +340,23 @@ function init_events()
                 )
             );
         }
+
+    init_foldupdown(
+        'waypoints_fold_div',
+        'waypoints_div',
+        'waypoints_foldup',
+        'waypoints_folddown',
+        function ()
+        {
+            document.getElementById('waypoints_fold_when_hid_span').style.display = 'none';
+            document.getElementById('waypoints_fold_when_vis_span').style.display = 'inline';
+        },
+        function ()
+        {
+            document.getElementById('waypoints_fold_when_vis_span').style.display = 'none';
+            document.getElementById('waypoints_fold_when_hid_span').style.display = 'inline';
+        }
+    );
 
     document.getElementById('share_button').onclick =
         function ()

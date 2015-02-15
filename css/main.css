@@ -83,4 +83,78 @@ td {
     width: 600px;
 }
 
+#waypoints_fold_div, #waypoints_label_div {
+    background-color: #DDDDDD;
+}
+
+#waypoints_fold_div:hover {
+    background-color: #EEEEEE;
+}
+
+#waypoints_fold_div {
+    cursor: pointer;
+    text-align: center;
+}
+
+#waypoints_fold_when_hid_span {
+    display: none;
+}
+
+#waypoints_fold_when_vis_span {
+    display: inline;
+}
+
+#waypoints_label_div {
+    text-align: center;
+}
+
+@keyframes waypoints_foldup {
+    0% {
+        height: 0px; /* will be set dynamically */
+    }
+    100% {
+        height: 0px;
+    }
+}
+
+@-webkit-keyframes waypoints_foldup {
+    0% {
+        height: 0px; /* will be set dynamically */
+    }
+    100% {
+        height: 0px;
+    }
+}
+
+@keyframes waypoints_folddown {
+    0% {
+        height: 0px;
+    }
+    100% {
+        height: 0px; /* will be set dynamically */
+    }
+}
+
+@-webkit-keyframes waypoints_folddown {
+    0% {
+        height: 0px;
+    }
+    100% {
+        height: 0px; /* will be set dynamically */
+    }
+}
+
+#waypoints_div {
+    animation-duration: 1.5s;
+    -webkit-animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+    overflow: hidden;
+}
+
+#waypoints_table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* vim: set shiftwidth=4 tabstop=4 expandtab: */
