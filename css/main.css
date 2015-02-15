@@ -32,6 +32,7 @@ td {
 
 .del_wp {
     cursor: pointer;
+    color: #CE0000;
 }
 
 .wp_type {
