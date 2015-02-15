@@ -38,10 +38,6 @@ td {
     width: 5em;
 }
 
-#load_waypoints_button {
-    margin: 4px;
-}
-
 #new_waypoint_tr {
     text-align: center;
 }
@@ -81,6 +77,17 @@ td {
     margin: auto;
     margin-top: 48px;
     width: 600px;
+}
+
+#waypoints_buttons_table {
+    width: 100%;
+}
+
+#waypoints_buttons_table, #waypoints_buttons_table td {
+    border-width: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
 #waypoints_fold_div, #waypoints_label_div {
