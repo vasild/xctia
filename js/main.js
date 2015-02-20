@@ -2,6 +2,8 @@
 
 var waypoints;
 
+var task;
+
 var main_map;
 
 /* Create object of type 'new_obj_type', set its innerHTML to 'text' and
@@ -242,10 +244,10 @@ function init_foldupdown(
     animation_up_css_name,
     /* in: @keyframes css animation name for down */
     animation_down_css_name,
-    /* in: function to call when fold down is completed */
-    after_folddown_action,
     /* in: function to call when fold up is completed */
-    after_foldup_action)
+    after_foldup_action,
+    /* in: function to call when fold down is completed */
+    after_folddown_action)
 {
     function onanimatinend(
         e)
@@ -348,15 +350,38 @@ function init_events()
         'waypoints_folddown',
         function ()
         {
-            document.getElementById('waypoints_fold_when_hid_span').style.display = 'none';
-            document.getElementById('waypoints_fold_when_vis_span').style.display = 'inline';
+            document.getElementById('waypoints_fold_when_vis_span').style.display = 'none';
+            document.getElementById('waypoints_fold_when_hid_span').style.display = 'inline';
         },
         function ()
         {
-            document.getElementById('waypoints_fold_when_vis_span').style.display = 'none';
-            document.getElementById('waypoints_fold_when_hid_span').style.display = 'inline';
+            document.getElementById('waypoints_fold_when_hid_span').style.display = 'none';
+            document.getElementById('waypoints_fold_when_vis_span').style.display = 'inline';
         }
     );
+
+    init_foldupdown(
+        'task_fold_div',
+        'task_div',
+        'task_foldup',
+        'task_folddown',
+        function ()
+        {
+            document.getElementById('task_fold_when_vis_span').style.display = 'none';
+            document.getElementById('task_fold_when_hid_span').style.display = 'inline';
+        },
+        function ()
+        {
+            document.getElementById('task_fold_when_hid_span').style.display = 'none';
+            document.getElementById('task_fold_when_vis_span').style.display = 'inline';
+        }
+    );
+
+    document.getElementById('turnpoint_insert_last_td').onclick =
+        function ()
+        {
+            task.add_turnpoint(this.parentNode);
+        }
 
     document.getElementById('share_button').onclick =
         function ()
@@ -521,6 +546,11 @@ function init()
     init_events();
 
     init_map();
+
+    /* Initialize this before waypoints.load_from_url() because the latter
+     * may try to add new waypoint names to the task's dropdown menus.
+     */
+    task = task_t();
 
     waypoints = waypoints_set_t();
     waypoints.load_from_url();

@@ -4,7 +4,7 @@ body, html {
     /*font-size: 0.8em;*/
 }
 
-body, html, input[type='text'], input[type='number'], option {
+body, html, input[type='text'], input[type='number'], option, .task_leg_label {
     font-family: monospace;
 }
 
@@ -14,10 +14,11 @@ input[type='text'], input[type='number'] {
 
 table {
     border-collapse: collapse;
+    border-style: none;
     margin: 4px;
 }
 
-table, td, th {
+td, th {
     border: 1px solid black;
 }
 
@@ -25,14 +26,37 @@ td {
     padding: 4px;
 }
 
-.altitude {
+.clickable {
+    cursor: pointer;
+}
+
+.del_row {
+    color: #CE0000;
+}
+
+.invisible {
+    display: none;
+}
+
+.no_border {
+    border-style: none;
+}
+
+.meters {
     text-align: right;
     width: 4em;
 }
 
-.del_wp {
-    cursor: pointer;
-    color: #CE0000;
+.turnpoint_insert_symbol {
+    color: #00DD00;
+}
+
+.turnpoint_name {
+    width: 6em;
+}
+
+.turnpoint_type {
+    width: 4em;
 }
 
 .wp_type {
@@ -80,6 +104,64 @@ td {
     width: 600px;
 }
 
+@keyframes task_foldup {
+    0% {
+        height: 0px; /* will be set dynamically */
+    }
+    100% {
+        height: 0px;
+    }
+}
+
+@-webkit-keyframes task_foldup {
+    0% {
+        height: 0px; /* will be set dynamically */
+    }
+    100% {
+        height: 0px;
+    }
+}
+
+@keyframes task_folddown {
+    0% {
+        height: 0px;
+    }
+    100% {
+        height: 0px; /* will be set dynamically */
+    }
+}
+
+@-webkit-keyframes task_folddown {
+    0% {
+        height: 0px;
+    }
+    100% {
+        height: 0px; /* will be set dynamically */
+    }
+}
+
+.task_leg_label_wrapper {
+    background-color: rgba(0, 0, 0, 0);
+    border-style: none;
+}
+
+.task_leg_label {
+    background-color: #000000;
+    border-radius: 4px;
+    color: #DDDDDD;
+    font-size: 80%;
+    padding-bottom: 1px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-top: 1px;
+    white-space: nowrap;
+}
+
+#task_table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #waypoints_buttons_table {
     width: 100%;
 }
@@ -91,28 +173,43 @@ td {
     text-align: center;
 }
 
-#waypoints_fold_div, #waypoints_label_div {
+#waypoints_fold_div,
+#waypoints_label_div,
+#task_fold_div,
+#task_label_div {
     background-color: #DDDDDD;
 }
 
-#waypoints_fold_div:hover {
+#waypoints_fold_div:hover,
+#task_fold_div:hover {
     background-color: #EEEEEE;
 }
 
-#waypoints_fold_div {
-    cursor: pointer;
+#waypoints_fold_div,
+#task_fold_div {
+    border-bottom: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    margin-bottom: 4px;
     text-align: center;
 }
 
-#waypoints_fold_when_hid_span {
+#waypoints_fold_when_hid_span,
+#task_fold_when_hid_span {
     display: none;
 }
 
-#waypoints_fold_when_vis_span {
+#waypoints_fold_when_vis_span,
+#task_fold_when_vis_span {
     display: inline;
 }
 
-#waypoints_label_div {
+#waypoints_label_div,
+#task_label_div {
+    border-bottom: 1px dashed #BBBBBB;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-top: 1px solid black;
     text-align: center;
 }
 
@@ -152,7 +249,7 @@ td {
     }
 }
 
-#waypoints_div {
+#waypoints_div, #task_div {
     animation-duration: 1.5s;
     -webkit-animation-duration: 1.5s;
     animation-fill-mode: forwards;

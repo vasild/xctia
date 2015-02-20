@@ -248,13 +248,30 @@ function waypoint_t(
     }
     /* @} */
 
+    /* Get the latitude of the waypoint. @{ */
+    function lat()
+    {
+        return(m_waypoint_data.lat());
+    }
+    /* @} */
+
+    /* Get the longtitude of the waypoint. @{ */
+    function lng()
+    {
+        return(m_waypoint_data.lng());
+    }
+    /* @} */
+
     /* Set/change the name of the waypoint. @{ */
     function set_name(
         /* in: new name */
         name)
     {
         m_waypoint_data.set_name(name);
+
         update_marker_title();
+
+        task.refresh_after_waypoint_rename(m_id);
     }
     /* @} */
 
@@ -264,7 +281,17 @@ function waypoint_t(
         comment)
     {
         m_waypoint_data.set_comment(comment);
+
         update_marker_title();
+
+        task.refresh_after_waypoint_rename(m_id);
+    }
+    /* @} */
+
+    /* Get the title of the waypoint. @{ */
+    function title()
+    {
+        return(m_waypoint_data.title());
     }
     /* @} */
 
@@ -294,6 +321,7 @@ function waypoint_t(
             {
                 m_waypoint_data.set_latlng(wp_lat.value, wp_lng.value);
                 m_marker.setLatLng([wp_lat.value, wp_lng.value]);
+                task.redraw_task();
             }
 
         document.getElementById('wp_altitude_' + m_id).onchange =
@@ -409,6 +437,8 @@ function waypoint_t(
                 document.getElementById('wp_lng_' + m_id).value = ll.lng.toFixed(5);
 
                 m_waypoint_data.set_latlng(ll.lat, ll.lng);
+
+                task.redraw_task();
             }
         );
 
@@ -466,10 +496,13 @@ function waypoint_t(
     /* Export some of the methods as public. @{ */
     return(
         {
-            id: id,
             set_id: set_id,
+            id: id,
+            lat: lat,
+            lng: lng,
             set_name: set_name,
             set_comment: set_comment,
+            title: title,
             create_table_row: create_table_row,
             create_marker: create_marker,
             marker: marker,
@@ -509,6 +542,8 @@ function waypoints_set_t()
         m_waypoints[i].set_id(id);
         m_waypoints[i].create_table_row();
         m_waypoints[i].create_marker(main_map);
+
+        task.refresh_after_waypoint_add(m_waypoints[i]);
     }
     /* @} */
 
@@ -523,6 +558,9 @@ function waypoints_set_t()
                 m_waypoints[i].id() == waypoint_id) {
 
                 m_waypoints[i] = null;
+
+                task.refresh_after_waypoint_del(waypoint_id);
+
                 break;
             }
         }
@@ -616,6 +654,25 @@ function waypoints_set_t()
     }
     /* @} */
 
+    /* Get a waypoint from the set, given its id.
+     * @return the waypoint object or null if not found
+     */
+    function get_by_id(
+        /* in: id of the searched waypoint */
+        id)
+    {
+        for (var i = 0; i < m_waypoints.length; i++) {
+            if (m_waypoints[i] == null) {
+                continue;
+            }
+
+            if (m_waypoints[i].id() == id) {
+                return(m_waypoints[i])
+            }
+        }
+        return(null);
+    }
+
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -625,6 +682,7 @@ function waypoints_set_t()
             load_from_url: load_from_url,
             dat_mime_type: dat_mime_type,
             export_as_dat: export_as_dat,
+            get_by_id: get_by_id,
         }
     );
     /* @} */

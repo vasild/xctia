@@ -15,6 +15,7 @@
         <script type="text/javascript" src="js/lz-string.js"></script>
         <script type="text/javascript" src="js/compr.js"></script>
         <script type="text/javascript" src="js/coord.js"></script>
+        <script type="text/javascript" src="js/task.js"></script>
         <script type="text/javascript" src="js/waypoints.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
     </head>
@@ -36,7 +37,7 @@
                         <th>&nbsp;</th>
                     </tr>
                     <!-- Waypoint row template -->
-                    <tr style="display: none" id="{wptr_}">
+                    <tr class="invisible" id="{wptr_}">
                         <td>
                             <input type="text" id="{wp_name_}"    size=10 placeholder="name" required><br>
                             <input type="text" id="{wp_comment_}" size=10 placeholder="comment">
@@ -46,12 +47,11 @@
                             <input type="text" id="{wp_lng_}" size=8 required>
                         </td>
                         <td>
-                            <input type="number" id="{wp_altitude_}" required min="0" class="altitude"><br>
-                            <select id="{wp_type_}" class="wp_type">
-                            </select>
+                            <input type="number" id="{wp_altitude_}" required min="0" class="meters"><br>
+                            <select id="{wp_type_}" class="wp_type"></select>
                         </td>
                         <td>
-                            <span id="{wp_del_}" class="del_wp" title="delete this waypoint">&#10007;</span>
+                            <span id="{wp_del_}" class="clickable del_row" title="delete this waypoint">&#10007;</span>
                         </td>
                     </tr>
                     <tr id="new_waypoint_tr">
@@ -61,12 +61,65 @@
                     </tr>
                 </table>
             </div>
-            <div id="waypoints_fold_div">
+            <div id="waypoints_fold_div" class="clickable">
                 <span id="waypoints_fold_when_hid_span">&#9662;</span>
                 <span id="waypoints_fold_when_vis_span">&#9652;</span>
             </div>
+
+            <div id="task_label_div">task</div>
+            <div id="task_div">
+                <table id="task_table">
+                    <tr>
+                        <th class="no_border">&nbsp;</th>
+                        <th rowspan="2">Point</th>
+                        <th rowspan="2">Radius[m]</th>
+                        <th rowspan="2">Type</th>
+                        <th rowspan="2">&nbsp;</th>
+                    </tr>
+                    <!-- Turnpoint rows templates @{ -->
+                    <tr class="invisible" id="turnpoint_insert_template_tr">
+                        <!-- the turnpoint_add class is used by JS to find this element -->
+                        <td rowspan="2" class="clickable no_border turnpoint_add">
+                            <span class="turnpoint_insert_symbol" title="insert new turnpoint">&#10753;</span>
+                        </td>
+                    </tr>
+                    <tr class="invisible" id="turnpoint_data_template_tr">
+                        <td rowspan="2">
+                            <!-- the turnpoint_name class is used by JS to find this element -->
+                            <select class="turnpoint_name"></select>
+                        </td>
+                        <td rowspan="2">
+                            <!-- the turnpoint_radius class is used by JS to find this element -->
+                            <input type="number" required min="0" value="1000" class="meters turnpoint_radius">
+                        </td>
+                        <td rowspan="2">
+                            <!-- the turnpoint_type class is used by JS to find this element -->
+                            <select class="turnpoint_type"></select>
+                        </td>
+                        <!-- the turnpoint_del class is used by JS to find this element -->
+                        <td rowspan="2" class="clickable del_row turnpoint_del">
+                            <span title="delete this turnpoint">&#10007;</span>
+                        </td>
+                    </tr>
+                    <!-- @} -->
+                    <tr>
+                        <td rowspan="2" id="turnpoint_insert_last_td" class="clickable no_border">
+                            <span class="turnpoint_insert_symbol" title="insert new turnpoint below">&#10753;</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="no_border">&nbsp;</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="task_fold_div" class="clickable">
+                <span id="task_fold_when_hid_span">&#9662;</span>
+                <span id="task_fold_when_vis_span">&#9652;</span>
+            </div>
+
             <button id="share_button">Share</button>
         </div>
+
         <div id="map_div"></div>
 
         <table id="share_table">
@@ -81,7 +134,7 @@
 
         <!-- invisible -->
 
-        <form style="display: none"><input id="load_waypoints_input" type="file"/></form>
+        <form class="invisible"><input id="load_waypoints_input" type="file"/></form>
 
     </body>
 </html>

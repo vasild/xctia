@@ -64,4 +64,23 @@ function coord_convert_ddd2ddmmssN(
 }
 /* @} */
 
+/* Calculate the position of the middle of a line. @{
+ * @return an array [mid_lat, mid_lng]
+ */
+function coord_find_middle(
+    /* in: first point's latitude */
+    x_lat,
+    /* in: first point's longtitude */
+    x_lng,
+    /* in: second point's latitude */
+    y_lat,
+    /* in: second point's longtitude */
+    y_lng)
+{
+    return(
+        [(x_lat + y_lat) / 2, (x_lng + y_lng) / 2]
+    );
+}
+/* @} */
+
 /* vim: set shiftwidth=4 tabstop=4 expandtab foldmethod=marker foldmarker=@{,@}: */
