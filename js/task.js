@@ -329,10 +329,21 @@ function task_t()
 
         /* For all <select>s for waypoint names. */
         for (var i = 0; i < name_selects.length; i++) {
+            var cur_select = name_selects[i];
+
+            var none_was_selected = cur_select.selectedIndex == -1;
+
             html_append_obj_with_text(
-                name_selects[i], "option", added_waypoint.title(),
+                cur_select, "option", added_waypoint.title(),
                 { value: added_waypoint.id() }
             );
+
+            /* Reset back to -1 because the append sets it to 0
+             * if it was -1.
+             */
+            if (none_was_selected) {
+                cur_select.selectedIndex = -1;
+            }
         }
     }
     /* @} */
