@@ -512,10 +512,11 @@ function init_map()
 
     var layer_satellite_google = new L.Google();
 
-    /* Add just the default layer to the map, the rest are added via the
-     * layers control.
+    /* Add the default and the administrative layer to the map, the rest are
+     * added via the layers control.
      */
     layer_relief.addTo(main_map);
+    layer_administrative.addTo(main_map);
 
     L.control.layers(
         {
