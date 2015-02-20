@@ -654,7 +654,7 @@ function waypoints_set_t()
     }
     /* @} */
 
-    /* Get a waypoint from the set, given its id.
+    /* Get a waypoint from the set, given its id. @{
      * @return the waypoint object or null if not found
      */
     function get_by_id(
@@ -672,6 +672,7 @@ function waypoints_set_t()
         }
         return(null);
     }
+    /* @} */
 
     /* Export some of the methods as public. @{ */
     return(
