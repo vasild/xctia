@@ -157,6 +157,55 @@ td {
     white-space: nowrap;
 }
 
+#task_bottom_div,
+#waypoints_bottom_div {
+    border-bottom: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    height: 0.5em;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+#task_bottom_div,
+#task_label_div,
+#waypoints_bottom_div,
+#waypoints_label_div {
+    background-color: #DDDDDD;
+}
+
+#task_div,
+#waypoints_div {
+    animation-duration: 1.5s;
+    -webkit-animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+    overflow: hidden;
+}
+
+#task_label_div,
+#waypoints_label_div {
+    border-bottom: 1px dashed #BBBBBB;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-top: 1px solid black;
+    position: relative;
+    text-align: center;
+}
+
+#task_label_div:hover,
+#waypoints_label_div:hover {
+    background-color: #EEEEEE;
+}
+
+#task_label_hide_span,
+#task_label_show_span,
+#waypoints_label_hide_span,
+#waypoints_label_show_span {
+    position: absolute;
+    right: 0;
+}
+
 #task_table {
     margin-left: auto;
     margin-right: auto;
@@ -166,50 +215,11 @@ td {
     width: 100%;
 }
 
-#waypoints_buttons_table, #waypoints_buttons_table td {
+#waypoints_buttons_table,
+#waypoints_buttons_table td {
     border-width: 0px;
     margin-left: auto;
     margin-right: auto;
-    text-align: center;
-}
-
-#waypoints_fold_div,
-#waypoints_label_div,
-#task_fold_div,
-#task_label_div {
-    background-color: #DDDDDD;
-}
-
-#waypoints_fold_div:hover,
-#task_fold_div:hover {
-    background-color: #EEEEEE;
-}
-
-#waypoints_fold_div,
-#task_fold_div {
-    border-bottom: 1px solid black;
-    border-left: 1px solid black;
-    border-right: 1px solid black;
-    margin-bottom: 4px;
-    text-align: center;
-}
-
-#waypoints_fold_when_hid_span,
-#task_fold_when_hid_span {
-    display: none;
-}
-
-#waypoints_fold_when_vis_span,
-#task_fold_when_vis_span {
-    display: inline;
-}
-
-#waypoints_label_div,
-#task_label_div {
-    border-bottom: 1px dashed #BBBBBB;
-    border-left: 1px solid black;
-    border-right: 1px solid black;
-    border-top: 1px solid black;
     text-align: center;
 }
 
@@ -247,14 +257,6 @@ td {
     100% {
         height: 0px; /* will be set dynamically */
     }
-}
-
-#waypoints_div, #task_div {
-    animation-duration: 1.5s;
-    -webkit-animation-duration: 1.5s;
-    animation-fill-mode: forwards;
-    -webkit-animation-fill-mode: forwards;
-    overflow: hidden;
 }
 
 #waypoints_table {

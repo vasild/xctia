@@ -21,7 +21,11 @@
     </head>
     <body>
         <div id="menu_div">
-            <div id="waypoints_label_div">waypoints</div>
+            <div id="waypoints_label_div" class="clickable">
+                waypoints
+                <span id="waypoints_label_show_span" class="invisible">[show]</span>
+                <span id="waypoints_label_hide_span">[hide]</span>
+            </div>
             <div id="waypoints_div">
                 <table id="waypoints_buttons_table">
                     <tr>
@@ -61,12 +65,13 @@
                     </tr>
                 </table>
             </div>
-            <div id="waypoints_fold_div" class="clickable">
-                <span id="waypoints_fold_when_hid_span">&#9662;</span>
-                <span id="waypoints_fold_when_vis_span">&#9652;</span>
-            </div>
+            <div id="waypoints_bottom_div"></div>
 
-            <div id="task_label_div">task</div>
+            <div id="task_label_div" class="clickable">
+                task
+                <span id="task_label_show_span" class="invisible">[show]</span>
+                <span id="task_label_hide_span">[hide]</span>
+            </div>
             <div id="task_div">
                 <table id="task_table">
                     <tr>
@@ -112,10 +117,7 @@
                     </tr>
                 </table>
             </div>
-            <div id="task_fold_div" class="clickable">
-                <span id="task_fold_when_hid_span">&#9662;</span>
-                <span id="task_fold_when_vis_span">&#9652;</span>
-            </div>
+            <div id="task_bottom_div"></div>
 
             <button id="share_button">Share</button>
         </div>

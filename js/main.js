@@ -344,36 +344,36 @@ function init_events()
         }
 
     init_foldupdown(
-        'waypoints_fold_div',
+        'waypoints_label_div',
         'waypoints_div',
         'waypoints_foldup',
         'waypoints_folddown',
         function ()
         {
-            document.getElementById('waypoints_fold_when_vis_span').style.display = 'none';
-            document.getElementById('waypoints_fold_when_hid_span').style.display = 'inline';
+            document.getElementById('waypoints_label_hide_span').style.display = 'none';
+            document.getElementById('waypoints_label_show_span').style.display = 'inline';
         },
         function ()
         {
-            document.getElementById('waypoints_fold_when_hid_span').style.display = 'none';
-            document.getElementById('waypoints_fold_when_vis_span').style.display = 'inline';
+            document.getElementById('waypoints_label_show_span').style.display = 'none';
+            document.getElementById('waypoints_label_hide_span').style.display = 'inline';
         }
     );
 
     init_foldupdown(
-        'task_fold_div',
+        'task_label_div',
         'task_div',
         'task_foldup',
         'task_folddown',
         function ()
         {
-            document.getElementById('task_fold_when_vis_span').style.display = 'none';
-            document.getElementById('task_fold_when_hid_span').style.display = 'inline';
+            document.getElementById('task_label_hide_span').style.display = 'none';
+            document.getElementById('task_label_show_span').style.display = 'inline';
         },
         function ()
         {
-            document.getElementById('task_fold_when_hid_span').style.display = 'none';
-            document.getElementById('task_fold_when_vis_span').style.display = 'inline';
+            document.getElementById('task_label_show_span').style.display = 'none';
+            document.getElementById('task_label_hide_span').style.display = 'inline';
         }
     );
 
