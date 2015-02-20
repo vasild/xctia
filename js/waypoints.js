@@ -567,58 +567,11 @@ function waypoints_set_t()
     }
     /* @} */
 
-    /* Generate an URL which contains all waypoints' data (share). @{ */
-    function gen_url()
+    /* Import the waypoints from an array. @{ */
+    function import_from_array(
+        /* in: array with data */
+        arr)
     {
-        /* Extract
-         * http://pg.v5d.org/task/ out of
-         * http://pg.v5d.org/task/?whatever...
-         */
-        var url = document.URL.replace(/^([^?]+).*$/, '$1');
-
-        var arr = new Array();
-
-        for (var i = 0; i < m_waypoints.length; i++) {
-            if (m_waypoints[i] != null) {
-                arr.push(m_waypoints[i].export_as_array());
-            }
-        }
-
-        var arr_json = JSON.stringify(arr);
-
-        return(url + '?v=1&w=' + compr_compress_to_uri(arr_json));
-    }
-    /* @} */
-
-    /* Load the waypoints from the URL of the current page @{
-     * if any waypoints data is passed there.
-     */
-    function load_from_url()
-    {
-        if (window.location.search == "") {
-            return;
-	    }
-
-        var uri = window.location.search.replace(/^.*[?&]w=([^&]+)(&.*$|$)/, '$1');
-        if (uri == window.location.search) {
-            return;
-        }
-
-        var arr_json = compr_decompress_from_uri(uri);
-        if (!arr_json) {
-            alert('Unable to decompress my URL. Was it truncated? ' +
-                  'URL (' + document.URL.length + ' bytes): ' + document.URL);
-            return;
-        }
-
-        var arr;
-        try {
-            arr = JSON.parse(arr_json);
-        } catch (e) {
-            alert(e);
-            return;
-        }
-
         for (var i = 0; i < arr.length; i++) {
 
             var waypoint = waypoint_t(waypoint_data_t(arr[i]));
@@ -634,6 +587,21 @@ function waypoints_set_t()
     function dat_mime_type()
     {
         return('application/dat');
+    }
+    /* @} */
+
+    /* Export as an array. @{ */
+    function export_as_array()
+    {
+        var arr = new Array();
+
+        for (var i = 0; i < m_waypoints.length; i++) {
+            if (m_waypoints[i] != null) {
+                arr.push(m_waypoints[i].export_as_array());
+            }
+        }
+
+        return(arr);
     }
     /* @} */
 
@@ -679,9 +647,10 @@ function waypoints_set_t()
         {
             add: add,
             del: del,
-            gen_url: gen_url,
             load_from_url: load_from_url,
             dat_mime_type: dat_mime_type,
+            export_as_array: export_as_array,
+            import_from_array: import_from_array,
             export_as_dat: export_as_dat,
             get_by_id: get_by_id,
         }

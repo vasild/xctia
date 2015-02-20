@@ -184,6 +184,55 @@ function save_waypoints()
         base64_encode(waypoints.export_as_dat());
 }
 
+/* Generate an URL which contains all data (share). @{ */
+function gen_url()
+{
+    /* Extract
+     * http://pg.v5d.org/task/ out of
+     * http://pg.v5d.org/task/?whatever...
+     */
+    var url = document.URL.replace(/^([^?]+).*$/, '$1');
+
+    var arr = new Array();
+    arr[0] = waypoints.export_as_array();
+
+    var arr_json = JSON.stringify(arr);
+
+    return(url + '?v=1&d=' + compr_compress_to_uri(arr_json));
+}
+/* @} */
+
+/* Load the waypoints and the task from the URL of the current page. @{ */
+function load_from_url()
+{
+    if (window.location.search == "") {
+        return;
+    }
+
+    var uri = window.location.search.replace(/^.*[?&]d=([^&]+)(&.*$|$)/, '$1');
+    if (uri == window.location.search) {
+        return;
+    }
+
+    var arr_json = compr_decompress_from_uri(uri);
+    if (!arr_json) {
+        alert('Unable to decompress my URL. Was it truncated? ' +
+              'URL (' + document.URL.length + ' bytes): ' + document.URL);
+        return;
+    }
+
+    var arr;
+    try {
+        arr = JSON.parse(arr_json);
+    } catch (e) {
+        alert(e);
+        return;
+    }
+
+    waypoints.import_from_array(arr[0]);
+}
+/* @} */
+
 /* Shorten a given url, using a web service. */
 function shorten_url(
     /* in: url to shorten */
@@ -386,7 +435,7 @@ function init_events()
     document.getElementById('share_button').onclick =
         function ()
         {
-            var url = waypoints.gen_url();
+            var url = gen_url();
 
             document.getElementById('share_table').style.display = 'table';
 
@@ -548,13 +597,14 @@ function init()
 
     init_map();
 
-    /* Initialize this before waypoints.load_from_url() because the latter
-     * may try to add new waypoint names to the task's dropdown menus.
+    /* Initialize these before load_from_url() because the latter
+     * may try to add elements to them.
      */
     task = task_t();
 
     waypoints = waypoints_set_t();
-    waypoints.load_from_url();
+
+    load_from_url();
 }
 
 window.onload = init;
