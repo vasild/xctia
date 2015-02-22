@@ -77,12 +77,26 @@ function turnpoint_t()
     }
     /* @} */
 
+    /* Get radius. @{ */
+    function radius()
+    {
+        return(m_radius);
+    }
+    /* @} */
+
     /* Set type. @{ */
     function set_type(
         /* in: new type */
         type)
     {
         m_type = turnpoint_types[type] ? type : Object.keys(turnpoint_types)[0];
+    }
+    /* @} */
+
+    /* Get type. @{ */
+    function type()
+    {
+        return(m_type);
     }
     /* @} */
 
@@ -96,6 +110,35 @@ function turnpoint_t()
     }
     /* @} */
 
+    /* Export this turnpoint's data as an array. @{
+     * @return an array that can be passed to import_from_array()
+     */
+    function export_as_array()
+    {
+        return(
+            [
+                m_waypoint_id,
+                m_radius,
+                m_type,
+            ]
+        );
+    }
+    /* @} */
+
+    /* Import the data from an array, returned by export_as_array(). @{ */
+    function import_from_array(
+        /* in: array that contains the data. */
+        arr)
+    {
+        /* Avoid calling set_waypoint_id() and set_radius() because they try
+         * to redraw the turnpoint.
+         */
+        m_waypoint_id = arr[0];
+        m_radius = arr[1];
+        set_type(arr[2]);
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -103,8 +146,12 @@ function turnpoint_t()
             set_waypoint_id: set_waypoint_id,
             waypoint_id: waypoint_id,
             set_radius: set_radius,
+            radius: radius,
             set_type: set_type,
+            type: type,
             remove_from_map: remove_from_map,
+            export_as_array: export_as_array,
+            import_from_array: import_from_array,
         }
     );
     /* @} */
@@ -224,13 +271,22 @@ function task_t()
     /* Add a new turnpoint to the task. @{
      * Create a new <tr>s for the new turnpoint and insert a new element
      * in m_turnpoints[] to the correct position. The waypoint that
-     * corresponds to this turnpoint is left uninitialized.
+     * corresponds to this turnpoint is left uninitialized if the second
+     * argument is not given.
      */
     function add_turnpoint(
         /* in: reference <tr>, insertion is done before it */
-        ref_tr)
+        ref_tr,
+        /* in: optional, array to import the turnpoint data from */
+        arr)
     {
         var turnpoint = turnpoint_t();
+        var turnpoint_has_data = false;
+
+        if (arr) {
+            turnpoint.import_from_array(arr);
+            turnpoint_has_data = true;
+        }
 
         /* Find the position in m_turnpoints[] to insert the new turnpoint.
          * Since rows can be inserted in the middle of the table, we must
@@ -267,13 +323,24 @@ function task_t()
 
         /* Setup the name dropdown menu. */
         var tp_name_select = tr_data.getElementsByClassName('turnpoint_name')[0];
-        tp_name_select.selectedIndex = -1;
         tp_name_select.onchange =
             function ()
             {
                 turnpoint.set_waypoint_id(this.options[this.selectedIndex].value);
                 redraw_task();
             };
+        var selected_index = -1;
+        if (turnpoint_has_data) {
+            /* For all <option>s in tp_name_select. */
+            var options = tp_name_select.getElementsByTagName('option');
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].value == turnpoint.waypoint_id()) {
+                    selected_index = i;
+                    break;
+                }
+            }
+        }
+        tp_name_select.selectedIndex = selected_index;
 
         /* Setup the radius input. */
         var tp_radius_input = tr_data.getElementsByClassName('turnpoint_radius')[0];
@@ -281,14 +348,39 @@ function task_t()
             function ()
             {
                 turnpoint.set_radius(this.value);
-            }
-        turnpoint.set_radius(tp_radius_input.value);
+            };
+        if (turnpoint_has_data) {
+            /* tp_radius_input.value has a preset value of 1000 from the
+             * HTML template. Reset it to whatever is given by the caller.
+             */
+            tp_radius_input.value = turnpoint.radius();
+        } else {
+            /* Set the radius using the preset 1000 from the HTML template. */
+            turnpoint.set_radius(tp_radius_input.value);
+        }
 
         /* Setup the type dropdown menu. */
         var tp_type_select = tr_data.getElementsByClassName('turnpoint_type')[0];
+        selected_index = 0;
+        var i = 0;
         for (t in turnpoint_types) {
             html_append_obj_with_text(
                 tp_type_select, "option", turnpoint_types[t], { value: t });
+
+            if (turnpoint_has_data && turnpoint.type() == t) {
+                selected_index = i;
+            }
+            i++;
+        }
+        tp_type_select.selectedIndex = selected_index;
+        tp_type_select.onchange =
+            function ()
+            {
+                turnpoint.set_type(this.options[this.selectedIndex].value);
+            };
+        if (!turnpoint_has_data) {
+            /* Use the first type by default if the caller did not provide one. */
+            turnpoint.set_type(Object.keys(turnpoint_types)[0]);
         }
 
         /* Setup the delete action. */
@@ -309,12 +401,16 @@ function task_t()
                 p.removeChild(ins_tr);
             };
 
+        var none_was_selected = tp_name_select.selectedIndex == -1;
+
         ref_tr.parentNode.insertBefore(tr_data, ref_tr);
         /* Workaround an issue in Chrome: selectedIndex gets reset from -1
          * to 0 by the insertBefore() call. tp_name_select is a child of
          * tr_data.
          */
-        tp_name_select.selectedIndex = -1;
+        if (none_was_selected) {
+            tp_name_select.selectedIndex = -1;
+        }
     }
     /* @} */
 
@@ -436,6 +532,34 @@ function task_t()
     }
     /* @} */
 
+    /* Export the whole task as an array. @{
+     * @return an array that can be passed to import_from_array()
+     */
+    function export_as_array()
+    {
+        var arr = new Array();
+
+        for (var i = 0; i < m_turnpoints.length; i++) {
+            arr.push(m_turnpoints[i].export_as_array());
+        }
+
+        return(arr);
+    }
+    /* @} */
+
+    /* Import the task's data from an array, returned by export_as_array() @{ */
+    function import_from_array(
+        /* in: array with data */
+        arr)
+    {
+        var ins_tr = document.getElementById('turnpoint_insert_last_td').parentNode;
+        for (var i = 0; i < arr.length; i++) {
+            add_turnpoint(ins_tr, arr[i]);
+        }
+        redraw_task();
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -444,6 +568,8 @@ function task_t()
             refresh_after_waypoint_add: refresh_after_waypoint_add,
             refresh_after_waypoint_del: refresh_after_waypoint_del,
             refresh_after_waypoint_rename: refresh_after_waypoint_rename,
+            export_as_array: export_as_array,
+            import_from_array: import_from_array,
         }
     );
     /* @} */

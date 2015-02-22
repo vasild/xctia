@@ -195,6 +195,7 @@ function gen_url()
 
     var arr = new Array();
     arr[0] = waypoints.export_as_array();
+    arr[1] = task.export_as_array();
 
     var arr_json = JSON.stringify(arr);
 
@@ -230,6 +231,7 @@ function load_from_url()
     }
 
     waypoints.import_from_array(arr[0]);
+    task.import_from_array(arr[1]);
 }
 /* @} */
 
