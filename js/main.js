@@ -607,6 +607,10 @@ function init()
     waypoints = waypoints_set_t();
 
     load_from_url();
+
+    if (task.is_valid()) {
+        main_map.fitBounds(task.bounds());
+    }
 }
 
 window.onload = init;
