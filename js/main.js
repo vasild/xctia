@@ -608,9 +608,17 @@ function init()
 
     load_from_url();
 
-    if (task.is_valid()) {
-        main_map.fitBounds(task.bounds());
-    }
+    /* Workaround an issue in Firefox where the map loading stops if this
+     * is executed directly.
+     */
+    window.setTimeout(
+        function ()
+        {
+            if (task.is_valid()) {
+                main_map.fitBounds(task.bounds());
+            }
+        },
+        0 /* 0 seconds */);
 }
 
 window.onload = init;
