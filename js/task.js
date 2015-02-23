@@ -193,6 +193,10 @@ function task_t()
         }
         m_map_legs_labels = [];
 
+        document.getElementById('task_summary_div').innerHTML = '';
+
+        var total_distance_m = 0;
+
         var latlngs = new Array();
         var prev_latlng = null;
         for (var i = 0; i < m_turnpoints.length; i++) {
@@ -216,9 +220,13 @@ function task_t()
                     latlng.lat, latlng.lng,
                     prev_latlng.lat, prev_latlng.lng);
 
+                var leg_length_m = latlng.distanceTo(prev_latlng);
+
+                total_distance_m += leg_length_m;
+
                 var label_html =
                     '<span class=\'task_leg_label\'>' +
-                    (latlng.distanceTo(prev_latlng) / 1000).toFixed(1) + ' km'
+                    (leg_length_m / 1000).toFixed(1) + ' km'
                     '</span>';
 
                 var icon = L.divIcon(
@@ -258,6 +266,10 @@ function task_t()
             }
         );
         m_map_path.addTo(main_map);
+
+        document.getElementById('task_summary_div').innerHTML =
+            'Total distance: ' +
+            (total_distance_m / 1000).toFixed(1) + ' km';
     }
     /* @} */
 
