@@ -123,6 +123,7 @@ function parser_waypoints(
             waypoint_t(
                 waypoint_data_t(
                     {
+                        id: fields[0],
                         lat: coord_convert_ddmmssN2ddd(fields[1]),
                         lng: coord_convert_ddmmssN2ddd(fields[2]),
                         /* Remove the trailing char, '123M' -> '123' */
@@ -381,13 +382,13 @@ function init_events()
     document.getElementById('new_waypoint_button').onclick =
         function ()
         {
-            var table = document.getElementById('waypoints_table');
-            /* table -> tbody -> number of <tr>s */
+            var id = waypoints.gen_new_id();
             var map_center = main_map.getCenter();
             waypoints.add(
                 waypoint_t(
                     waypoint_data_t(
                         {
+                            id: id,
                             lat: map_center.lat,
                             lng: map_center.lng,
                             altitude: 0,

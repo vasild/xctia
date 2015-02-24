@@ -8,17 +8,19 @@ var waypoint_types = {
 /* Basic data fields of a waypoint (type) @{ */
 function waypoint_data_t(
     /* in: parameters object or array, must contain:
-     * - lat or [0]: fractional number d.ddddd [degrees]
-     * - lng or [1]: fractional number d.ddddd [degrees]
-     * - altitude or [2]: integer altitude [meters]
-     * - type or [3]: string, one of waypoint_types' keys
-     * - name or [4]: name of the waypoint
-     * - comment or [5]: waypoint comment
+     * - id or [0]: waypoint id [number]
+     * - lat or [1]: fractional number d.ddddd [degrees]
+     * - lng or [2]: fractional number d.ddddd [degrees]
+     * - altitude or [3]: integer altitude [meters]
+     * - type or [4]: string, one of waypoint_types' keys
+     * - name or [5]: name of the waypoint
+     * - comment or [6]: waypoint comment
      */
     data)
 {
     /* Private member variables */
 
+    var m_id;
     var m_lat;
     var m_lng;
     var m_altitude;
@@ -42,6 +44,8 @@ function waypoint_data_t(
         /* in: object to get the data from */
         p)
     {
+        m_id = p.id;
+
         set_latlng(p.lat, p.lng);
 
         set_altitude(p.altitude);
@@ -61,14 +65,22 @@ function waypoint_data_t(
     {
         import_from_obj(
             {
-                lat: arr[0],
-                lng: arr[1],
-                altitude: arr[2],
-                type: arr[3],
-                name: arr[4],
-                comment: arr[5],
+                id: arr[0],
+                lat: arr[1],
+                lng: arr[2],
+                altitude: arr[3],
+                type: arr[4],
+                name: arr[5],
+                comment: arr[6],
             }
         );
+    }
+    /* @} */
+
+    /* Get id. @{ */
+    function id()
+    {
+        return(m_id);
     }
     /* @} */
 
@@ -132,7 +144,7 @@ function waypoint_data_t(
     function set_name(
         name)
     {
-        m_name = name ? name : 'wp';
+        m_name = name ? name : 'wp' + m_id;
     }
     /* @} */
 
@@ -170,6 +182,7 @@ function waypoint_data_t(
     {
         return(
             [
+                m_id,
                 m_lat,
                 m_lng,
                 m_altitude,
@@ -181,10 +194,11 @@ function waypoint_data_t(
     }
     /* @} */
 
-    /* Export as a part of a ".dat" line (without the leading "id,"). @{ */
-    function export_as_part_of_dat_line()
+    /* Export as a ".dat" line. @{ */
+    function export_as_dat_line()
     {
         return(
+            m_id + ',' +
             coord_convert_ddd2ddmmssN(m_lat, true) + ',' +
             coord_convert_ddd2ddmmssN(m_lng, false) + ',' +
             m_altitude + 'M,' +
@@ -198,6 +212,7 @@ function waypoint_data_t(
     /* Export some of the methods as public. @{ */
     return(
         {
+            id: id,
             set_latlng: set_latlng,
             lat: lat,
             lng: lng,
@@ -211,7 +226,7 @@ function waypoint_data_t(
             comment: comment,
             title: title,
             export_as_array: export_as_array,
-            export_as_part_of_dat_line: export_as_part_of_dat_line,
+            export_as_dat_line: export_as_dat_line,
         }
     );
     /* @} */
@@ -225,26 +240,16 @@ function waypoint_t(
 {
     /* Private member variables */
 
-    var m_id;
     var m_waypoint_data = waypoint_data;
     var m_marker;
     var m_map;
 
     /* Private methods, some of them could be exported below. */
 
-    /* Set/change the id of the waypoint. @{ */
-    function set_id(
-        /* in: new id */
-        id)
-    {
-        m_id = id;
-    }
-    /* @} */
-
     /* Get the id of the waypoint. @{ */
     function id()
     {
-        return(m_id);
+        return(m_waypoint_data.id());
     }
     /* @} */
 
@@ -278,7 +283,7 @@ function waypoint_t(
 
         update_marker_title();
 
-        task.refresh_after_waypoint_rename(m_id);
+        task.refresh_after_waypoint_rename(m_waypoint_data.id());
     }
     /* @} */
 
@@ -298,7 +303,7 @@ function waypoint_t(
 
         update_marker_title();
 
-        task.refresh_after_waypoint_rename(m_id);
+        task.refresh_after_waypoint_rename(m_waypoint_data.id());
     }
     /* @} */
 
@@ -308,7 +313,6 @@ function waypoint_t(
         return(m_waypoint_data.comment());
     }
     /* @} */
-
 
     /* Get the title of the waypoint. @{ */
     function title()
@@ -326,17 +330,17 @@ function waypoint_t(
     {
         var tr_inner = document.getElementById('{wptr_}').innerHTML;
         /* Replace '{foo}' with 'fooN' were N is the waypoint id */
-        tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + m_id);
+        tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + m_waypoint_data.id());
 
         var tr = document.createElement('tr');
-        tr.setAttribute('id', 'wptr_' + m_id);
+        tr.setAttribute('id', 'wptr_' + m_waypoint_data.id());
         tr.innerHTML = tr_inner;
 
         var new_waypoint_tr = document.getElementById('new_waypoint_tr');
         new_waypoint_tr.parentNode.insertBefore(tr, new_waypoint_tr);
 
-        var wp_lat = document.getElementById('wp_lat_' + m_id);
-        var wp_lng = document.getElementById('wp_lng_' + m_id);
+        var wp_lat = document.getElementById('wp_lat_' + m_waypoint_data.id());
+        var wp_lng = document.getElementById('wp_lng_' + m_waypoint_data.id());
         wp_lat.onchange =
         wp_lng.onchange =
             function ()
@@ -346,47 +350,47 @@ function waypoint_t(
                 task.redraw_task();
             }
 
-        document.getElementById('wp_altitude_' + m_id).onchange =
+        document.getElementById('wp_altitude_' + m_waypoint_data.id()).onchange =
             function ()
             {
                 m_waypoint_data.set_altitude(this.value);
             }
 
-        document.getElementById('wp_type_' + m_id).onchange =
+        document.getElementById('wp_type_' + m_waypoint_data.id()).onchange =
             function ()
             {
                 m_waypoint_data.set_type(this.value);
             }
 
-        document.getElementById('wp_name_' + m_id).onchange =
+        document.getElementById('wp_name_' + m_waypoint_data.id()).onchange =
             function ()
             {
                 set_name(this.value);
             }
 
-        document.getElementById('wp_comment_' + m_id).onchange =
+        document.getElementById('wp_comment_' + m_waypoint_data.id()).onchange =
             function ()
             {
                 set_comment(this.value);
             }
 
-        document.getElementById('wp_del_' + m_id).onclick =
+        document.getElementById('wp_del_' + m_waypoint_data.id()).onclick =
             function ()
             {
                 delete_marker();
 
                 delete_table_row();
 
-                waypoints.del(m_id);
+                waypoints.del(m_waypoint_data.id());
             }
 
-        document.getElementById('wp_name_' + m_id).value = m_waypoint_data.name();
-        document.getElementById('wp_comment_' + m_id).value = m_waypoint_data.comment();
-        document.getElementById('wp_lat_' + m_id).value = m_waypoint_data.lat().toFixed(5);
-        document.getElementById('wp_lng_' + m_id).value = m_waypoint_data.lng().toFixed(5);
-        document.getElementById('wp_altitude_' + m_id).value = m_waypoint_data.altitude();
+        document.getElementById('wp_name_' + m_waypoint_data.id()).value = m_waypoint_data.name();
+        document.getElementById('wp_comment_' + m_waypoint_data.id()).value = m_waypoint_data.comment();
+        document.getElementById('wp_lat_' + m_waypoint_data.id()).value = m_waypoint_data.lat().toFixed(5);
+        document.getElementById('wp_lng_' + m_waypoint_data.id()).value = m_waypoint_data.lng().toFixed(5);
+        document.getElementById('wp_altitude_' + m_waypoint_data.id()).value = m_waypoint_data.altitude();
 
-        var select = document.getElementById('wp_type_' + m_id);
+        var select = document.getElementById('wp_type_' + m_waypoint_data.id());
         for (t in waypoint_types) {
             var attributes = {value: t};
             if (t == m_waypoint_data.type()) {
@@ -402,7 +406,7 @@ function waypoint_t(
     /* Delete the row of this waypoint from the waypoints HTML table. @{ */
     function delete_table_row()
     {
-        var tr = document.getElementById('wptr_' + m_id);
+        var tr = document.getElementById('wptr_' + m_waypoint_data.id());
         tr.parentNode.removeChild(tr);
     }
     /* @} */
@@ -432,10 +436,10 @@ function waypoint_t(
             function (e)
             {
                 /* Focus on the waypoint name */
-                document.getElementById('wp_name_' + m_id).focus();
+                document.getElementById('wp_name_' + m_waypoint_data.id()).focus();
 
                 /* Shake the whole table row */
-                var tr = document.getElementById('wptr_' + m_id);
+                var tr = document.getElementById('wptr_' + m_waypoint_data.id());
                 tr.addEventListener(
                     'animationend',
                     function (e)
@@ -455,8 +459,8 @@ function waypoint_t(
             {
                 var ll = e.target.getLatLng();
 
-                document.getElementById('wp_lat_' + m_id).value = ll.lat.toFixed(5);
-                document.getElementById('wp_lng_' + m_id).value = ll.lng.toFixed(5);
+                document.getElementById('wp_lat_' + m_waypoint_data.id()).value = ll.lat.toFixed(5);
+                document.getElementById('wp_lng_' + m_waypoint_data.id()).value = ll.lng.toFixed(5);
 
                 m_waypoint_data.set_latlng(ll.lat, ll.lng);
 
@@ -504,7 +508,7 @@ function waypoint_t(
     /* Generate a string that represents one line from a ".dat" file @{ */
     function export_as_dat_line()
     {
-        return(m_id + ',' + m_waypoint_data.export_as_part_of_dat_line());
+        return(m_waypoint_data.export_as_dat_line());
     }
     /* @} */
 
@@ -518,7 +522,6 @@ function waypoint_t(
     /* Export some of the methods as public. @{ */
     return(
         {
-            set_id: set_id,
             id: id,
             lat: lat,
             lng: lng,
@@ -553,22 +556,20 @@ function waypoints_set_t()
         /* in: waypoint to add */
         waypoint)
     {
-        /* Create a new element and get its index, hoping that this is
-         * atomic.
-         */
-        var i = m_waypoints.push(null) - 1;
+        var existent_waypoint = get_by_id(waypoint.id());
+        if (existent_waypoint != null) {
+            alert('Cannot add a new waypoint "' + waypoint.name() + '" ' +
+                  'because a waypoint with the same id ' + waypoint.id() + ' ' +
+                  'already exists: "' + existent_waypoint.name() + '"');
+            return;
+        }
 
-        /* Count from 1, rather than from 0 because XCSoar seems to be
-         * confused by a waypoint with id=0.
-         */
-        var id = i + 1;
+        m_waypoints.push(waypoint);
 
-        m_waypoints[i] = waypoint;
-        m_waypoints[i].set_id(id);
-        m_waypoints[i].create_table_row();
-        m_waypoints[i].create_marker(main_map);
+        waypoint.create_table_row();
+        waypoint.create_marker(main_map);
 
-        task.refresh_after_waypoint_add(m_waypoints[i]);
+        task.refresh_after_waypoint_add(waypoint);
     }
     /* @} */
 
@@ -666,6 +667,29 @@ function waypoints_set_t()
     }
     /* @} */
 
+    /* Generate a new waypoint id that is unique in this set. @{
+     * @return a unique id
+     */
+    function gen_new_id()
+    {
+        /* Count from 1, rather than from 0 because XCSoar seems to be
+         * confused by a waypoint with id=0.
+         */
+        var id = 1;
+
+        /* Generate a new id that is the max id + 1, or just 1 if the
+         * array is empty.
+         */
+        for (var i = 0; i < m_waypoints.length; i++) {
+            var cur_id = Number(m_waypoints[i].id());
+            if (id <= cur_id) {
+                id = cur_id + 1;
+            }
+        }
+        return(id);
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -676,6 +700,7 @@ function waypoints_set_t()
             import_from_array: import_from_array,
             save: save,
             get_by_id: get_by_id,
+            gen_new_id: gen_new_id,
         }
     );
     /* @} */
