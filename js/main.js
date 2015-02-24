@@ -175,14 +175,20 @@ function parse_file(
     reader.readAsText(file);
 }
 
-/* Save the waypoints in the global waypoints set to a local file on the
- * user's computer.
- */
-function save_waypoints()
+/* Save a string as a file on the filesystem of the user's computer. @{ */
+function save_str_as_file(
+    /* in: string, file's contents */
+    str,
+    /* in: file name to suggest to the user */
+    file_name)
 {
-    window.location.href = 'data:' + waypoints.dat_mime_type() + ';base64,' +
-        base64_encode(waypoints.export_as_dat());
+    var data_uri = 'data:application/octet-stream;base64,' + base64_encode(str);
+    var a = document.getElementById('save_a');
+    a.setAttribute('href', data_uri);
+    a.setAttribute('download', file_name);
+    a.click();
 }
+/* @} */
 
 /* Generate an URL which contains all data (share). @{ */
 function gen_url()
@@ -369,7 +375,7 @@ function init_events()
     document.getElementById('save_waypoints_button').onclick =
         function ()
         {
-            save_waypoints();
+            waypoints.save();
         }
 
     document.getElementById('new_waypoint_button').onclick =
@@ -433,6 +439,12 @@ function init_events()
         {
             task.add_turnpoint(this.parentNode);
         }
+
+    document.getElementById('task_save_button').onclick =
+        function ()
+        {
+            task.save();
+        };
 
     document.getElementById('share_button').onclick =
         function ()

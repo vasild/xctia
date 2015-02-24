@@ -262,6 +262,13 @@ function waypoint_t(
     }
     /* @} */
 
+    /* Get the altitude of the waypoint. @{ */
+    function altitude()
+    {
+        return(m_waypoint_data.altitude());
+    }
+    /* @} */
+
     /* Set/change the name of the waypoint. @{ */
     function set_name(
         /* in: new name */
@@ -272,6 +279,13 @@ function waypoint_t(
         update_marker_title();
 
         task.refresh_after_waypoint_rename(m_id);
+    }
+    /* @} */
+
+    /* Get the name of the waypoint. @{ */
+    function name()
+    {
+        return(m_waypoint_data.name());
     }
     /* @} */
 
@@ -287,6 +301,14 @@ function waypoint_t(
         task.refresh_after_waypoint_rename(m_id);
     }
     /* @} */
+
+    /* Get the comment of the waypoint. @{ */
+    function comment()
+    {
+        return(m_waypoint_data.comment());
+    }
+    /* @} */
+
 
     /* Get the title of the waypoint. @{ */
     function title()
@@ -500,8 +522,11 @@ function waypoint_t(
             id: id,
             lat: lat,
             lng: lng,
+            altitude: altitude,
             set_name: set_name,
+            name: name,
             set_comment: set_comment,
+            comment: comment,
             title: title,
             create_table_row: create_table_row,
             create_marker: create_marker,
@@ -581,15 +606,6 @@ function waypoints_set_t()
     }
     /* @} */
 
-    /* Get the generated ".dat" file mime type. @{
-     * @return a string representing the mime type
-     */
-    function dat_mime_type()
-    {
-        return('application/dat');
-    }
-    /* @} */
-
     /* Export as an array. @{ */
     function export_as_array()
     {
@@ -605,10 +621,10 @@ function waypoints_set_t()
     }
     /* @} */
 
-    /* Export as a ".dat" file. @{
+    /* Generate a ".dat" file. @{
      * @return a string that is the file's contents
      */
-    function export_as_dat()
+    function gen_dat()
     {
         var dat = '';
 
@@ -619,6 +635,14 @@ function waypoints_set_t()
         }
 
         return(dat);
+    }
+    /* @} */
+
+    /* Save the waypoints as a file on the user's computer. @{ */
+    function save()
+    {
+        var dat_str = gen_dat();
+        save_str_as_file(dat_str, "waypoints.dat");
     }
     /* @} */
 
@@ -648,10 +672,9 @@ function waypoints_set_t()
             add: add,
             del: del,
             load_from_url: load_from_url,
-            dat_mime_type: dat_mime_type,
             export_as_array: export_as_array,
             import_from_array: import_from_array,
-            export_as_dat: export_as_dat,
+            save: save,
             get_by_id: get_by_id,
         }
     );

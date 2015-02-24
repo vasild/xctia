@@ -1,6 +1,6 @@
 var turnpoint_types = {
-    CYLINDER: 'Cylinder',
-    SYMMETRIC_QUADRANT: 'Symmetric quadrant',
+    Cylinder: 'Cylinder',
+    SymmetricQuadrant: 'Symmetric quadrant',
 };
 
 /* Turnpoint (type). @{
@@ -195,6 +195,8 @@ function task_t()
 
         document.getElementById('task_summary_div').innerHTML = '';
 
+        document.getElementById('task_save_button').style.display = 'none';
+
         var total_distance_m = 0;
 
         var latlngs = new Array();
@@ -270,6 +272,8 @@ function task_t()
         document.getElementById('task_summary_div').innerHTML =
             'Total distance: ' +
             (total_distance_m / 1000).toFixed(1) + ' km';
+
+        document.getElementById('task_save_button').style.display = 'block';
     }
     /* @} */
 
@@ -606,6 +610,90 @@ function task_t()
     }
     /* @} */
 
+    /* Generate a ".tsk" file. @{
+     * @return an object, containing the string and the suggested file name
+     */
+    function gen_tsk()
+    {
+        var tsk_str = '';
+
+        tsk_str +=
+            '<Task ' +
+            'fai_finish="0" ' +
+            'finish_min_height_ref="AGL" ' +
+            'finish_min_height="0" ' +
+            'start_max_height_ref="AGL" ' +
+            'start_max_height="0" ' +
+            'start_max_speed="0" ' +
+            'start_requires_arm="0" ' +
+            'aat_min_time="10800" ' +
+            'type="RT">\n';
+
+        var file_name;
+
+        for (var i = 0; i < m_turnpoints.length; i++) {
+
+            var turnpoint = m_turnpoints[i];
+            var waypoint = waypoints.get_by_id(turnpoint.waypoint_id());
+
+            if (waypoint == null) {
+                continue;
+            }
+
+            var point_type;
+
+            switch (i) {
+            case 0:
+                point_type = 'Start';
+                file_name = waypoint.name();
+                break;
+            case m_turnpoints.length - 1:
+                point_type = 'Finish';
+                file_name += '-' + waypoint.name() + '.tsk';
+                break;
+            default:
+                point_type = 'Turn';
+            }
+
+            tsk_str +=
+                '\t<Point type="' + point_type + '">\n' +
+
+                '\t\t<Waypoint ' +
+                'altitude="' + waypoint.altitude() + '" ' +
+                'comment="' + waypoint.comment() + '" ' +
+                'id="' + turnpoint.waypoint_id() + '" ' +
+                'name="' + waypoint.name() + '">\n' +
+
+                '\t\t\t<Location ' +
+                'latitude="' + waypoint.lat().toFixed(4) + '" ' +
+                'longitude="' + waypoint.lng().toFixed(4) + '"/>\n' +
+
+                '\t\t</Waypoint>\n' +
+                '\t\t<ObservationZone ' +
+                'radius="' + turnpoint.radius() + '" ' +
+                'type="' + turnpoint.type() + '"/>\n' +
+                '\t</Point>\n';
+        }
+
+        tsk_str += '</Task>\n';
+
+        return(
+            {
+                str: tsk_str,
+                file_name: file_name,
+            }
+        );
+    }
+    /* @} */
+
+    /* Save the task as a .tsk file on the user's computer. @{ */
+    function save()
+    {
+        var tsk = gen_tsk();
+        save_str_as_file(tsk.str, tsk.file_name);
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -618,6 +706,7 @@ function task_t()
             import_from_array: import_from_array,
             is_valid: is_valid,
             bounds: bounds,
+            save: save,
         }
     );
     /* @} */

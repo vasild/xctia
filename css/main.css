@@ -206,6 +206,12 @@ td {
     right: 0;
 }
 
+#task_save_button {
+    margin-bottom: 4px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #task_summary_div {
     margin: 4px;
     text-align: center;
