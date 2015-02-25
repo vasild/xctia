@@ -694,6 +694,19 @@ function task_t()
     }
     /* @} */
 
+    /* Get the max waypoint id from all turnpoints in the task. @{
+     * @return max waypoint id or -1 if there are no turnpoints
+     */
+    function max_waypoint_id()
+    {
+        var max_id = -1;
+        for (var i = 0; i < m_turnpoints.length; i++) {
+            max_id = Math.max(max_id, m_turnpoints[i].waypoint_id());
+        }
+        return(max_id);
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -707,6 +720,7 @@ function task_t()
             is_valid: is_valid,
             bounds: bounds,
             save: save,
+            max_waypoint_id: max_waypoint_id,
         }
     );
     /* @} */

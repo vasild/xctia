@@ -44,7 +44,7 @@ function waypoint_data_t(
         /* in: object to get the data from */
         p)
     {
-        m_id = p.id;
+        m_id = Number(p.id);
 
         set_latlng(p.lat, p.lng);
 
@@ -84,15 +84,26 @@ function waypoint_data_t(
     }
     /* @} */
 
-    /* Set latitude and longtitude. @{ */
+    /* Set latitude and longtitude. @{
+     * @return true if set successfully
+     */
     function set_latlng(
         /* in: latitude */
         lat,
         /* in: longtitude */
         lng)
     {
+        lat = parseFloat(lat);
+        lng = parseFloat(lng);
+
+        if (isNaN(lat) || isNaN(lng)) {
+            return(false);
+        }
+
         m_lat = (-90 <= lat && lat <= 90) ? lat : 0;
         m_lng = (-180 <= lng && lng <= 180) ? lng : 0;
+
+        return(true);
     }
     /* @} */
 
@@ -110,11 +121,21 @@ function waypoint_data_t(
     }
     /* @} */
 
-    /* Set altitude. @{ */
+    /* Set altitude. @{
+     * @return true if set successfully
+     */
     function set_altitude(
         altitude)
     {
+        altitude = Number(altitude);
+
+        if (isNaN(altitude)) {
+            return(false);
+        }
+
         m_altitude = altitude >= 0 ? altitude : 0;
+
+        return(true);
     }
     /* @} */
 
@@ -183,8 +204,8 @@ function waypoint_data_t(
         return(
             [
                 m_id,
-                m_lat,
-                m_lng,
+                Number(m_lat.toFixed(5)),
+                Number(m_lng.toFixed(5)),
                 m_altitude,
                 m_type,
                 m_name,
@@ -345,9 +366,13 @@ function waypoint_t(
         wp_lng.onchange =
             function ()
             {
-                m_waypoint_data.set_latlng(wp_lat.value, wp_lng.value);
-                m_marker.setLatLng([wp_lat.value, wp_lng.value]);
-                task.redraw_task();
+                /* If bogus data is entered, then don't bother trying to
+                 * redraw the map elements.
+                 */
+                if (m_waypoint_data.set_latlng(wp_lat.value, wp_lng.value)) {
+                    m_marker.setLatLng([wp_lat.value, wp_lng.value]);
+                    task.redraw_task();
+                }
             }
 
         document.getElementById('wp_altitude_' + m_waypoint_data.id()).onchange =
@@ -675,18 +700,20 @@ function waypoints_set_t()
         /* Count from 1, rather than from 0 because XCSoar seems to be
          * confused by a waypoint with id=0.
          */
-        var id = 1;
+        var max_id = 1;
 
-        /* Generate a new id that is the max id + 1, or just 1 if the
-         * array is empty.
-         */
+        /* Find the largest id in the waypoints array. */
         for (var i = 0; i < m_waypoints.length; i++) {
-            var cur_id = Number(m_waypoints[i].id());
-            if (id <= cur_id) {
-                id = cur_id + 1;
+            if (m_waypoints[i] != null) {
+                max_id = Math.max(max_id, m_waypoints[i].id());
             }
         }
-        return(id);
+
+        max_id = Math.max(max_id, task.max_waypoint_id());
+
+        max_id++;
+
+        return(max_id);
     }
     /* @} */
 
