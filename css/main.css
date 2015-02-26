@@ -1,7 +1,6 @@
 body, html {
     height: 100%;
     margin: 0;
-    /*font-size: 0.8em;*/
 }
 
 body, html, input[type='text'], input[type='number'], option, .task_leg_label {
@@ -85,16 +84,14 @@ td {
 }
 
 #map_div {
-    float: right;
     height: 100%;
-    width: 84%;
+    width: available;
 }
 
 #menu_div {
     float: left;
     height: 100%;
     overflow: scroll;
-    width: 16%;
 }
 
 #share_button {
