@@ -5,6 +5,7 @@ var waypoints;
 var task;
 
 var main_map;
+var main_map_current_base_layer_name;
 
 /* Create object of type 'new_obj_type', set its innerHTML to 'text' and
  * append it to 'dest'.
@@ -203,6 +204,7 @@ function gen_url()
     var arr = new Array();
     arr[0] = waypoints.export_as_array();
     arr[1] = task.export_as_array();
+    arr[2] = map_save_state();
 
     var arr_json = JSON.stringify(arr);
 
@@ -211,22 +213,22 @@ function gen_url()
 /* @} */
 
 /* Load the waypoints and the task from the URL of the current page. @{ */
-function load_from_url()
+function parse_url()
 {
     if (window.location.search == "") {
-        return;
+        return(null);
     }
 
     var uri = window.location.search.replace(/^.*[?&]d=([^&]+)(&.*$|$)/, '$1');
     if (uri == window.location.search) {
-        return;
+        return(null);
     }
 
     var arr_json = compr_decompress_from_uri(uri);
     if (!arr_json) {
         alert('Unable to decompress my URL. Was it truncated? ' +
               'URL (' + document.URL.length + ' bytes): ' + document.URL);
-        return;
+        return(null);
     }
 
     var arr;
@@ -234,11 +236,10 @@ function load_from_url()
         arr = JSON.parse(arr_json);
     } catch (e) {
         alert(e);
-        return;
+        return(null);
     }
 
-    waypoints.import_from_array(arr[0]);
-    task.import_from_array(arr[1]);
+    return(arr);
 }
 /* @} */
 
@@ -495,10 +496,13 @@ function init_events()
 }
 
 /* Initialize the map. */
-function init_map()
+function init_map(
+    state_arr)
 {
-    /* Center the map in the middle of Bulgaria. */
-    main_map = L.map('map_div').setView([42.751046, 25.268555], 8);
+    var state = map_restore_state(state_arr);
+
+    main_map = L.map('map_div').setView([state.center_lat, state.center_lng],
+                                        state.zoom);
 
     var max_zoom = 25;
 
@@ -576,26 +580,30 @@ function init_map()
 
     var layer_satellite_google = new L.Google();
 
-    /* Add the default and the administrative layer to the map, the rest are
-     * added via the layers control.
-     */
-    layer_relief.addTo(main_map);
-    layer_administrative.addTo(main_map);
+    var base_layers = {
+        'Relief': layer_relief, /* the first one will be used by default */
+        'Topo XC': layer_topoxc,
+        'Hike': layer_hike,
+        'Satellite Google': layer_satellite_google,
+        'Satellite MapQuest': layer_satellite_mapquest,
+        'Satellite Here.com': layer_satellite_herecom,
+    };
 
-    L.control.layers(
-        {
-            'Relief': layer_relief,
-            'Topo XC': layer_topoxc,
-            'Hike': layer_hike,
-            'Satellite Google': layer_satellite_google,
-            'Satellite MapQuest': layer_satellite_mapquest,
-            'Satellite Here.com': layer_satellite_herecom,
-        },
-        {
-            'Administrative': layer_administrative,
-            'Topo': layer_topo,
-        }
-    ).addTo(main_map);
+    if (state.base_layer_name == null) {
+        state.base_layer_name = Object.keys(base_layers)[0];
+    }
+    main_map_current_base_layer_name = state.base_layer_name;
+
+    var overlay_layers = {
+        'Administrative': layer_administrative,
+        'Topo': layer_topo,
+    };
+
+    L.control.layers(base_layers, overlay_layers).addTo(main_map);
+
+    /* Setup the default visible layers. */
+    base_layers[state.base_layer_name].addTo(main_map);
+    layer_administrative.addTo(main_map);
 
     L.control.scale(
         {
@@ -603,35 +611,33 @@ function init_map()
             maxWidth: 300,
         }
     ).addTo(main_map);
+
+    main_map.on(
+        'baselayerchange',
+        function(layer)
+        {
+            main_map_current_base_layer_name = layer.name;
+        }
+    );
 }
 
 /* Initialize everything. */
 function init()
 {
+    var params = parse_url();
+
     init_events();
 
-    init_map();
-
-    /* Initialize these before load_from_url() because the latter
-     * may try to add elements to them.
-     */
-    task = task_t();
+    init_map(params != null ? params[2] : null);
 
     waypoints = waypoints_set_t();
 
-    load_from_url();
+    task = task_t();
 
-    /* Workaround an issue in Firefox where the map loading stops if this
-     * is executed directly.
-     */
-    window.setTimeout(
-        function ()
-        {
-            if (task.is_valid()) {
-                main_map.fitBounds(task.bounds());
-            }
-        },
-        0 /* 0 seconds */);
+    if (params != null) {
+        waypoints.import_from_array(params[0]);
+        task.import_from_array(params[1]);
+    }
 }
 
 window.onload = init;

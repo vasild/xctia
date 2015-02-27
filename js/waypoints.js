@@ -722,7 +722,6 @@ function waypoints_set_t()
         {
             add: add,
             del: del,
-            load_from_url: load_from_url,
             export_as_array: export_as_array,
             import_from_array: import_from_array,
             save: save,

@@ -139,17 +139,6 @@ function turnpoint_t()
     }
     /* @} */
 
-    /* Get the bounds of the turnpoint's shape on the map. @{ */
-    function bounds()
-    {
-        if (m_map_shape != null) {
-            return(m_map_shape.getBounds());
-        } else {
-            return(null);
-        }
-    }
-    /* @} */
-
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -163,7 +152,6 @@ function turnpoint_t()
             remove_from_map: remove_from_map,
             export_as_array: export_as_array,
             import_from_array: import_from_array,
-            bounds: bounds,
         }
     );
     /* @} */
@@ -597,19 +585,6 @@ function task_t()
     }
     /* @} */
 
-    /* Return the bounds of the task, assuming it is valid. @{
-     * @return task bounds
-     */
-    function bounds()
-    {
-        var bounds = m_map_path.getBounds();
-        for (var i = 0; i < m_turnpoints.length; i++) {
-            bounds.extend(m_turnpoints[i].bounds());
-        }
-        return(bounds);
-    }
-    /* @} */
-
     /* Generate a ".tsk" file. @{
      * @return an object, containing the string and the suggested file name
      */
@@ -718,7 +693,6 @@ function task_t()
             export_as_array: export_as_array,
             import_from_array: import_from_array,
             is_valid: is_valid,
-            bounds: bounds,
             save: save,
             max_waypoint_id: max_waypoint_id,
         }
