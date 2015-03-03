@@ -227,10 +227,13 @@ td {
     margin-right: auto;
 }
 
+#task_buttons_table,
 #waypoints_buttons_table {
     width: 100%;
 }
 
+#task_buttons_table,
+#task_buttons_table td,
 #waypoints_buttons_table,
 #waypoints_buttons_table td {
     border-width: 0px;

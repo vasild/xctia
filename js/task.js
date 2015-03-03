@@ -183,8 +183,6 @@ function task_t()
 
         document.getElementById('task_summary_div').innerHTML = '';
 
-        document.getElementById('task_save_button').style.display = 'none';
-
         var total_distance_m = 0;
 
         var latlngs = new Array();
@@ -260,8 +258,6 @@ function task_t()
         document.getElementById('task_summary_div').innerHTML =
             'Total distance: ' +
             (total_distance_m / 1000).toFixed(1) + ' km';
-
-        document.getElementById('task_save_button').style.display = 'block';
     }
     /* @} */
 
@@ -604,7 +600,7 @@ function task_t()
             'aat_min_time="10800" ' +
             'type="RT">\n';
 
-        var file_name;
+        var file_name = 'empty-task';
 
         for (var i = 0; i < m_turnpoints.length; i++) {
 
@@ -624,7 +620,7 @@ function task_t()
                 break;
             case m_turnpoints.length - 1:
                 point_type = 'Finish';
-                file_name += '-' + waypoint.name() + '.tsk';
+                file_name += '-' + waypoint.name();
                 break;
             default:
                 point_type = 'Turn';
@@ -651,6 +647,8 @@ function task_t()
         }
 
         tsk_str += '</Task>\n';
+
+        file_name += '.tsk';
 
         return(
             {
