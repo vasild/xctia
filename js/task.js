@@ -139,6 +139,17 @@ function turnpoint_t()
     }
     /* @} */
 
+    /* Get the bounds of the turnpoint's shape on the map. @{ */
+    function bounds()
+    {
+        if (m_map_shape != null) {
+            return(m_map_shape.getBounds());
+        } else {
+            return(null);
+        }
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -152,6 +163,7 @@ function turnpoint_t()
             remove_from_map: remove_from_map,
             export_as_array: export_as_array,
             import_from_array: import_from_array,
+            bounds: bounds,
         }
     );
     /* @} */
@@ -680,6 +692,22 @@ function task_t()
     }
     /* @} */
 
+    /* Fit map's viewport to the task. @{ */
+    function fit_map()
+    {
+        if (!is_valid()) {
+            return;
+        }
+
+        var bounds = m_map_path.getBounds();
+        for (var i = 0; i < m_turnpoints.length; i++) {
+            bounds.extend(m_turnpoints[i].bounds());
+        }
+
+        main_map.fitBounds(bounds);
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
@@ -693,6 +721,7 @@ function task_t()
             is_valid: is_valid,
             save: save,
             max_waypoint_id: max_waypoint_id,
+            fit_map: fit_map,
         }
     );
     /* @} */

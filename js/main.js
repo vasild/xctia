@@ -134,12 +134,77 @@ function parser_waypoints(
                         comment: fields[6],
                     }
                 )
-            )
+            ),
+            true
         );
     }
 
     return(null);
 }
+
+/* Parse the contents of a task file in the "XCSoar (.tsk)" format. @{
+ * Also add each turnpoint as a waypoint and as a task turnpoint.
+ * @return null
+ */
+function parser_task(
+    /* in: file contents as a string */
+    str)
+{
+    var parser = new DOMParser();
+    var dom = parser.parseFromString(str, "text/xml");
+    var points_xml = dom.getElementsByTagName('Point');
+
+    for (var i = 0; i < points_xml.length; i++) {
+        var point_xml = points_xml[i];
+
+        var waypoint_xml = point_xml.getElementsByTagName('Waypoint')[0];
+        var location_xml = point_xml.getElementsByTagName('Location')[0];
+        var observation_zone_xml = point_xml.getElementsByTagName('ObservationZone')[0];
+
+        var waypoint_id = waypoint_xml.getAttribute('id');
+        var lat = location_xml.getAttribute('latitude');
+        var lng = location_xml.getAttribute('longitude');
+        var altitude = waypoint_xml.getAttribute('altitude');
+        var name = waypoint_xml.getAttribute('name');
+        var comment = waypoint_xml.getAttribute('comment');
+        var radius = observation_zone_xml.getAttribute('radius');
+        var turnpoint_type = observation_zone_xml.getAttribute('type');
+
+        waypoints.add(
+            waypoint_t(
+                waypoint_data_t(
+                    {
+                        id: waypoint_id,
+                        lat: lat,
+                        lng: lng,
+                        altitude: altitude,
+                        type: Object.keys(waypoint_types)[0],
+                        name: name,
+                        comment: comment,
+                    }
+                )
+            ),
+            false
+        );
+
+        task.add_turnpoint(
+            document.getElementById('turnpoint_insert_last_td').parentNode,
+            [
+                waypoint_id,
+                radius,
+                turnpoint_type,
+            ]
+        );
+    }
+
+    if (points_xml.length >= 2) {
+        task.redraw_task();
+        task.fit_map();
+    }
+
+    return(null);
+}
+/* @} */
 
 /* Generic function to parse a file in JavaScript, uploaded in a HTML form.
  * The 'file' parameter must come from the files[] array from a HTML
@@ -398,7 +463,8 @@ function init_events()
                             comment: '',
                         }
                     )
-                )
+                ),
+                true
             );
         }
 
@@ -440,6 +506,18 @@ function init_events()
         function ()
         {
             task.add_turnpoint(this.parentNode);
+        }
+
+    document.getElementById('task_open_input').onchange =
+        function ()
+        {
+            parse_file(this.files[0], parser_task, null);
+        }
+
+    document.getElementById('task_open_button').onclick =
+        function ()
+        {
+            document.getElementById('task_open_input').click();
         }
 
     document.getElementById('task_save_button').onclick =

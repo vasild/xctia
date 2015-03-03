@@ -576,16 +576,22 @@ function waypoints_set_t()
 
     /* Private methods, some of them could be exported below. */
 
-    /* Add a new waypoint to the set. @{ */
+    /* Add a new waypoint to the set. @{ @*/
     function add(
         /* in: waypoint to add */
-        waypoint)
+        waypoint,
+        /* in: if true then emit an error message if a waypoint with the same
+         * id already exists.
+         */
+        errmsg_on_dup)
     {
         var existent_waypoint = get_by_id(waypoint.id());
         if (existent_waypoint != null) {
-            alert('Cannot add a new waypoint "' + waypoint.name() + '" ' +
-                  'because a waypoint with the same id ' + waypoint.id() + ' ' +
-                  'already exists: "' + existent_waypoint.name() + '"');
+            if (errmsg_on_dup) {
+                alert('Cannot add a new waypoint "' + waypoint.name() + '" ' +
+                      'because a waypoint with the same id ' + waypoint.id() + ' ' +
+                      'already exists: "' + existent_waypoint.name() + '"');
+            }
             return;
         }
 
@@ -627,7 +633,7 @@ function waypoints_set_t()
 
             var waypoint = waypoint_t(waypoint_data_t(arr[i]));
 
-            add(waypoint);
+            add(waypoint, true);
         }
     }
     /* @} */
