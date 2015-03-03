@@ -545,12 +545,12 @@ function init_map(
         }
     );
 
-    var layer_topo = L.tileLayer(
+    var layer_contours = L.tileLayer(
         'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
         {
             attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-            id: 'mapbox.run-bike-hike',
-            opacity: 0.5,
+            id: 'vasild.4f35a6b9',
+            opacity: 1.0,
             maxNativeZoom: 25,
             maxZoom: max_zoom,
             subdomains: ["a", "b", "c", "d"],
@@ -596,7 +596,7 @@ function init_map(
 
     var overlay_layers = {
         'Administrative': layer_administrative,
-        'Topo': layer_topo,
+        'Contrours': layer_contours,
     };
 
     L.control.layers(base_layers, overlay_layers).addTo(main_map);
