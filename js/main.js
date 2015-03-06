@@ -161,13 +161,13 @@ function parser_task(
         var location_xml = point_xml.getElementsByTagName('Location')[0];
         var observation_zone_xml = point_xml.getElementsByTagName('ObservationZone')[0];
 
-        var waypoint_id = waypoint_xml.getAttribute('id');
+        var waypoint_id = waypoints.gen_new_id();
         var lat = location_xml.getAttribute('latitude');
         var lng = location_xml.getAttribute('longitude');
         var altitude = waypoint_xml.getAttribute('altitude');
         var name = waypoint_xml.getAttribute('name');
         var comment = waypoint_xml.getAttribute('comment');
-        var radius = observation_zone_xml.getAttribute('radius');
+        var radius = observation_zone_xml.getAttribute('radius') || 1000;
         var turnpoint_type = observation_zone_xml.getAttribute('type');
 
         waypoints.add(
