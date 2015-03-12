@@ -85,13 +85,22 @@ td {
 
 #map_div {
     height: 100%;
-    width: available;
+}
+
+#menu_div,
+#menu_div_wrap {
+    width: 25em;
 }
 
 #menu_div {
-    float: left;
     height: 100%;
     overflow: scroll;
+}
+
+#menu_div_wrap {
+    float: left;
+    height: 100%;
+    overflow: hide;
 }
 
 #share_button {
