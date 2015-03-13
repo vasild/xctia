@@ -88,7 +88,7 @@ td {
 }
 
 #menu_div,
-#menu_div_wrap {
+#menu_wrap_div {
     width: 25em;
 }
 
@@ -97,7 +97,7 @@ td {
     overflow: scroll;
 }
 
-#menu_div_wrap {
+#menu_wrap_div {
     float: left;
     height: 100%;
     overflow: hide;
