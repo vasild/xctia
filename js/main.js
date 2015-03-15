@@ -570,6 +570,37 @@ function init_events()
             }
     });
 
+    document.getElementById('similar_div').style.animationName =
+    document.getElementById('similar_div').style.webkitAnimationName = 'similar_foldup';
+    init_animation({
+        clickable_id: 'similar_label_div',
+        main_id: 'similar_div',
+        hide_keyframes: 'similar_foldup',
+        before_hide: function ()
+            {
+                var rule = html_find_css_rule('similar_foldup', CSSRule.KEYFRAMES_RULE, '0%');
+
+                rule.style.height = document.getElementById('similar_div').scrollHeight + 'px';
+            },
+        after_hide: function ()
+            {
+                document.getElementById('similar_label_hide_span').style.display = 'none';
+                document.getElementById('similar_label_show_span').style.display = 'inline';
+            },
+        show_keyframes: 'similar_folddown',
+        before_show: function ()
+            {
+                var rule = html_find_css_rule('similar_folddown', CSSRule.KEYFRAMES_RULE, '100%');
+
+                rule.style.height = document.getElementById('similar_div').scrollHeight + 'px';
+            },
+        after_show: function ()
+            {
+                document.getElementById('similar_label_show_span').style.display = 'none';
+                document.getElementById('similar_label_hide_span').style.display = 'inline';
+            }
+    });
+
     document.getElementById('turnpoint_insert_last_td').onclick =
         function ()
         {

@@ -140,6 +140,8 @@ td {
 }
 
 #menu_toggle_span,
+#similar_bottom_div,
+#similar_label_div,
 #task_bottom_div,
 #task_label_div,
 #waypoints_bottom_div,
@@ -148,6 +150,7 @@ td {
 }
 
 #menu_toggle_span:hover,
+#similar_label_div:hover,
 #task_label_div:hover,
 #waypoints_label_div:hover {
     background-color: #EEEEEE;
@@ -205,6 +208,42 @@ td {
     width: 600px;
 }
 
+@keyframes similar_foldup {
+    0% {
+        height: 0px; /* will be set dynamically */
+    }
+    100% {
+        height: 0px;
+    }
+}
+
+@-webkit-keyframes similar_foldup {
+    0% {
+        height: 0px; /* will be set dynamically */
+    }
+    100% {
+        height: 0px;
+    }
+}
+
+@keyframes similar_folddown {
+    0% {
+        height: 0px;
+    }
+    100% {
+        height: 0px; /* will be set dynamically */
+    }
+}
+
+@-webkit-keyframes similar_folddown {
+    0% {
+        height: 0px;
+    }
+    100% {
+        height: 0px; /* will be set dynamically */
+    }
+}
+
 @keyframes task_foldup {
     0% {
         height: 0px; /* will be set dynamically */
@@ -241,6 +280,7 @@ td {
     }
 }
 
+#similar_bottom_div,
 #task_bottom_div,
 #waypoints_bottom_div {
     border-bottom: 1px solid black;
@@ -251,6 +291,11 @@ td {
     text-align: center;
 }
 
+#similar_div {
+    text-align: center;
+}
+
+#similar_div,
 #task_div,
 #waypoints_div {
     animation-duration: 1.5s;
@@ -260,6 +305,7 @@ td {
     overflow: hidden;
 }
 
+#similar_label_div,
 #task_label_div,
 #waypoints_label_div {
     border-bottom: 1px dashed #BBBBBB;
@@ -270,6 +316,8 @@ td {
     text-align: center;
 }
 
+#similar_label_hide_span,
+#similar_label_show_span,
 #task_label_hide_span,
 #task_label_show_span,
 #waypoints_label_hide_span,
