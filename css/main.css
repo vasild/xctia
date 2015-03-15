@@ -83,6 +83,42 @@ td {
     text-align: center;
 }
 
+@keyframes menu_hide {
+    0% {
+        width: 25em;
+    }
+    100% {
+        width: 0em;
+    }
+}
+
+@-webkit-keyframes menu_hide {
+    0% {
+        width: 25em;
+    }
+    100% {
+        width: 0em;
+    }
+}
+
+@keyframes menu_show {
+    0% {
+        width: 0em;
+    }
+    100% {
+        width: 25em;
+    }
+}
+
+@-webkit-keyframes menu_show {
+    0% {
+        width: 0em;
+    }
+    100% {
+        width: 25em;
+    }
+}
+
 #map_div {
     height: 100%;
 }
@@ -97,10 +133,44 @@ td {
     overflow: scroll;
 }
 
+#menu_toggle_span {
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    padding: 32px 4px;
+}
+
+#menu_toggle_span,
+#task_bottom_div,
+#task_label_div,
+#waypoints_bottom_div,
+#waypoints_label_div {
+    background-color: #DDDDDD;
+}
+
+#menu_toggle_span:hover,
+#task_label_div:hover,
+#waypoints_label_div:hover {
+    background-color: #EEEEEE;
+}
+
+#menu_toggle_wrap_div {
+    height: 100px;
+    position: absolute;
+    right: -100px;
+    top: 50%;
+    width: 100px;
+    z-index: 1;
+}
+
 #menu_wrap_div {
+    animation-duration: 1.5s;
+    -webkit-animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
     float: left;
     height: 100%;
     overflow: hide;
+    position: relative;
 }
 
 #share_button {
@@ -181,13 +251,6 @@ td {
     text-align: center;
 }
 
-#task_bottom_div,
-#task_label_div,
-#waypoints_bottom_div,
-#waypoints_label_div {
-    background-color: #DDDDDD;
-}
-
 #task_div,
 #waypoints_div {
     animation-duration: 1.5s;
@@ -205,11 +268,6 @@ td {
     border-top: 1px solid black;
     position: relative;
     text-align: center;
-}
-
-#task_label_div:hover,
-#waypoints_label_div:hover {
-    background-color: #EEEEEE;
 }
 
 #task_label_hide_span,

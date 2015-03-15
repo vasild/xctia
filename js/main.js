@@ -354,70 +354,67 @@ function shorten_url(
 }
 
 /* Setup events on two elements so that when the first is clicked
- * (click_html_element_id) the second one (fold_html_element_id) is folded
- * up according to the animation rules in animation_up_css_name and
- * animation_down_css_name. After fold down/up is completed call
- * after_folddown_action()/after_foldup_action().
+ * (arg.clickable_id) the second one (arg.main_id) is hidden
+ * according to the animation rules in arg.hide_keyframes.
+ * Before show/hide is started arg.before_hide() or arg.before_show() is
+ * called and after show/hide has ended arg.after_show() or arg.after_hide()
+ * is called.
  */
-function init_foldupdown(
-    /* in: id of the element that triggers the animation by being clicked */
-    click_html_element_id,
-    /* in: id of the element to fold down/up */
-    fold_html_element_id,
-    /* in: @keyframes css animation name for up */
-    animation_up_css_name,
-    /* in: @keyframes css animation name for down */
-    animation_down_css_name,
-    /* in: function to call when fold up is completed */
-    after_foldup_action,
-    /* in: function to call when fold down is completed */
-    after_folddown_action)
+function init_animation(
+    /* in: arguments, must contain the following elements:
+     * clickable_id: (string) the id of the HTML element that is clicked to toggle show/hide
+     * main_id: (string) the id of the HTML element that is being shown/hidden
+     * hide_keyframes: (string) CSS @keyframes animation specification for the hide action
+     * before_hide: (function) callback function to execute before hiding starts
+     * after_hide: (function) callback function to execute after hiding has ended
+     * show_keyframes: (string) CSS @keyframes animation specification for the show action
+     * before_show: (function) callback function to execute before showing starts
+     * after_show: (function) callback function to execute after showing has ended
+     */
+    arg)
 {
-    function onanimatinend(
+    function onanimationend(
         e)
     {
-        if (this.style.animationName == animation_down_css_name ||
-            this.style.webkitAnimationName == animation_down_css_name) {
+        if (this.style.animationName == arg.show_keyframes ||
+            this.style.webkitAnimationName == arg.show_keyframes) {
             /* Cancel the animation so that the object restores its
-             * original state when no animations are active of height=''
-             */
+             * original state when no animations are active. */
             this.style.animationName =
             this.style.webkitAnimationName = '';
 
-            after_folddown_action();
+            arg.after_show();
         } else {
-            after_foldup_action();
+            arg.after_hide();
         }
     }
 
-    var fold_html_element = document.getElementById(fold_html_element_id);
+    var main = document.getElementById(arg.main_id);
 
-    fold_html_element.addEventListener('animationend', onanimatinend);
-    fold_html_element.addEventListener('webkitAnimationEnd', onanimatinend);
+    main.addEventListener('animationend', onanimationend);
+    main.addEventListener('webkitAnimationEnd', onanimationend);
 
-    document.getElementById(click_html_element_id).onclick =
+    document.getElementById(arg.clickable_id).onclick =
         function ()
         {
-            var height = fold_html_element.scrollHeight;
+            if (main.style.animationName == arg.show_keyframes ||
+                main.style.animationName == '' ||
+                main.style.webkitAnimationName == arg.show_keyframes ||
+                main.style.webkitAnimationName == '') {
 
-            if (fold_html_element.style.animationName == animation_down_css_name ||
-                fold_html_element.style.animationName == '' ||
-                fold_html_element.style.webkitAnimationName == animation_down_css_name ||
-                fold_html_element.style.webkitAnimationName == '') {
-
-                var rule = html_find_css_rule(animation_up_css_name, CSSRule.KEYFRAMES_RULE, '0%');
-                if (rule) {
-                    rule.style.height = height + 'px';
-                    fold_html_element.style.animationName =
-                    fold_html_element.style.webkitAnimationName = animation_up_css_name;
+                if (arg.before_hide) {
+                    arg.before_hide();
                 }
+
+                main.style.animationName =
+                main.style.webkitAnimationName = arg.hide_keyframes;
             } else {
-                var rule = html_find_css_rule(animation_down_css_name, CSSRule.KEYFRAMES_RULE, '100%');
-                if (rule) {
-                    rule.style.height = height + 'px';
-                    fold_html_element.style.animationName =
-                    fold_html_element.style.webkitAnimationName = animation_down_css_name;
+                if (arg.before_show) {
+                    arg.before_show();
                 }
+
+                main.style.animationName =
+                main.style.webkitAnimationName = arg.show_keyframes;
             }
         };
 }
@@ -468,39 +465,110 @@ function init_events()
             );
         }
 
-    init_foldupdown(
-        'waypoints_label_div',
-        'waypoints_div',
-        'waypoints_foldup',
-        'waypoints_folddown',
-        function ()
-        {
-            document.getElementById('waypoints_label_hide_span').style.display = 'none';
-            document.getElementById('waypoints_label_show_span').style.display = 'inline';
-        },
-        function ()
-        {
-            document.getElementById('waypoints_label_show_span').style.display = 'none';
-            document.getElementById('waypoints_label_hide_span').style.display = 'inline';
-        }
-    );
+    init_animation({
+        clickable_id: 'waypoints_label_div',
+        main_id: 'waypoints_div',
+        hide_keyframes: 'waypoints_foldup',
+        before_hide: function ()
+            {
+                var rule = html_find_css_rule('waypoints_foldup', CSSRule.KEYFRAMES_RULE, '0%');
 
-    init_foldupdown(
-        'task_label_div',
-        'task_div',
-        'task_foldup',
-        'task_folddown',
-        function ()
-        {
-            document.getElementById('task_label_hide_span').style.display = 'none';
-            document.getElementById('task_label_show_span').style.display = 'inline';
-        },
-        function ()
-        {
-            document.getElementById('task_label_show_span').style.display = 'none';
-            document.getElementById('task_label_hide_span').style.display = 'inline';
+                rule.style.height = document.getElementById('waypoints_div').scrollHeight + 'px';
+            },
+        after_hide: function ()
+            {
+                document.getElementById('waypoints_label_hide_span').style.display = 'none';
+                document.getElementById('waypoints_label_show_span').style.display = 'inline';
+            },
+        show_keyframes: 'waypoints_folddown',
+        before_show: function ()
+            {
+                var rule = html_find_css_rule('waypoints_folddown', CSSRule.KEYFRAMES_RULE, '100%');
+
+                rule.style.height = document.getElementById('waypoints_div').scrollHeight + 'px';
+            },
+        after_show: function ()
+            {
+                document.getElementById('waypoints_label_show_span').style.display = 'none';
+                document.getElementById('waypoints_label_hide_span').style.display = 'inline';
+            }
+    });
+
+    init_animation({
+        clickable_id: 'task_label_div',
+        main_id: 'task_div',
+        hide_keyframes: 'task_foldup',
+        before_hide: function ()
+            {
+                var rule = html_find_css_rule('task_foldup', CSSRule.KEYFRAMES_RULE, '0%');
+
+                rule.style.height = document.getElementById('task_div').scrollHeight + 'px';
+            },
+        after_hide: function ()
+            {
+                document.getElementById('task_label_hide_span').style.display = 'none';
+                document.getElementById('task_label_show_span').style.display = 'inline';
+            },
+        show_keyframes: 'task_folddown',
+        before_show: function ()
+            {
+                var rule = html_find_css_rule('task_folddown', CSSRule.KEYFRAMES_RULE, '100%');
+
+                rule.style.height = document.getElementById('task_div').scrollHeight + 'px';
+            },
+        after_show: function ()
+            {
+                document.getElementById('task_label_show_span').style.display = 'none';
+                document.getElementById('task_label_hide_span').style.display = 'inline';
+            }
+    });
+
+    /* Pospone a bunch of actions that redraw the map (to fix its state
+     * after the container element has been resized) and keep its center
+     * to what it was when this function was called.
+     */
+    function map_smooth_resize()
+    {
+        var menu_wrap_div = document.getElementById('menu_wrap_div');
+        var computed_style = document.defaultView.getComputedStyle(menu_wrap_div);
+        var dur = parseFloat(computed_style['animation-duration'] || computed_style['-webkit-animation-duration']);
+
+        var steps = 16;
+
+        var center = main_map.getCenter();
+
+        for (var i = 1; i < steps; i++) {
+            window.setTimeout(
+                function ()
+                {
+                    main_map.setView(center);
+                    main_map.invalidateSize(true /* animate */);
+                },
+                dur * 1000 / steps * i
+            );
         }
-    );
+    }
+
+    init_animation({
+        clickable_id: 'menu_toggle_span',
+        main_id: 'menu_wrap_div',
+        hide_keyframes: 'menu_hide',
+        before_hide: map_smooth_resize,
+        after_hide: function ()
+            {
+                document.getElementById('menu_toggle_hide_span').style.display = 'none';
+                document.getElementById('menu_toggle_show_span').style.display = 'inline';
+                main_map.invalidateSize(true /* animate */);
+            },
+        show_keyframes: 'menu_show',
+        before_show: map_smooth_resize,
+        after_show: function ()
+            {
+                document.getElementById('menu_toggle_show_span').style.display = 'none';
+                document.getElementById('menu_toggle_hide_span').style.display = 'inline';
+                main_map.invalidateSize(true /* animate */);
+            }
+    });
 
     document.getElementById('turnpoint_insert_last_td').onclick =
         function ()
