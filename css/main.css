@@ -1,6 +1,7 @@
 body, html {
     height: 100%;
     margin: 0;
+    overflow: hidden;
 }
 
 body, html, input[type='text'], input[type='number'], option, .task_leg_label {
@@ -78,6 +79,37 @@ td {
 .wp_type {
     width: 5em;
 }
+
+#cat_run_img {
+    animation-duration: 3s;
+    -webkit-animation-duration: 3s;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+    animation-timing-function: linear;
+    -webkit-animation-timing-function: linear;
+    bottom: 0;
+    left: -300px;
+    position: absolute;
+}
+
+@keyframes cat_run {
+    0% {
+        left: -300px;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@-webkit-keyframes cat_run {
+    0% {
+        left: 0;
+    }
+    100% {
+        right: 0;
+    }
+}
+
 
 #new_waypoint_tr {
     text-align: center;

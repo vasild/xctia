@@ -605,6 +605,35 @@ function init_events()
             }
     });
 
+    function oncatanimationend(
+        e)
+    {
+        this.style.animationName = this.style.webkitAnimationName = '';
+    }
+
+    var cat = document.getElementById('cat_run_img');
+
+    cat.addEventListener('animationend', oncatanimationend);
+    cat.addEventListener('webkitAnimationEnd', oncatanimationend);
+
+    function cat_run(
+        first_call)
+    {
+        if (!first_call) {
+            cat.style.animationName = cat.style.webkitAnimationName = 'cat_run';
+        }
+
+        /* Pick up a random point in time between the next 2 and 3 minutes */
+        var min = 2*60*1000;
+        var max = 3*60*1000;
+        window.setTimeout(
+            cat_run,
+            Math.floor(Math.random() * (max - min)) + min
+        );
+    };
+
+    cat_run(true /* first call */);
+
     document.getElementById('turnpoint_insert_last_td').onclick =
         function ()
         {
