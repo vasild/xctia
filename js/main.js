@@ -376,12 +376,16 @@ function init_animation(
     function onanimationend(
         e)
     {
-        if (this.style.animationName == arg.show_keyframes ||
-            this.style.webkitAnimationName == arg.show_keyframes) {
+        if (e.target.id != arg.main_id) {
+            return;
+        }
+
+        if (e.target.style.animationName == arg.show_keyframes ||
+            e.target.style.webkitAnimationName == arg.show_keyframes) {
             /* Cancel the animation so that the object restores its
              * original state when no animations are active. */
-            this.style.animationName =
-            this.style.webkitAnimationName = '';
+            e.target.style.animationName =
+            e.target.style.webkitAnimationName = '';
 
             arg.after_show();
         } else {
