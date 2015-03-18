@@ -726,11 +726,15 @@ function init_map(
     );
 
     var layer_administrative = L.tileLayer(
-        'http://maps-for-free.com/layer/admin/z{z}/row{y}/{z}_{x}-{y}.gif',
+        'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
         {
-            attribution: '<a href="http://maps-for-free.com">maps-for-free.com</a>',
-            maxNativeZoom: 11,
+            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+            id: 'xctia.e542c64c',
+            opacity: 1.0,
+            maxNativeZoom: 22,
             maxZoom: max_zoom,
+            subdomains: ["a", "b", "c", "d"],
+            token: 'pk.eyJ1IjoieGN0aWEiLCJhIjoiQWYwQUNEayJ9._e9tePK42LWuuXClsK5oVg',
         }
     );
 
@@ -761,7 +765,7 @@ function init_map(
             attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
             id: 'vasild.4f35a6b9',
             opacity: 1.0,
-            maxNativeZoom: 25,
+            maxNativeZoom: 22,
             maxZoom: max_zoom,
             subdomains: ["a", "b", "c", "d"],
             token: 'pk.eyJ1IjoidmFzaWxkIiwiYSI6IkxnS09yWDgifQ.sbC5m00jUB1tK6xmnIogdQ',
