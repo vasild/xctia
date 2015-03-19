@@ -348,62 +348,74 @@ function ev_init_menu_toggle()
 /* Setup some cats showing up on the screen at random intervals. @{ */
 function ev_init_cats()
 {
-    function oncatanimationend(
-        e)
+    function play_running_cat()
     {
-        this.style.animationName = this.style.webkitAnimationName = '';
-    }
+        function oncatanimationend(
+            e)
+        {
+            this.style.animationName =
+            this.style.webkitAnimationName = '';
+        };
 
-    var cat = document.getElementById('cat_run_img');
+        var cat = document.getElementById('cat_run_img');
 
-    cat.addEventListener('animationend', oncatanimationend);
-    cat.addEventListener('webkitAnimationEnd', oncatanimationend);
+        cat.addEventListener('animationend', oncatanimationend);
+        cat.addEventListener('webkitAnimationEnd', oncatanimationend);
 
-    function cat_run(
+        cat.style.animationName =
+        cat.style.webkitAnimationName = 'cat_run';
+    };
+
+    function play_peeking_cat()
+    {
+        var cat = document.getElementById('cat_peek_img');
+
+        /* Reset the .gif so its animation begins now. */
+        cat.src = cat.src;
+
+        /* Show the cat. */
+        cat.style.display = 'block';
+
+        /* Hide the cat when the animation ends. */
+        window.setTimeout(
+            function ()
+            {
+                cat.style.display = 'none';
+            },
+            1400
+        );
+    };
+
+    function play_random_cat()
+    {
+        /* Get a random integer in [0, 1]. */
+        switch (Math.floor(Math.random() * 2)) {
+        case 0:
+            play_running_cat();
+            break;
+        case 1:
+            play_peeking_cat();
+            break;
+        }
+    };
+
+    function play_and_postpone_another(
         first_call)
     {
         if (!first_call) {
-            cat.style.animationName = cat.style.webkitAnimationName = 'cat_run';
+            play_random_cat();
         }
 
-        /* Pick up a random point in time between the next 2 and 3 minutes */
-        var min = 3*60*1000;
-        var max = 4*60*1000;
+        /* Pick up a random point in time in the next few minutes. */
+        var min = 5*1000;
+        var max = 10*1000;
         window.setTimeout(
-            cat_run,
+            play_and_postpone_another,
             Math.floor(Math.random() * (max - min)) + min
         );
     };
 
-    cat_run(true /* first call */);
-
-    function cat_peek(
-        first_call)
-    {
-        if (!first_call) {
-            var cat = document.getElementById('cat_peek_img');
-            cat.style.display = "block";
-            cat.src = cat.src;
-
-            window.setTimeout(
-                function ()
-                {
-                    cat.style.display = "none";
-                },
-                1400
-            );
-        }
-
-        /* Pick up a random point in time between the next 2 and 3 minutes */
-        var min = 2*60*1000;
-        var max = 3*60*1000;
-        window.setTimeout(
-            cat_peek,
-            Math.floor(Math.random() * (max - min)) + min
-        );
-    };
-
-    cat_peek(true);
+    play_and_postpone_another(true /* first call */);
 }
 /* @} */
 
