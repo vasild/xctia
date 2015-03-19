@@ -407,8 +407,8 @@ function ev_init_cats()
         }
 
         /* Pick up a random point in time in the next few minutes. */
-        var min = 5*1000;
-        var max = 10*1000;
+        var min = 3 * 60 * 1000;
+        var max = 4 * 60 * 1000;
         window.setTimeout(
             play_and_postpone_another,
             Math.floor(Math.random() * (max - min)) + min
