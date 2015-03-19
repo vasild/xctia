@@ -624,8 +624,8 @@ function init_events()
         }
 
         /* Pick up a random point in time between the next 2 and 3 minutes */
-        var min = 2*60*1000;
-        var max = 3*60*1000;
+        var min = 3*60*1000;
+        var max = 4*60*1000;
         window.setTimeout(
             cat_run,
             Math.floor(Math.random() * (max - min)) + min
@@ -633,6 +633,34 @@ function init_events()
     };
 
     cat_run(true /* first call */);
+
+    function cat_peek(
+        first_call)
+    {
+        if (!first_call) {
+            var cat = document.getElementById('cat_peek_img');
+            cat.style.display = "block";
+            cat.src = cat.src;
+
+            window.setTimeout(
+                function ()
+                {
+                    cat.style.display = "none";
+                },
+                1400
+            );
+        }
+
+        /* Pick up a random point in time between the next 2 and 3 minutes */
+        var min = 2*60*1000;
+        var max = 3*60*1000;
+        window.setTimeout(
+            cat_peek,
+            Math.floor(Math.random() * (max - min)) + min
+        );
+    };
+
+    cat_peek(true);
 
     document.getElementById('turnpoint_insert_last_td').onclick =
         function ()

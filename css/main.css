@@ -80,6 +80,13 @@ td {
     width: 5em;
 }
 
+#cat_peek_img {
+    bottom: -40px;
+    display: none;
+    position: absolute;
+    right: -75px;
+}
+
 #cat_run_img {
     animation-duration: 3s;
     -webkit-animation-duration: 3s;
