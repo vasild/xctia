@@ -4,6 +4,8 @@ var waypoints;
 
 var task;
 
+var map;
+
 /* Create object of type 'new_obj_type', set its innerHTML to 'text' and
  * append it to 'dest'.
  */
@@ -266,7 +268,7 @@ function gen_url()
     var arr = new Array();
     arr[0] = waypoints.export_as_array();
     arr[1] = task.export_as_array();
-    arr[2] = map_save_state();
+    arr[2] = map.export_state_as_array();
 
     var arr_json = JSON.stringify(arr);
 
@@ -358,7 +360,7 @@ function init()
     /* Initialize various events. */
     ev_init();
 
-    map_init(params != null ? params[2] : null);
+    map = map_t('map_div', params != null ? params[2] : null);
 
     waypoints = waypoints_set_t();
 
