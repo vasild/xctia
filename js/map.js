@@ -85,6 +85,57 @@ function map_t(
     };
     /* @} */
 
+    /* Create a new marker and put it on the map. @{
+     * @return a marker object
+     */
+    function create_marker(
+        /* in: marker options */
+        opt)
+    {
+        var marker = L.marker(
+            [opt.lat, opt.lng],
+            {
+                draggable: opt.draggable,
+                icon: L.icon(
+                    {
+                        iconAnchor: opt.icon_anchor,
+                        iconSize: opt.icon_size,
+                        iconUrl: opt.icon_url,
+                    }
+                ),
+                title: opt.title,
+            }
+        );
+
+        marker.on('click', opt.onclick);
+        marker.on('drag', opt.ondrag);
+
+        marker.addTo(main_map);
+
+        return(marker);
+    };
+    /* @} */
+
+    /* Delete a marker from the map. @{ */
+    function delete_marker(
+        /* in,out: marker */
+        marker)
+    {
+        main_map.removeLayer(marker);
+    };
+    /* @} */
+
+    /* Get the current lat,lng of the drag from an object passed to the client callback on drag. @{
+     * @return {lat: ..., lng: ...}
+     */
+    function onshape_drag_get_latlng(
+        /* in: object that is passed to the caller-supplied ondrag method */
+        e)
+    {
+        return(e.target.getLatLng());
+    };
+    /* @} */
+
     /* Initialize the map. @{ */
     function init(
         /* in: name of the containing HTML div element where to put the map */
@@ -229,6 +280,9 @@ function map_t(
             set_center: set_center,
             export_state_as_array: export_state_as_array,
             redraw: redraw,
+            create_marker: create_marker,
+            delete_marker: delete_marker,
+            onshape_drag_get_latlng: onshape_drag_get_latlng,
         }
     );
     /* @} */

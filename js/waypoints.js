@@ -263,7 +263,6 @@ function waypoint_t(
 
     var m_waypoint_data = waypoint_data;
     var m_marker;
-    var m_map;
 
     /* Private methods, some of them could be exported below. */
 
@@ -437,72 +436,56 @@ function waypoint_t(
     /* @} */
 
     /* Create a marker on the map for this waypoint. @{ */
-    function create_marker(
-        /* in,out: map where to add the pointer */
-        map)
+    function create_marker()
     {
-        m_marker = L.marker(
-            [m_waypoint_data.lat(), m_waypoint_data.lng()],
-            {
-                draggable: true,
-                icon: L.icon(
-                    {
-                        iconAnchor: [7, 7],
-                        iconSize: [15, 15],
-                        iconUrl: 'img/x-mark-015.png',
-                    }
-                ),
-                title: m_waypoint_data.title(),
-            }
-        );
+        m_marker = map.create_marker({
+            lat: m_waypoint_data.lat(),
+            lng: m_waypoint_data.lng(),
+            draggable: true,
+            icon_anchor: [7, 7],
+            icon_size: [15, 15],
+            icon_url: 'img/x-mark-015.png',
+            title: m_waypoint_data.title(),
+            onclick: function (e)
+                {
+                    var id = m_waypoint_data.id();
 
-        m_marker.on(
-            'click',
-            function (e)
-            {
-                /* Focus on the waypoint name */
-                document.getElementById('wp_name_' + m_waypoint_data.id()).focus();
+                    /* Focus on the waypoint name */
+                    document.getElementById('wp_name_' + id).focus();
 
-                /* Shake the whole table row */
-                var tr = document.getElementById('wptr_' + m_waypoint_data.id());
-                tr.addEventListener(
-                    'animationend',
-                    function (e)
-                    {
-                        this.classList.remove('animated');
-                        this.classList.remove('rubberBand');
-                    },
-                    false);
-                tr.classList.add('rubberBand');
-                tr.classList.add('animated');
-            }
-        );
+                    /* Shake the whole table row */
+                    var tr = document.getElementById('wptr_' + id);
+                    tr.addEventListener(
+                        'animationend',
+                        function (e)
+                        {
+                            this.classList.remove('animated');
+                            this.classList.remove('rubberBand');
+                        },
+                        false);
+                    tr.classList.add('rubberBand');
+                    tr.classList.add('animated');
+                },
+            ondrag: function (e)
+                {
+                    var ll = map.onshape_drag_get_latlng(e);
+                    var id = m_waypoint_data.id();
 
-        m_marker.on(
-            'drag',
-            function (e)
-            {
-                var ll = e.target.getLatLng();
+                    document.getElementById('wp_lat_' + id).value = ll.lat.toFixed(5);
+                    document.getElementById('wp_lng_' + id).value = ll.lng.toFixed(5);
 
-                document.getElementById('wp_lat_' + m_waypoint_data.id()).value = ll.lat.toFixed(5);
-                document.getElementById('wp_lng_' + m_waypoint_data.id()).value = ll.lng.toFixed(5);
+                    m_waypoint_data.set_latlng(ll.lat, ll.lng);
 
-                m_waypoint_data.set_latlng(ll.lat, ll.lng);
-
-                task.redraw_task();
-            }
-        );
-
-        m_map = map;
-
-        m_marker.addTo(m_map);
+                    task.redraw_task();
+                },
+        });
     }
     /* @} */
 
     /* Delete this waypoint's marker from the map. @{ */
     function delete_marker()
     {
-        m_map.removeLayer(m_marker);
+        map.delete_marker(m_marker);
         m_marker = null;
     }
     /* @} */
@@ -525,7 +508,7 @@ function waypoint_t(
          */
         if (m_marker != null) {
             delete_marker();
-            create_marker(m_map);
+            create_marker();
         }
     }
     /* @} */
@@ -598,7 +581,7 @@ function waypoints_set_t()
         m_waypoints.push(waypoint);
 
         waypoint.create_table_row();
-        waypoint.create_marker(main_map);
+        waypoint.create_marker();
 
         task.refresh_after_waypoint_add(waypoint);
     }
