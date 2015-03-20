@@ -24,7 +24,7 @@ function turnpoint_t()
         if (waypoint == null) {
             /* Remove an outdated shape from the map, if any. */
             if (m_map_shape != null) {
-                main_map.removeLayer(m_map_shape);
+                map.delete_circle(m_map_shape);
                 m_map_shape = null;
             }
             return;
@@ -32,14 +32,12 @@ function turnpoint_t()
 
         var latlng = L.latLng(waypoint.lat(), waypoint.lng());
         if (m_map_shape == null) {
-            m_map_shape = L.circle(
-                latlng,
-                m_radius,
-                {
-                    weight: 2,
-                }
-            );
-            m_map_shape.addTo(main_map);
+            m_map_shape = map.create_circle({
+                lat: waypoint.lat(),
+                lng: waypoint.lng(),
+                radius: m_radius,
+                contour_width: 2,
+            });
         } else {
             m_map_shape.setLatLng(latlng);
         }

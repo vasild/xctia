@@ -125,6 +125,36 @@ function map_t(
     };
     /* @} */
 
+    /* Create a new circle and put it on the map. @{
+     * @return a circle object
+     */
+    function create_circle(
+        /* in: circle options */
+        opt)
+    {
+        var circle = L.circle(
+            [opt.lat, opt.lng],
+            opt.radius,
+            {
+                weight: opt.contour_width,
+            }
+        );
+
+        circle.addTo(main_map);
+
+        return(circle);
+    };
+    /* @} */
+
+    /* Delete a circle from the map. @{ */
+    function delete_circle(
+        /* in,out: circle */
+        circle)
+    {
+        main_map.removeLayer(circle);
+    };
+    /* @} */
+
     /* Get the current lat,lng of the drag from an object passed to the client callback on drag. @{
      * @return {lat: ..., lng: ...}
      */
@@ -282,6 +312,8 @@ function map_t(
             redraw: redraw,
             create_marker: create_marker,
             delete_marker: delete_marker,
+            create_circle: create_circle,
+            delete_circle: delete_circle,
             onshape_drag_get_latlng: onshape_drag_get_latlng,
         }
     );
