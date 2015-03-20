@@ -4,9 +4,6 @@ var waypoints;
 
 var task;
 
-var main_map;
-var main_map_current_base_layer_name;
-
 /* Create object of type 'new_obj_type', set its innerHTML to 'text' and
  * append it to 'dest'.
  */
@@ -353,136 +350,6 @@ function shorten_url(
     xhr.send();
 }
 
-/* Initialize the map. */
-function init_map(
-    state_arr)
-{
-    var state = map_restore_state(state_arr);
-
-    main_map = L.map('map_div').setView([state.center_lat, state.center_lng],
-                                        state.zoom);
-
-    var max_zoom = 25;
-
-    var layer_relief = L.tileLayer(
-        'http://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg',
-        {
-            attribution: '<a href="http://maps-for-free.com">maps-for-free.com</a>',
-            maxNativeZoom: 11,
-            maxZoom: max_zoom,
-        }
-    );
-
-    var layer_administrative = L.tileLayer(
-        'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
-        {
-            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-            id: 'xctia.e542c64c',
-            opacity: 1.0,
-            maxNativeZoom: 22,
-            maxZoom: max_zoom,
-            subdomains: ["a", "b", "c", "d"],
-            token: 'pk.eyJ1IjoieGN0aWEiLCJhIjoiQWYwQUNEayJ9._e9tePK42LWuuXClsK5oVg',
-        }
-    );
-
-    var layer_topoxc = L.tileLayer(
-        'http://maps1.pgweb.cz/elev/{z}/{x}/{y}',
-        {
-            attribution: '<a href="http://xcontest.org">"Topo XC" by courtesy of xcontest.org</a>',
-            maxNativeZoom: 19,
-            maxZoom: max_zoom,
-        }
-    );
-
-    var layer_hike = L.tileLayer(
-        'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
-        {
-            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-            id: 'mapbox.run-bike-hike',
-            maxNativeZoom: 25,
-            maxZoom: max_zoom,
-            subdomains: ["a", "b", "c", "d"],
-            token: 'pk.eyJ1IjoidmFzaWxkIiwiYSI6IkxnS09yWDgifQ.sbC5m00jUB1tK6xmnIogdQ',
-        }
-    );
-
-    var layer_contours = L.tileLayer(
-        'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
-        {
-            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-            id: 'vasild.4f35a6b9',
-            opacity: 1.0,
-            maxNativeZoom: 22,
-            maxZoom: max_zoom,
-            subdomains: ["a", "b", "c", "d"],
-            token: 'pk.eyJ1IjoidmFzaWxkIiwiYSI6IkxnS09yWDgifQ.sbC5m00jUB1tK6xmnIogdQ',
-        }
-    );
-
-    var layer_satellite_mapquest = L.tileLayer(
-        'http://otile{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg',
-        {
-            attribution: '<a href="http://mapquest.com">MapQuest Open Aerial Tiles</a>',
-            maxNativeZoom: 11,
-            maxZoom: max_zoom,
-            subdomains: ["1", "2", "3", "4"],
-        }
-    );
-
-    var layer_satellite_herecom = L.tileLayer(
-        'http://{s}.aerial.maps.cit.api.here.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?app_id=DemoAppId01082013GAL&app_code=AJKnXv84fjrb0KIHawS0Tg',
-        {
-            attribution: '<a href="http://here.com">Here.com</a>',
-            maxNativeZoom: 20,
-            maxZoom: max_zoom,
-            subdomains: ["1", "2", "3", "4"],
-        }
-    );
-
-    var layer_satellite_google = new L.Google();
-
-    var base_layers = {
-        'Relief': layer_relief, /* the first one will be used by default */
-        'Topo XC': layer_topoxc,
-        'Hike': layer_hike,
-        'Satellite Google': layer_satellite_google,
-        'Satellite MapQuest': layer_satellite_mapquest,
-        'Satellite Here.com': layer_satellite_herecom,
-    };
-
-    if (state.base_layer_name == null) {
-        state.base_layer_name = Object.keys(base_layers)[0];
-    }
-    main_map_current_base_layer_name = state.base_layer_name;
-
-    var overlay_layers = {
-        'Administrative': layer_administrative,
-        'Contrours': layer_contours,
-    };
-
-    L.control.layers(base_layers, overlay_layers).addTo(main_map);
-
-    /* Setup the default visible layers. */
-    base_layers[state.base_layer_name].addTo(main_map);
-    layer_administrative.addTo(main_map);
-
-    L.control.scale(
-        {
-            imperial: false,
-            maxWidth: 300,
-        }
-    ).addTo(main_map);
-
-    main_map.on(
-        'baselayerchange',
-        function(layer)
-        {
-            main_map_current_base_layer_name = layer.name;
-        }
-    );
-}
-
 /* Initialize everything. */
 function init()
 {
@@ -491,7 +358,7 @@ function init()
     /* Initialize various events. */
     ev_init();
 
-    init_map(params != null ? params[2] : null);
+    map_init(params != null ? params[2] : null);
 
     waypoints = waypoints_set_t();
 
