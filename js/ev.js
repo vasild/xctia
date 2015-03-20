@@ -315,7 +315,7 @@ function ev_init_menu_toggle()
                 function ()
                 {
                     map.set_center(center);
-                    main_map.invalidateSize(true /* animate */);
+                    map.redraw();
                 },
                 dur * 1000 / steps * i
             );
@@ -331,7 +331,7 @@ function ev_init_menu_toggle()
             {
                 document.getElementById('menu_toggle_hide_span').style.display = 'none';
                 document.getElementById('menu_toggle_show_span').style.display = 'inline';
-                main_map.invalidateSize(true /* animate */);
+                map.redraw();
             },
         show_keyframes: 'menu_show',
         before_show: map_smooth_resize,
@@ -339,7 +339,7 @@ function ev_init_menu_toggle()
             {
                 document.getElementById('menu_toggle_show_span').style.display = 'none';
                 document.getElementById('menu_toggle_hide_span').style.display = 'inline';
-                main_map.invalidateSize(true /* animate */);
+                map.redraw();
             }
     });
 }

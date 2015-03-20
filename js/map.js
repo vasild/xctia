@@ -72,7 +72,16 @@ function map_t(
         /* in: an object returned by center() */
         center)
     {
-        return(main_map.setView(center));
+        main_map.setView(center);
+    };
+    /* @} */
+
+    /* Redraw the map. @{
+     * Useful when the container div has been resized.
+     */
+    function redraw()
+    {
+        main_map.invalidateSize(true /* animate */);
     };
     /* @} */
 
@@ -219,6 +228,7 @@ function map_t(
             center: center,
             set_center: set_center,
             export_state_as_array: export_state_as_array,
+            redraw: redraw,
         }
     );
     /* @} */
