@@ -96,7 +96,7 @@ function ev_init_waypoints()
         function ()
         {
             var id = waypoints.gen_new_id();
-            var map_center = main_map.getCenter();
+            var map_center = map.center();
             waypoints.add(
                 waypoint_t(
                     waypoint_data_t(
@@ -308,13 +308,13 @@ function ev_init_menu_toggle()
 
         var steps = 16;
 
-        var center = main_map.getCenter();
+        var center = map.center();
 
         for (var i = 1; i < steps; i++) {
             window.setTimeout(
                 function ()
                 {
-                    main_map.setView(center);
+                    map.set_center(center);
                     main_map.invalidateSize(true /* animate */);
                 },
                 dur * 1000 / steps * i
@@ -419,7 +419,6 @@ function ev_init_cats()
 }
 /* @} */
 
-/*
 /* Initialize the events. @{ */
 function ev_init()
 {

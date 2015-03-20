@@ -57,6 +57,25 @@ function map_t(
     };
     /* @} */
 
+    /* Get the center of the map. @{
+     * @return {lat: ..., lng: ...}
+     */
+    function center()
+    {
+        return(main_map.getCenter());
+    };
+    /* @} */
+
+    /* Set the center of the map. @{
+     */
+    function set_center(
+        /* in: an object returned by center() */
+        center)
+    {
+        return(main_map.setView(center));
+    };
+    /* @} */
+
     /* Initialize the map. @{ */
     function init(
         /* in: name of the containing HTML div element where to put the map */
@@ -197,6 +216,8 @@ function map_t(
     /* Export some of the methods as public. @{ */
     return(
         {
+            center: center,
+            set_center: set_center,
             export_state_as_array: export_state_as_array,
         }
     );
