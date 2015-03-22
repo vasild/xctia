@@ -198,6 +198,16 @@ function map_t(
             }
         );
 
+        var layer_opentopomap = L.tileLayer(
+            'http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+            {
+                attribution: 'Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org/">OpenTopoMap</a>',
+                maxNativeZoom: 16,
+                maxZoom: max_zoom,
+                subdomains: ["a", "b", "c"],
+            }
+        );
+
         var layer_hike = L.tileLayer(
             'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
             {
@@ -235,6 +245,7 @@ function map_t(
         var base_layers = {
             'Relief': layer_relief, /* the first one will be used by default */
             'Topo XC': layer_topoxc,
+            'OpenTopoMap': layer_opentopomap,
             'Hike': layer_hike,
             'Satellite Google': layer_satellite_google,
             'Satellite MapQuest': layer_satellite_mapquest,
