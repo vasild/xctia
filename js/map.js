@@ -189,19 +189,6 @@ function map_t(
             }
         );
 
-        var layer_administrative = L.tileLayer(
-            'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
-            {
-                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-                id: 'xctia.e542c64c',
-                opacity: 1.0,
-                maxNativeZoom: 22,
-                maxZoom: max_zoom,
-                subdomains: ["a", "b", "c", "d"],
-                token: 'pk.eyJ1IjoieGN0aWEiLCJhIjoiQWYwQUNEayJ9._e9tePK42LWuuXClsK5oVg',
-            }
-        );
-
         var layer_topoxc = L.tileLayer(
             'http://maps1.pgweb.cz/elev/{z}/{x}/{y}',
             {
@@ -217,19 +204,6 @@ function map_t(
                 attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
                 id: 'mapbox.run-bike-hike',
                 maxNativeZoom: 25,
-                maxZoom: max_zoom,
-                subdomains: ["a", "b", "c", "d"],
-                token: 'pk.eyJ1IjoidmFzaWxkIiwiYSI6IkxnS09yWDgifQ.sbC5m00jUB1tK6xmnIogdQ',
-            }
-        );
-
-        var layer_contours = L.tileLayer(
-            'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
-            {
-                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-                id: 'vasild.4f35a6b9',
-                opacity: 1.0,
-                maxNativeZoom: 22,
                 maxZoom: max_zoom,
                 subdomains: ["a", "b", "c", "d"],
                 token: 'pk.eyJ1IjoidmFzaWxkIiwiYSI6IkxnS09yWDgifQ.sbC5m00jUB1tK6xmnIogdQ',
@@ -273,16 +247,42 @@ function map_t(
             main_map_current_base_layer_name = Object.keys(base_layers)[0];
         }
 
+        var layer_countries = L.tileLayer(
+            'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
+            {
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                id: 'xctia.e542c64c',
+                opacity: 1.0,
+                maxNativeZoom: 22,
+                maxZoom: max_zoom,
+                subdomains: ["a", "b", "c", "d"],
+                token: 'pk.eyJ1IjoieGN0aWEiLCJhIjoiQWYwQUNEayJ9._e9tePK42LWuuXClsK5oVg',
+            }
+        );
+
+        var layer_contours = L.tileLayer(
+            'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
+            {
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                id: 'vasild.4f35a6b9',
+                opacity: 1.0,
+                maxNativeZoom: 22,
+                maxZoom: max_zoom,
+                subdomains: ["a", "b", "c", "d"],
+                token: 'pk.eyJ1IjoidmFzaWxkIiwiYSI6IkxnS09yWDgifQ.sbC5m00jUB1tK6xmnIogdQ',
+            }
+        );
+
         var overlay_layers = {
-            'Administrative': layer_administrative,
-            'Contrours': layer_contours,
+            'Country borders': layer_countries,
+            'Isolines (contours)': layer_contours,
         };
 
         L.control.layers(base_layers, overlay_layers).addTo(main_map);
 
         /* Setup the default visible layers. */
         base_layers[main_map_current_base_layer_name].addTo(main_map);
-        layer_administrative.addTo(main_map);
+        layer_countries.addTo(main_map);
 
         L.control.scale(
             {
