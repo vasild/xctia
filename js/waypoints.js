@@ -687,9 +687,11 @@ function waypoints_set_t()
     function gen_new_id()
     {
         /* Count from 1, rather than from 0 because XCSoar seems to be
-         * confused by a waypoint with id=0.
+         * confused by a waypoint with id=0. If no points are found
+         * in m_waypoints[] then this is incremented with 1 and then
+         * returned as the id of the first waypoint.
          */
-        var max_id = 1;
+        var max_id = 0;
 
         /* Find the largest id in the waypoints array. */
         for (var i = 0; i < m_waypoints.length; i++) {
