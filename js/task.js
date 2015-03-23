@@ -258,15 +258,14 @@ function task_t()
             return;
         }
 
-        m_map_path = L.polyline(
-            latlngs,
-            {
-                color: 'blue',
-                opacity: 1,
-                weight: 2,
-            }
-        );
-        m_map_path.addTo(main_map);
+        m_map_path = map_polyline_t({
+            color: 'blue',
+            opacity: 1,
+            points: latlngs,
+            width: 2,
+        });
+
+        map.add_shape(m_map_path);
 
         document.getElementById('task_summary_div').innerHTML =
             'Total distance: ' +

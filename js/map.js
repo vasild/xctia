@@ -49,6 +49,24 @@ function map_circle_t(
 };
 /* @} */
 
+/* Polyline shape type. @{
+ * @return a polyline
+ */
+function map_polyline_t(
+    /* in: polyline options */
+    opt)
+{
+    return(L.polyline(
+        opt.points,
+        {
+            color: opt.color,
+            opacity: opt.opacity,
+            weight: opt.width,
+        }
+    ));
+};
+/* @} */
+
 /* Marker type. @{
  * @return a marker object
  */
