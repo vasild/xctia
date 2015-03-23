@@ -369,7 +369,7 @@ function waypoint_t(
                  * redraw the map elements.
                  */
                 if (m_waypoint_data.set_latlng(wp_lat.value, wp_lng.value)) {
-                    m_marker.setLatLng([wp_lat.value, wp_lng.value]);
+                    m_marker.setLatLng([wp_lat.value, wp_lng.value]); /* XXX direct leaflet access */
                     task.redraw_task();
                 }
             }
@@ -438,14 +438,17 @@ function waypoint_t(
     /* Create a marker on the map for this waypoint. @{ */
     function create_marker()
     {
-        m_marker = map.create_marker({
+        m_marker = map_marker_t({
+            clickable: true,
+            draggable: true,
+            icon: map_icon_t({
+                icon_anchor: [7, 7],
+                icon_size: [15, 15],
+                icon_url: 'img/x-mark-015.png'
+            }),
+            keyboard: true,
             lat: m_waypoint_data.lat(),
             lng: m_waypoint_data.lng(),
-            draggable: true,
-            icon_anchor: [7, 7],
-            icon_size: [15, 15],
-            icon_url: 'img/x-mark-015.png',
-            title: m_waypoint_data.title(),
             onclick: function (e)
                 {
                     var id = m_waypoint_data.id();
@@ -478,14 +481,17 @@ function waypoint_t(
 
                     task.redraw_task();
                 },
+            title: m_waypoint_data.title(),
         });
+
+        map.add_shape(m_marker);
     }
     /* @} */
 
     /* Delete this waypoint's marker from the map. @{ */
     function delete_marker()
     {
-        map.delete_marker(m_marker);
+        map.delete_shape(m_marker);
         m_marker = null;
     }
     /* @} */

@@ -23,23 +23,21 @@ function turnpoint_t()
         /* If no waypoint is set. */
         if (waypoint == null) {
             /* Remove an outdated shape from the map, if any. */
-            if (m_map_shape != null) {
-                map.delete_circle(m_map_shape);
-                m_map_shape = null;
-            }
+            remove_from_map();
             return;
         }
 
         var latlng = L.latLng(waypoint.lat(), waypoint.lng());
         if (m_map_shape == null) {
-            m_map_shape = map.create_circle({
+            m_map_shape = map_circle_t({
                 lat: waypoint.lat(),
                 lng: waypoint.lng(),
                 radius: m_radius,
                 contour_width: 2,
             });
+            map.add_shape(m_map_shape);
         } else {
-            m_map_shape.setLatLng(latlng);
+            m_map_shape.setLatLng(latlng); /* XXX direct access to leaflet */
         }
     }
     /* @} */
@@ -102,7 +100,7 @@ function turnpoint_t()
     function remove_from_map()
     {
         if (m_map_shape != null) {
-            main_map.removeLayer(m_map_shape);
+            map.delete_shape(m_map_shape);
             m_map_shape = null;
         }
     }
@@ -182,12 +180,12 @@ function task_t()
     {
         /* Remove the existent task elements from the map. */
         if (m_map_path != null) {
-            main_map.removeLayer(m_map_path);
+            map.delete_shape(m_map_path);
             m_map_path = null;
         }
 
         for (var i = 0; i < m_map_legs_labels.length; i++) {
-            main_map.removeLayer(m_map_legs_labels[i]);
+            map.delete_shape(m_map_legs_labels[i]);
         }
         m_map_legs_labels = [];
 
@@ -227,23 +225,28 @@ function task_t()
                     (leg_length_m / 1000).toFixed(1) + ' km'
                     '</span>';
 
-                var icon = L.divIcon(
+                var icon = map_html_icon_t(
                     {
-                        className: 'task_leg_label_wrapper',
+                        class_name: 'task_leg_label_wrapper',
                         html: label_html,
                     }
                 );
 
-                var marker = L.marker(
-                    mid_latlng,
+                var marker = map_marker_t(
                     {
                         clickable: false,
+                        draggable: false,
                         icon: icon,
                         keyboard: false,
+                        lat: mid_latlng[0],
+                        lng: mid_latlng[1],
+                        onclick: null,
+                        ondrag: null,
+                        title: "",
                     }
                 );
 
-                marker.addTo(main_map);
+                map.add_shape(marker);
 
                 m_map_legs_labels.push(marker);
             }

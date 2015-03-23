@@ -5,6 +5,80 @@ var main_map_current_base_layer_name;
 
 /* @} */
 
+/* Icon type. @{
+ * @return an icon */
+function map_icon_t(
+    /* in: icon options */
+    opt)
+{
+    return(L.icon({
+        iconAnchor: opt.icon_anchor,
+        iconSize: opt.icon_size,
+        iconUrl: opt.icon_url,
+    }));
+}
+/* @} */
+
+/* HTML icon type. @{
+ * @return an icon */
+function map_html_icon_t(
+    /* in: html icon options */
+    opt)
+{
+    return(L.divIcon({
+        className: opt.class_name,
+        html: opt.html,
+    }));
+}
+/* @} */
+
+/* Circle shape type. @{
+ * @return a circle
+ */
+function map_circle_t(
+    /* in: circle options */
+    opt)
+{
+    return(L.circle(
+        [opt.lat, opt.lng],
+        opt.radius,
+        {
+            weight: opt.contour_width,
+        }
+    ));
+};
+/* @} */
+
+/* Marker type. @{
+ * @return a marker object
+ */
+function map_marker_t(
+    /* in: marker options */
+    opt)
+{
+    var marker = L.marker(
+        [opt.lat, opt.lng],
+        {
+            clickable: opt.clickable,
+            draggable: opt.draggable,
+            icon: opt.icon,
+            keyboard: opt.keyboard,
+            title: opt.title,
+        }
+    );
+
+    if (opt.onclick) {
+        marker.on('click', opt.onclick);
+    }
+
+    if (opt.ondrag) {
+        marker.on('drag', opt.ondrag);
+    }
+
+    return(marker);
+};
+/* @} */
+
 /* Map type. @{ */
 function map_t(
     /* in: name of the containing HTML div element where to put the map */
@@ -85,73 +159,24 @@ function map_t(
     };
     /* @} */
 
-    /* Create a new marker and put it on the map. @{
-     * @return a marker object
+    /* Add a new shape to the map. @{
+     * The shape can be any of:
+     * - circle
      */
-    function create_marker(
-        /* in: marker options */
-        opt)
+    function add_shape(
+        /* in: shape object */
+        shape)
     {
-        var marker = L.marker(
-            [opt.lat, opt.lng],
-            {
-                draggable: opt.draggable,
-                icon: L.icon(
-                    {
-                        iconAnchor: opt.icon_anchor,
-                        iconSize: opt.icon_size,
-                        iconUrl: opt.icon_url,
-                    }
-                ),
-                title: opt.title,
-            }
-        );
-
-        marker.on('click', opt.onclick);
-        marker.on('drag', opt.ondrag);
-
-        marker.addTo(main_map);
-
-        return(marker);
+        shape.addTo(main_map);
     };
     /* @} */
 
-    /* Delete a marker from the map. @{ */
-    function delete_marker(
-        /* in,out: marker */
-        marker)
+    /* Delete a shape from the map. @{ */
+    function delete_shape(
+        /* in,out: shape */
+        shape)
     {
-        main_map.removeLayer(marker);
-    };
-    /* @} */
-
-    /* Create a new circle and put it on the map. @{
-     * @return a circle object
-     */
-    function create_circle(
-        /* in: circle options */
-        opt)
-    {
-        var circle = L.circle(
-            [opt.lat, opt.lng],
-            opt.radius,
-            {
-                weight: opt.contour_width,
-            }
-        );
-
-        circle.addTo(main_map);
-
-        return(circle);
-    };
-    /* @} */
-
-    /* Delete a circle from the map. @{ */
-    function delete_circle(
-        /* in,out: circle */
-        circle)
-    {
-        main_map.removeLayer(circle);
+        main_map.removeLayer(shape);
     };
     /* @} */
 
@@ -321,10 +346,8 @@ function map_t(
             set_center: set_center,
             export_state_as_array: export_state_as_array,
             redraw: redraw,
-            create_marker: create_marker,
-            delete_marker: delete_marker,
-            create_circle: create_circle,
-            delete_circle: delete_circle,
+            add_shape: add_shape,
+            delete_shape: delete_shape,
             onshape_drag_get_latlng: onshape_drag_get_latlng,
         }
     );
