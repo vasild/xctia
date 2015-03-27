@@ -27,7 +27,6 @@ function turnpoint_t()
             return;
         }
 
-        var latlng = L.latLng(waypoint.lat(), waypoint.lng());
         if (m_map_shape == null) {
             m_map_shape = map_circle_t({
                 lat: waypoint.lat(),
@@ -37,7 +36,7 @@ function turnpoint_t()
             });
             map.add_shape(m_map_shape);
         } else {
-            m_map_shape.setLatLng(latlng); /* XXX direct access to leaflet */
+            m_map_shape.set_location([waypoint.lat(), waypoint.lng()]);
         }
     }
     /* @} */
@@ -68,7 +67,7 @@ function turnpoint_t()
         m_radius = radius;
 
         if (m_map_shape != null) {
-            m_map_shape.setRadius(m_radius);
+            m_map_shape.set_radius(m_radius);
         }
     }
     /* @} */
@@ -139,7 +138,7 @@ function turnpoint_t()
     function bounds()
     {
         if (m_map_shape != null) {
-            return(m_map_shape.getBounds());
+            return(m_map_shape.bounds());
         } else {
             return(null);
         }
@@ -206,17 +205,17 @@ function task_t()
 
             turnpoint.redraw_turnpoint();
 
-            var latlng = L.latLng(waypoint.lat(), waypoint.lng());
+            var latlng = map_latlng_t(waypoint.lat(), waypoint.lng());
 
-            latlngs.push(latlng);
+            latlngs.push([latlng.lat(), latlng.lng()]);
 
             if (prev_latlng != null) {
 
                 var mid_latlng = coord_find_middle(
-                    latlng.lat, latlng.lng,
-                    prev_latlng.lat, prev_latlng.lng);
+                    latlng.lat(), latlng.lng(),
+                    prev_latlng.lat(), prev_latlng.lng());
 
-                var leg_length_m = latlng.distanceTo(prev_latlng);
+                var leg_length_m = latlng.distance_to(prev_latlng);
 
                 total_distance_m += leg_length_m;
 
@@ -225,18 +224,14 @@ function task_t()
                     (leg_length_m / 1000).toFixed(1) + ' km'
                     '</span>';
 
-                var icon = map_html_icon_t(
-                    {
-                        class_name: 'task_leg_label_wrapper',
-                        html: label_html,
-                    }
-                );
-
                 var marker = map_marker_t(
                     {
                         clickable: false,
                         draggable: false,
-                        icon: icon,
+                        icon: map_html_icon_t({
+                            class_name: 'task_leg_label_wrapper',
+                            html: label_html,
+                        }),
                         keyboard: false,
                         lat: mid_latlng[0],
                         lng: mid_latlng[1],
@@ -699,12 +694,12 @@ function task_t()
             return;
         }
 
-        var bounds = m_map_path.getBounds();
+        var bounds = m_map_path.bounds();
         for (var i = 0; i < m_turnpoints.length; i++) {
-            bounds.extend(m_turnpoints[i].bounds());
+            bounds.expand(m_turnpoints[i].bounds());
         }
 
-        main_map.fitBounds(bounds);
+        map.fit_bounds(bounds);
     }
     /* @} */
 

@@ -369,7 +369,7 @@ function waypoint_t(
                  * redraw the map elements.
                  */
                 if (m_waypoint_data.set_latlng(wp_lat.value, wp_lng.value)) {
-                    m_marker.setLatLng([wp_lat.value, wp_lng.value]); /* XXX direct leaflet access */
+                    m_marker.set_location([wp_lat.value, wp_lng.value]);
                     task.redraw_task();
                 }
             }

@@ -1,8 +1,87 @@
-/* Global variables. @{ */
+/* Lat,Lng type. @{
+ * @return a lat,lng object
+ */
+function map_latlng_t(
+    /* in: latitude */
+    lat_arg,
+    /* in: longitude */
+    lng_arg)
+{
+    var m_latlng = L.latLng(lat_arg, lng_arg);
 
-var main_map;
-var main_map_current_base_layer_name;
+    /* Get latitude. @{ */
+    function lat()
+    {
+        return(m_latlng.lat);
+    }
+    /* @} */
 
+    /* Get longitude. @{ */
+    function lng()
+    {
+        return(m_latlng.lng);
+    }
+    /* @} */
+
+    /* Calculate distance to a given another point. @{ */
+    function distance_to(
+        /* in: another map_latlng_t */
+        other)
+    {
+        return(m_latlng.distanceTo(other.internal()));
+    }
+    /* @} */
+
+    return(
+        {
+            internal: function () {
+                return(m_latlng);
+            },
+            distance_to: distance_to,
+            lat: lat,
+            lng: lng,
+        }
+    );
+}
+/* @} */
+
+/* Bounds type. @{
+ * @return a bounds object
+ */
+function map_bounds_t(
+    /* in: internal implementation's bounds, or undefined */
+    internal)
+{
+    var m_bounds;
+
+    if (internal) {
+        m_bounds = internal;
+    } else {
+        m_bounds = null;
+    }
+
+    /* Expand. @{ */
+    function expand(
+        /* in: another map_bounds_t object to expand with */
+        bounds)
+    {
+        if (m_bounds == null) {
+            m_bounds = bounds.internal();
+        } else {
+            m_bounds.extend(bounds.internal());
+        }
+    }
+    /* @} */
+
+    return(
+        {
+            internal: function () {
+                return(m_bounds);
+            },
+            expand: expand,
+        }
+    );
+}
 /* @} */
 
 /* Icon type. @{
@@ -11,11 +90,17 @@ function map_icon_t(
     /* in: icon options */
     opt)
 {
-    return(L.icon({
+    var m_icon = L.icon({
         iconAnchor: opt.icon_anchor,
         iconSize: opt.icon_size,
         iconUrl: opt.icon_url,
-    }));
+    });
+
+    return({
+        internal: function () {
+            return(m_icon);
+        }
+    });
 }
 /* @} */
 
@@ -25,10 +110,16 @@ function map_html_icon_t(
     /* in: html icon options */
     opt)
 {
-    return(L.divIcon({
+    var m_html_icon = L.divIcon({
         className: opt.class_name,
         html: opt.html,
-    }));
+    });
+
+    return({
+        internal: function () {
+            return(m_html_icon);
+        }
+    });
 }
 /* @} */
 
@@ -39,14 +130,48 @@ function map_circle_t(
     /* in: circle options */
     opt)
 {
-    return(L.circle(
+    var m_circle = L.circle(
         [opt.lat, opt.lng],
         opt.radius,
         {
             weight: opt.contour_width,
         }
-    ));
-};
+    );
+
+    /* Set circle's center location. @{ */
+    function set_location(
+        /* in: [lat, lng] */
+        arr)
+    {
+        m_circle.setLatLng(arr);
+    }
+    /* @} */
+
+    /* Set circle's radius. @{ */
+    function set_radius(
+        /* in: radius */
+        radius)
+    {
+        m_circle.setRadius(radius);
+    }
+    /* @} */
+
+    /* Get circle's bounds. @{ */
+    function bounds()
+    {
+        return(map_bounds_t(m_circle.getBounds()));
+    }
+    /* @} */
+
+    return({
+        set_location: set_location,
+        set_radius: set_radius,
+        bounds: bounds,
+        internal: function () {
+            return(m_circle);
+        }
+    });
+}
 /* @} */
 
 /* Polyline shape type. @{
@@ -56,15 +181,31 @@ function map_polyline_t(
     /* in: polyline options */
     opt)
 {
-    return(L.polyline(
+    var m_polyline = L.polyline(
         opt.points,
         {
             color: opt.color,
             opacity: opt.opacity,
             weight: opt.width,
         }
-    ));
-};
+    );
+
+    /* Get bounds. @{ */
+    function bounds()
+    {
+        return(map_bounds_t(m_polyline.getBounds()));
+    }
+    /* @} */
+
+    return(
+        {
+            internal: function () {
+                return(m_polyline);
+            },
+            bounds: bounds,
+        }
+    );
+}
 /* @} */
 
 /* Marker type. @{
@@ -74,27 +215,43 @@ function map_marker_t(
     /* in: marker options */
     opt)
 {
-    var marker = L.marker(
+    var m_marker = L.marker(
         [opt.lat, opt.lng],
         {
             clickable: opt.clickable,
             draggable: opt.draggable,
-            icon: opt.icon,
+            icon: opt.icon.internal(),
             keyboard: opt.keyboard,
             title: opt.title,
         }
     );
 
     if (opt.onclick) {
-        marker.on('click', opt.onclick);
+        m_marker.on('click', opt.onclick);
     }
 
     if (opt.ondrag) {
-        marker.on('drag', opt.ondrag);
+        m_marker.on('drag', opt.ondrag);
     }
 
-    return(marker);
-};
+    /* Set location. @{ */
+    function set_location(
+        /* in: [lat, lng] */
+        arr)
+    {
+        m_marker.setLatLng(arr);
+    }
+    /* @} */
+
+    return(
+        {
+            internal: function () {
+                return(m_marker);
+            },
+            set_location: set_location,
+        }
+    );
+}
 /* @} */
 
 /* Map type. @{ */
@@ -104,6 +261,9 @@ function map_t(
     /* in: map's initial state array */
     state_arr)
 {
+    var m_map;
+    var m_map_current_base_layer_name;
+
     /* Export the current state of the map as an array. @{
      * @return [lat, lng, zoom, current_base_layer_name]
      */
@@ -111,10 +271,10 @@ function map_t(
     {
         return(
             [
-                parseFloat(main_map.getCenter().lat.toFixed(5)),
-                parseFloat(main_map.getCenter().lng.toFixed(5)),
-                main_map.getZoom(),
-                main_map_current_base_layer_name,
+                parseFloat(m_map.getCenter().lat.toFixed(5)),
+                parseFloat(m_map.getCenter().lng.toFixed(5)),
+                m_map.getZoom(),
+                m_map_current_base_layer_name,
             ]
         );
     };
@@ -154,7 +314,7 @@ function map_t(
      */
     function center()
     {
-        return(main_map.getCenter());
+        return(m_map.getCenter());
     };
     /* @} */
 
@@ -164,7 +324,7 @@ function map_t(
         /* in: an object returned by center() */
         center)
     {
-        main_map.setView(center);
+        m_map.setView(center);
     };
     /* @} */
 
@@ -173,7 +333,7 @@ function map_t(
      */
     function redraw()
     {
-        main_map.invalidateSize(true /* animate */);
+        m_map.invalidateSize(true /* animate */);
     };
     /* @} */
 
@@ -185,7 +345,7 @@ function map_t(
         /* in: shape object */
         shape)
     {
-        shape.addTo(main_map);
+        shape.internal().addTo(m_map);
     };
     /* @} */
 
@@ -194,7 +354,7 @@ function map_t(
         /* in,out: shape */
         shape)
     {
-        main_map.removeLayer(shape);
+        m_map.removeLayer(shape.internal());
     };
     /* @} */
 
@@ -209,6 +369,15 @@ function map_t(
     };
     /* @} */
 
+    /* Fit map to bounds. @{ */
+    function fit_bounds(
+        /* in: map_bounds_t bounds object */
+        bounds)
+    {
+        return(m_map.fitBounds(bounds.internal()));
+    };
+    /* @} */
+
     /* Initialize the map. @{ */
     function init(
         /* in: name of the containing HTML div element where to put the map */
@@ -218,8 +387,8 @@ function map_t(
     {
         var state = state_from_array(state_arr);
 
-        main_map = L.map(html_div_id).setView([state.center_lat, state.center_lng],
-                                              state.zoom);
+        m_map = L.map(html_div_id).setView([state.center_lat, state.center_lng],
+                                           state.zoom);
 
         var max_zoom = 25;
 
@@ -296,9 +465,9 @@ function map_t(
         };
 
         if (state.base_layer_name != null) {
-            main_map_current_base_layer_name = state.base_layer_name
+            m_map_current_base_layer_name = state.base_layer_name
         } else {
-            main_map_current_base_layer_name = Object.keys(base_layers)[0];
+            m_map_current_base_layer_name = Object.keys(base_layers)[0];
         }
 
         var layer_countries = L.tileLayer(
@@ -332,24 +501,24 @@ function map_t(
             'Isolines (contours)': layer_contours,
         };
 
-        L.control.layers(base_layers, overlay_layers).addTo(main_map);
+        L.control.layers(base_layers, overlay_layers).addTo(m_map);
 
         /* Setup the default visible layers. */
-        base_layers[main_map_current_base_layer_name].addTo(main_map);
-        layer_countries.addTo(main_map);
+        base_layers[m_map_current_base_layer_name].addTo(m_map);
+        layer_countries.addTo(m_map);
 
         L.control.scale(
             {
                 imperial: false,
                 maxWidth: 300,
             }
-        ).addTo(main_map);
+        ).addTo(m_map);
 
-        main_map.on(
+        m_map.on(
             'baselayerchange',
             function (layer)
             {
-                main_map_current_base_layer_name = layer.name;
+                m_map_current_base_layer_name = layer.name;
             }
         );
     }
