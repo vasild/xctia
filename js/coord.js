@@ -109,4 +109,99 @@ function coord_find_middle(
 }
 /* @} */
 
+/* Calculate the angle between a vector and the Y axis. @{
+ * @return angle in degrees:
+ * 0 deg: North
+ * 90 deg: East
+ * 180 deg: South
+ * -90 deg: West
+ * or anything in between
+ */
+function coord_vector_angle_from_y(
+    /* in: first point's lat */
+    a_lat,
+    /* in: first point's lng */
+    a_lng,
+    /* in: second point's lat (tip of the angle) */
+    b_lat,
+    /* in: second point's lng (tip of the angle) */
+    b_lng)
+{
+    var a_pixels = map.latlng_to_pixels([a_lat, a_lng]);
+    var b_pixels = map.latlng_to_pixels([b_lat, b_lng]);
+
+    var a_x = a_pixels[0];
+    var a_y = a_pixels[1];
+    var b_x = b_pixels[0];
+    var b_y = b_pixels[1];
+
+    var ab_y_ang = Math.atan2(b_x - a_x, a_y - b_y);
+
+    /* Convert radians to degrees. */
+    ab_y_ang *= 180 / Math.PI;
+
+    return(ab_y_ang);
+}
+/* @} */
+
+/* Calculate the angle of the outer bisector in degrees. @{
+ * @return angle
+ */
+function coord_bisector_angle(
+    /* in: first point's lat */
+    a_lat,
+    /* in: first point's lng */
+    a_lng,
+    /* in: second point's lat (tip of the angle) */
+    b_lat,
+    /* in: second point's lng (tip of the angle) */
+    b_lng,
+    /* in: third point's lat */
+    c_lat,
+    /* in: third point's lng */
+    c_lng)
+{
+    var a_pixels = map.latlng_to_pixels([a_lat, a_lng]);
+    var b_pixels = map.latlng_to_pixels([b_lat, b_lng]);
+    var c_pixels = map.latlng_to_pixels([c_lat, c_lng]);
+
+    var a_x = a_pixels[0];
+    var a_y = a_pixels[1];
+    var b_x = b_pixels[0];
+    var b_y = b_pixels[1];
+    var c_x = c_pixels[0];
+    var c_y = c_pixels[1];
+
+    /* The angle between the a->b vector and the Y axis:
+     * 0 rad: North
+     * PI / 2 rad: East
+     * PI rad: South
+     * - PI / 2 rad: West
+     */
+    var ab_y_ang = Math.atan2(b_x - a_x, a_y - b_y);
+
+    /* The angle between the b->c vector and the Y axis:
+     * 0 rad: North
+     * PI / 2 rad: East
+     * PI rad: South
+     * - PI / 2 rad: West
+     */
+    var bc_y_ang = Math.atan2(c_x - b_x, b_y - c_y);
+
+    /* The angle ABC (between a->b vector and b->c vector). */
+    abc_ang = Math.PI - ab_y_ang + bc_y_ang;
+
+    var ret = bc_y_ang - abc_ang / 2;
+
+    if (abc_ang < Math.PI) {
+        ret += Math.PI;
+    }
+
+    /* Convert radians to degrees. */
+    ret *= 180 / Math.PI;
+
+    return(ret);
+}
+/* @} */
+
 /* vim: set shiftwidth=4 tabstop=4 expandtab foldmethod=marker foldmarker=@{,@}: */

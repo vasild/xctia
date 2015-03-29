@@ -42,7 +42,11 @@ function turnpoint_t()
     var m_map_shape = null;
 
     /* Redraw this turnpoint's shape on the map. @{ */
-    function redraw_turnpoint()
+    function redraw_turnpoint(
+        /* in: previous turnpoint or null if this is the first one */
+        prev_turnpoint,
+        /* in: next turnpoint or null if this is the last one */
+        next_turnpoint)
     {
         var waypoint = waypoints.get_by_id(m_waypoint_id);
 
@@ -60,9 +64,55 @@ function turnpoint_t()
                 radius: m_radius,
                 contour_width: 2,
             });
+
             map.add_shape(m_map_shape);
         } else {
             m_map_shape.set_location([waypoint.lat(), waypoint.lng()]);
+        }
+
+        switch (m_type) {
+        case 'Cylinder':
+            /* Convert to full circle in case it was semicircle before. */
+            m_map_shape.set_semicircle(0, 0);
+            break;
+        case 'SymmetricQuadrant':
+            var angle_deg;
+
+            if (prev_turnpoint != null && next_turnpoint != null) {
+                var prev_waypoint = waypoints.get_by_id(prev_turnpoint.waypoint_id());
+                var next_waypoint = waypoints.get_by_id(next_turnpoint.waypoint_id());
+
+                angle_deg = coord_bisector_angle(
+                    prev_waypoint.lat(), prev_waypoint.lng(),
+                    waypoint.lat(), waypoint.lng(),
+                    next_waypoint.lat(), next_waypoint.lng());
+
+            } else if (prev_turnpoint != null) {
+                /* next_turnpoint is null */
+                var prev_waypoint = waypoints.get_by_id(prev_turnpoint.waypoint_id());
+
+                angle_deg = coord_vector_angle_from_y(
+                    prev_waypoint.lat(), prev_waypoint.lng(),
+                    waypoint.lat(), waypoint.lng());
+
+            } else if (next_turnpoint != null) {
+                /* prev_turnpoint is null */
+                var next_waypoint = waypoints.get_by_id(next_turnpoint.waypoint_id());
+
+                angle_deg = coord_vector_angle_from_y(
+                    waypoint.lat(), waypoint.lng(),
+                    next_waypoint.lat(), next_waypoint.lng());
+
+                angle_deg += 180;
+
+            } else {
+                /* It is a sole turnpoint. Point the semicircle to the north. */
+                angle_deg = 0;
+            }
+
+            m_map_shape.set_semicircle(angle_deg, 90);
+
+            break;
         }
     }
     /* @} */
@@ -73,8 +123,6 @@ function turnpoint_t()
         waypoint_id)
     {
         m_waypoint_id = waypoint_id;
-
-        redraw_turnpoint();
     }
     /* @} */
 
@@ -229,7 +277,10 @@ function task_t()
                 continue;
             }
 
-            turnpoint.redraw_turnpoint();
+            var prev_turnpoint = i > 0 ? m_turnpoints[i - 1] : null;
+            var next_turnpoint = i < m_turnpoints.length - 1 ? m_turnpoints[i + 1] : null;
+
+            turnpoint.redraw_turnpoint(prev_turnpoint, next_turnpoint);
 
             var latlng = map_latlng_t(waypoint.lat(), waypoint.lng());
 
@@ -422,6 +473,7 @@ function task_t()
             function ()
             {
                 turnpoint.set_type(this.options[this.selectedIndex].value);
+                redraw_task();
             };
         if (!turnpoint_has_data) {
             /* Use the first type by default if the caller did not provide one. */

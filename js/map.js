@@ -182,6 +182,25 @@ function map_circle_t(
     }
     /* @} */
 
+    /* Set semi-circle's properties. @{
+     * If both direction and degrees are 0, then disable the semicircle.
+     */
+    function set_semicircle(
+        /* in: direction */
+        direction,
+        /* in: degrees */
+        degrees)
+    {
+        if (direction == 0 && degrees == 0) {
+            /* A trick to fool the Leaflet semicircle plugin to draw a full
+             * circle, once it has been a semicircle. */
+            m_circle.setDirection(180, 360);
+        } else {
+            m_circle.setDirection(direction, degrees);
+        }
+    }
+    /* @} */
+
     /* Get circle's bounds. @{ */
     function bounds()
     {
@@ -192,6 +211,7 @@ function map_circle_t(
     return({
         set_location: set_location,
         set_radius: set_radius,
+        set_semicircle: set_semicircle,
         bounds: bounds,
         internal: function () {
             return(m_circle);
@@ -303,7 +323,7 @@ function map_t(
                 m_map_current_base_layer_name,
             ]
         );
-    };
+    }
     /* @} */
 
     /* Generate a descriptive object from an array returned by export_state_as_array(). @{
@@ -332,7 +352,7 @@ function map_t(
                 base_layer_name: null,
             });
         }
-    };
+    }
     /* @} */
 
     /* Get the center of the map. @{
@@ -341,7 +361,7 @@ function map_t(
     function center()
     {
         return(m_map.getCenter());
-    };
+    }
     /* @} */
 
     /* Set the center of the map. @{
@@ -351,7 +371,7 @@ function map_t(
         center)
     {
         m_map.setView(center);
-    };
+    }
     /* @} */
 
     /* Redraw the map. @{
@@ -360,7 +380,7 @@ function map_t(
     function redraw()
     {
         m_map.invalidateSize(true /* animate */);
-    };
+    }
     /* @} */
 
     /* Add a new shape to the map. @{
@@ -372,7 +392,7 @@ function map_t(
         shape)
     {
         shape.internal().addTo(m_map);
-    };
+    }
     /* @} */
 
     /* Delete a shape from the map. @{ */
@@ -381,7 +401,7 @@ function map_t(
         shape)
     {
         m_map.removeLayer(shape.internal());
-    };
+    }
     /* @} */
 
     /* Get the current lat,lng of the drag from an object passed to the client callback on drag. @{
@@ -392,7 +412,7 @@ function map_t(
         e)
     {
         return(e.target.getLatLng());
-    };
+    }
     /* @} */
 
     /* Fit map to bounds. @{ */
@@ -401,7 +421,19 @@ function map_t(
         bounds)
     {
         return(m_map.fitBounds(bounds.internal()));
-    };
+    }
+    /* @} */
+
+    /* Convert [lat, lng] coordinates to [x, y] pixels. @{
+     * @return [x, y]
+     */
+    function latlng_to_pixels(
+        /* in: [lat, lng] */
+        latlng)
+    {
+        var p = m_map.project(latlng);
+        return([p.x, p.y]);
+    }
     /* @} */
 
     /* Initialize the map. @{ */
@@ -562,6 +594,7 @@ function map_t(
             add_shape: add_shape,
             delete_shape: delete_shape,
             onshape_drag_get_latlng: onshape_drag_get_latlng,
+            latlng_to_pixels: latlng_to_pixels,
         }
     );
     /* @} */
