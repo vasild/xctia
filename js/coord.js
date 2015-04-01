@@ -109,6 +109,10 @@ function coord_find_middle(
 }
 /* @} */
 
+/* A javascript calculator that takes the shape of the earth into account:
+ * http://williams.best.vwh.net/gccalc.htm
+ */
+
 /* Calculate the angle between a vector and the Y axis. @{
  * @return angle in degrees:
  * 0 deg: North
