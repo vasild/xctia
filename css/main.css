@@ -143,11 +143,6 @@ td {
     }
 }
 
-
-#new_waypoint_tr {
-    text-align: center;
-}
-
 @keyframes menu_hide {
     0% {
         width: 25em;
@@ -239,6 +234,14 @@ td {
     height: 100%;
     overflow: hide;
     position: relative;
+}
+
+#new_waypoint_button {
+    display: block;
+    margin-bottom: 4px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 4px;
 }
 
 #share_button {

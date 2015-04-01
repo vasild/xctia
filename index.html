@@ -70,8 +70,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                             <td><button id="save_waypoints_button">Save (.dat)</button></td>
                         </tr>
                     </table>
-                    <table id="waypoints_table">
-                        <tr>
+                    <table id="waypoints_table" class="invisible">
+                        <tr id="waypoints_head_tr">
                             <th>Name/Comment</th>
                             <th>Lat/Lng</th>
                             <th>Alt[m]/Type</th>
@@ -95,12 +95,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                                 <span id="{wp_del_}" class="clickable del_row" title="delete this waypoint">&#10007;</span>
                             </td>
                         </tr>
-                        <tr id="new_waypoint_tr">
-                            <td colspan="4">
-                                <button id="new_waypoint_button">New waypoint</button>
-                            </td>
-                        </tr>
                     </table>
+                    <button id="new_waypoint_button">New waypoint</button>
                 </div>
                 <div id="waypoints_bottom_div"></div>
                 <!-- @} -->

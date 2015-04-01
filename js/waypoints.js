@@ -374,6 +374,11 @@ function waypoint_t(
      */
     function create_table_row()
     {
+        /* Make the waypoints table visible. It is invisible if there are no
+         * waypoints in it.
+         */
+        document.getElementById('waypoints_table').classList.remove('invisible');
+
         var tr_inner = document.getElementById('{wptr_}').innerHTML;
         /* Replace '{foo}' with 'fooN' were N is the waypoint id */
         tr_inner = tr_inner.replace(/{([^}]+)}/g, '$1' + m_waypoint_data.id());
@@ -382,8 +387,7 @@ function waypoint_t(
         tr.setAttribute('id', 'wptr_' + m_waypoint_data.id());
         tr.innerHTML = tr_inner;
 
-        var new_waypoint_tr = document.getElementById('new_waypoint_tr');
-        new_waypoint_tr.parentNode.insertBefore(tr, new_waypoint_tr);
+        document.getElementById('waypoints_head_tr').parentNode.appendChild(tr);
 
         var wp_lat = document.getElementById('wp_lat_' + m_waypoint_data.id());
         var wp_lng = document.getElementById('wp_lng_' + m_waypoint_data.id());
@@ -457,7 +461,16 @@ function waypoint_t(
     function delete_table_row()
     {
         var tr = document.getElementById('wptr_' + m_waypoint_data.id());
-        tr.parentNode.removeChild(tr);
+        var trs_container = tr.parentNode;
+        trs_container.removeChild(tr);
+
+        /* Hide the waypoints table if the last row in it has been removed.
+         * There are two rows in a no-waypoints table: 1 heading row and 1
+         * invisible row template.
+         */
+        if (trs_container.getElementsByTagName('tr').length <= 2) {
+            document.getElementById('waypoints_table').classList.add('invisible');
+        }
     }
     /* @} */
 
