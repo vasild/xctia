@@ -1,3 +1,3 @@
-[submodule "js/external/Leaflet-semicircle"]
-	path = js/external/Leaflet-semicircle
+[submodule "external/Leaflet-semicircle"]
+	path = external/Leaflet-semicircle
 	url = git@github.com:jieter/Leaflet-semicircle.git
