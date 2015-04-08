@@ -67,8 +67,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <button class="uk-button uk-button-primary uk-width-1-1" data-uk-toggle="{target:'#waypoints_wrap_div', animation:'uk-animation-scale-up, uk-animation-scale-up'}">
                     Waypoints
                 </button>
-                <div id="waypoints_wrap_div">
 
+                <div id="waypoints_wrap_div">
                     <!-- Waypoints menu @{ -->
                     <nav class="uk-navbar">
                         <ul class="uk-navbar-nav">
@@ -106,31 +106,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     <!-- @} -->
 
                     <!-- Waypoints table @{ -->
-                    <table id="waypoints_table" class="invisible">
-                        <tr id="waypoints_head_tr">
-                            <th>Name/Comment</th>
-                            <th>Lat/Lng</th>
-                            <th>Alt[m]/Type</th>
-                            <th>&nbsp;</th>
-                        </tr>
-                        <!-- Waypoint row template -->
-                        <tr class="invisible" id="{wptr_}">
-                            <td>
-                                <input type="text" id="{wp_name_}"    size=10 placeholder="name" required><br>
-                                <input type="text" id="{wp_comment_}" size=10 placeholder="comment">
-                            </td>
-                            <td>
-                                <input type="text" id="{wp_lat_}" size=8 required><br>
-                                <input type="text" id="{wp_lng_}" size=8 required>
-                            </td>
-                            <td>
-                                <input type="number" id="{wp_altitude_}" required min="0" class="meters"><br>
-                                <select id="{wp_type_}" class="wp_type"></select>
-                            </td>
-                            <td>
-                                <span id="{wp_del_}" class="clickable del_row" title="delete this waypoint">&#10007;</span>
-                            </td>
-                        </tr>
+                    <table id="waypoints_table" class="uk-table invisible">
+                        <thead>
+                            <tr id="waypoints_head_tr">
+                                <th>Name/Comment</th>
+                                <th>Lat/Lng</th>
+                                <th>Alt[m]/Type</th>
+                                <th>&nbsp;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Waypoint row template @{ -->
+                            <tr class="invisible" id="{wptr_}">
+                                <td>
+                                    <input type="text" id="{wp_name_}"    size=10 placeholder="name" required><br>
+                                    <input type="text" id="{wp_comment_}" size=10 placeholder="comment">
+                                </td>
+                                <td>
+                                    <input type="text" id="{wp_lat_}" size=8 required><br>
+                                    <input type="text" id="{wp_lng_}" size=8 required>
+                                </td>
+                                <td>
+                                    <input type="number" id="{wp_altitude_}" required min="0" class="meters"><br>
+                                    <select id="{wp_type_}" class="wp_type"></select>
+                                </td>
+                                <td>
+                                    <span id="{wp_del_}" class="clickable del_row" title="delete this waypoint">&#10007;</span>
+                                </td>
+                            </tr>
+                            <!-- @} -->
+                        </tbody>
                     </table>
                     <!-- @} -->
 
@@ -141,8 +146,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 <button class="uk-button uk-button-primary uk-width-1-1" data-uk-toggle="{target:'#task_wrap_div', animation:'uk-animation-scale-up, uk-animation-scale-up'}">
                     Task
                 </button>
-                <div id="task_wrap_div">
 
+                <div id="task_wrap_div">
                     <!-- Task menu @{ -->
                     <nav class="uk-navbar">
                         <ul class="uk-navbar-nav">

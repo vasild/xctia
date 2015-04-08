@@ -30,26 +30,8 @@ body, html {
     overflow: hidden;
 }
 
-body, html, input[type='text'], input[type='number'], option, .task_leg_label {
-    font-family: monospace;
-}
-
-input[type='text'], input[type='number'] {
-    border-style: solid;
-}
-
-table {
-    border-collapse: collapse;
-    border-style: none;
-    margin: 4px;
-}
-
-td, th {
-    border: 1px solid black;
-}
-
-td {
-    padding: 4px;
+button, input, select, textarea {
+    font-family: inherit;
 }
 
 .clickable {
@@ -83,6 +65,7 @@ td {
     border-radius: 4px;
     color: #DDDDDD;
     font-size: 80%;
+    font-family: monospace;
     padding-bottom: 1px;
     padding-left: 2px;
     padding-right: 2px;
@@ -263,8 +246,7 @@ td {
 }
 
 #waypoints_table {
-    margin-left: auto;
-    margin-right: auto;
+    margin-top: 0;
 }
 
 /* vim: set shiftwidth=4 tabstop=4 expandtab: */
