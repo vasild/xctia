@@ -33,11 +33,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <title>XCtia - cross country flight planning and analysis</title>
         <link rel="shortcut icon" href="img/zigzag.ico"/>
         <link type="text/css" rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.7.3/leaflet.css">
+        <link type="text/css" rel="stylesheet" href="external/uikit-2.18.0/css/uikit.custom.min.css">
         <link type="text/css" rel="stylesheet" href="css/animate.min.css">
         <link type="text/css" rel="stylesheet" href="css/main.css">
+        <script type="text/javascript" src="//code.jquery.com/jquery-2.1.3.min.js"></script>
         <script type="text/javascript" src="//cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
         <script type="text/javascript" src="//maps.google.com/maps/api/js?v=3&sensor=false"></script>
         <script type="text/javascript" src="//pg.v5d.org/lib/str.js"></script>
+        <script type="text/javascript" src="external/uikit-2.18.0/js/uikit.min.js"></script>
         <script type="text/javascript" src="external/leaflet-plugins-1.2.1/layer/tile/Google.js"></script>
         <script type="text/javascript" src="external/Leaflet-semicircle/Semicircle.js"></script>
         <script type="text/javascript" src="external/lz-string.js"></script>
@@ -59,19 +62,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             </div>
             <!-- menu_div @{ -->
             <div id="menu_div">
-                <!-- waypoints @{ -->
-                <div id="waypoints_label_div" class="clickable">
-                    waypoints
-                    <span id="waypoints_label_show_span" class="invisible">[show]</span>
-                    <span id="waypoints_label_hide_span">[hide]</span>
-                </div>
-                <div id="waypoints_div">
-                    <table id="waypoints_buttons_table">
-                        <tr>
-                            <td><button id="load_waypoints_button">Open (.dat)</button></td>
-                            <td><button id="save_waypoints_button">Save (.dat)</button></td>
-                        </tr>
-                    </table>
+
+                <!-- Waypoints @{ -->
+                <button class="uk-button uk-width-1-1" data-uk-toggle="{target:'#waypoints_wrap_div', animation:'uk-animation-scale-up, uk-animation-scale-up'}">
+                    Waypoints
+                </button>
+                <div id="waypoints_wrap_div">
+
+                    <!-- Waypoints menu @{ -->
+                    <nav class="uk-navbar">
+                        <ul class="uk-navbar-nav">
+                            <li class="uk-parent" data-uk-dropdown>
+                                <a href="#">File <i class="uk-icon-caret-down"></i></a>
+                                <div class="uk-dropdown uk-dropdown-navbar uk-dropdown-small">
+                                    <ul class="uk-nav uk-nav-navbar">
+                                        <li>
+                                            <a id="open_waypoints_dat_a">
+                                                <i class="uk-icon-folder-open"></i>
+                                                Open (XCSoar waypoints, *.dat)
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a id="save_waypoints_dat_a">
+                                                <i class="uk-icon-download"></i>
+                                                Save (XCSoar waypoints, *.dat)
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="uk-navbar-flip">
+                            <ul class="uk-navbar-nav">
+                                <li>
+                                    <a id="new_waypoint_a" class="uk-navbar-nav-subtitle">
+                                        <i class="uk-icon-map-marker"></i> New
+                                        <div>waypoint</div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <!-- @} -->
+
+                    <!-- Waypoints table @{ -->
                     <table id="waypoints_table" class="invisible">
                         <tr id="waypoints_head_tr">
                             <th>Name/Comment</th>
@@ -98,24 +132,56 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                             </td>
                         </tr>
                     </table>
-                    <button id="new_waypoint_button">New waypoint</button>
+                    <!-- @} -->
+
                 </div>
-                <div id="waypoints_bottom_div"></div>
                 <!-- @} -->
 
-                <!-- task @{ -->
-                <div id="task_label_div" class="clickable">
-                    task
-                    <span id="task_label_show_span" class="invisible">[show]</span>
-                    <span id="task_label_hide_span">[hide]</span>
-                </div>
-                <div id="task_div">
-                    <table id="task_buttons_table">
-                        <tr>
-                            <td><button id="task_open_button">Open (.tsk)</button></td>
-                            <td><button id="task_save_button">Save (.tsk)</button></td>
-                        </tr>
-                    </table>
+                <hr>
+
+                <!-- Task @{ -->
+                <button class="uk-button uk-width-1-1" data-uk-toggle="{target:'#task_wrap_div', animation:'uk-animation-scale-up, uk-animation-scale-up'}">
+                    Task
+                </button>
+                <div id="task_wrap_div">
+
+                    <!-- Task menu @{ -->
+                    <nav class="uk-navbar">
+                        <ul class="uk-navbar-nav">
+                            <li class="uk-parent" data-uk-dropdown>
+                                <a href="#">File <i class="uk-icon-caret-down"></i></a>
+                                <div class="uk-dropdown uk-dropdown-navbar uk-dropdown-small">
+                                    <ul class="uk-nav uk-nav-navbar">
+                                        <li>
+                                            <a id="open_task_tsk_a">
+                                                <i class="uk-icon-folder-open"></i>
+                                                Open (XCSoar task, *.tsk)
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a id="save_task_tsk_a">
+                                                <i class="uk-icon-download"></i>
+                                                Save (XCSoar task, *.tsk)
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="uk-navbar-flip">
+                            <ul class="uk-navbar-nav">
+                                <li>
+                                    <a id="new_turnpoint_a" class="uk-navbar-nav-subtitle">
+                                        <i class="uk-icon-dot-circle-o"></i> New
+                                        <div>turnpoint</div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <!-- @} -->
+
+                    <!-- Task table @{ -->
                     <table id="task_table">
                         <tr>
                             <th class="no_border">&nbsp;</th>
@@ -159,25 +225,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                             <td colspan="4" class="no_border">&nbsp;</td>
                         </tr>
                     </table>
+                    <!-- @} -->
+
                     <div id="task_summary_div"></div>
+
                 </div>
-                <div id="task_bottom_div"></div>
                 <!-- @} -->
 
-                <button id="share_button">Share</button>
+                <hr>
 
-                <!-- similar sites @{ -->
-                <div id="similar_label_div" class="clickable">
-                    similar sites
-                    <span id="similar_label_show_span">[show]</span>
-                    <span id="similar_label_hide_span" class="invisible">[hide]</span>
-                </div>
-                <div id="similar_div">
+                <!-- Share @{ -->
+                <button id="share_button" class="uk-button uk-width-1-1">
+                    Share
+                </button>
+                <!-- @} -->
+
+                <hr>
+
+                <!-- Similar sites @{ -->
+                <button class="uk-button uk-width-1-1" data-uk-toggle="{target:'#similar_sites_wrap_div', animation:'uk-animation-scale-up, uk-animation-scale-up'}">
+                    Similar sites
+                </button>
+                <div id="similar_sites_wrap_div" class="uk-hidden uk-text-center">
                     <a href="http://prosoar.de">proSoar</a><br/>
                     <a href="http://bit.ly/taskcreator">Task creator</a><br/>
                     <a href="http://pottyplace.com/waypts/waypts.php">Waypoint Editor</a><br/>
                 </div>
-                <div id="similar_bottom_div"></div>
                 <!-- @} -->
             </div>
             <!-- @} -->
@@ -197,9 +270,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
         <!-- invisible -->
 
-        <form class="invisible"><input id="load_waypoints_input" type="file"/></form>
+        <form class="invisible"><input id="open_waypoints_dat_input" type="file"/></form>
 
-        <form class="invisible"><input id="task_open_input" type="file"/></form>
+        <form class="invisible"><input id="open_task_tsk_input" type="file"/></form>
 
         <a id="save_a" href="" download="" class="invisible"></a>
 

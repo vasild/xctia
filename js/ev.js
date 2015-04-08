@@ -100,25 +100,25 @@ function ev_init_animation(
 function ev_init_waypoints()
 {
     /* When the invisible file input about waypoints get fed up with a file. */
-    document.getElementById('load_waypoints_input').onchange =
+    document.getElementById('open_waypoints_dat_input').onchange =
         function ()
         {
             parse_file(this.files[0], parser_waypoints, null);
         };
 
-    document.getElementById('load_waypoints_button').onclick =
+    document.getElementById('open_waypoints_dat_a').onclick =
         function ()
         {
-            document.getElementById('load_waypoints_input').click();
+            document.getElementById('open_waypoints_dat_input').click();
         };
 
-    document.getElementById('save_waypoints_button').onclick =
+    document.getElementById('save_waypoints_dat_a').onclick =
         function ()
         {
             waypoints.save();
         };
 
-    document.getElementById('new_waypoint_button').onclick =
+    document.getElementById('new_waypoint_a').onclick =
         function ()
         {
             var id = waypoints.gen_new_id();
@@ -140,35 +140,6 @@ function ev_init_waypoints()
                 true
             );
         };
-
-    ev_init_animation({
-        clickable_id: 'waypoints_label_div',
-        main_id: 'waypoints_div',
-        hide_keyframes: 'waypoints_foldup',
-        before_hide: function ()
-            {
-                var rule = html_find_css_rule('waypoints_foldup', CSSRule.KEYFRAMES_RULE, '0%');
-
-                rule.style.height = document.getElementById('waypoints_div').scrollHeight + 'px';
-            },
-        after_hide: function ()
-            {
-                document.getElementById('waypoints_label_hide_span').style.display = 'none';
-                document.getElementById('waypoints_label_show_span').style.display = 'inline';
-            },
-        show_keyframes: 'waypoints_folddown',
-        before_show: function ()
-            {
-                var rule = html_find_css_rule('waypoints_folddown', CSSRule.KEYFRAMES_RULE, '100%');
-
-                rule.style.height = document.getElementById('waypoints_div').scrollHeight + 'px';
-            },
-        after_show: function ()
-            {
-                document.getElementById('waypoints_label_show_span').style.display = 'none';
-                document.getElementById('waypoints_label_hide_span').style.display = 'inline';
-            }
-    });
 }
 /* @} */
 
@@ -181,52 +152,29 @@ function ev_init_task()
             task.add_turnpoint(this.parentNode);
         };
 
-    document.getElementById('task_open_input').onchange =
+    document.getElementById('new_turnpoint_a').onclick =
+        function ()
+        {
+            document.getElementById('turnpoint_insert_last_td').click();
+        };
+
+    document.getElementById('open_task_tsk_input').onchange =
         function ()
         {
             parse_file(this.files[0], parser_task, null);
         };
 
-    document.getElementById('task_open_button').onclick =
+    document.getElementById('open_task_tsk_a').onclick =
         function ()
         {
-            document.getElementById('task_open_input').click();
+            document.getElementById('open_task_tsk_input').click();
         };
 
-    document.getElementById('task_save_button').onclick =
+    document.getElementById('save_task_tsk_a').onclick =
         function ()
         {
             task.save();
         };
-
-    ev_init_animation({
-        clickable_id: 'task_label_div',
-        main_id: 'task_div',
-        hide_keyframes: 'task_foldup',
-        before_hide: function ()
-            {
-                var rule = html_find_css_rule('task_foldup', CSSRule.KEYFRAMES_RULE, '0%');
-
-                rule.style.height = document.getElementById('task_div').scrollHeight + 'px';
-            },
-        after_hide: function ()
-            {
-                document.getElementById('task_label_hide_span').style.display = 'none';
-                document.getElementById('task_label_show_span').style.display = 'inline';
-            },
-        show_keyframes: 'task_folddown',
-        before_show: function ()
-            {
-                var rule = html_find_css_rule('task_folddown', CSSRule.KEYFRAMES_RULE, '100%');
-
-                rule.style.height = document.getElementById('task_div').scrollHeight + 'px';
-            },
-        after_show: function ()
-            {
-                document.getElementById('task_label_show_span').style.display = 'none';
-                document.getElementById('task_label_hide_span').style.display = 'inline';
-            }
-    });
 }
 /* @} */
 
@@ -278,44 +226,6 @@ function ev_init_share()
              */
             e.stopPropagation();
         };
-}
-/* @} */
-
-/* Initialize the events around the 'similar sites' box. @{ */
-function ev_init_similar_sites()
-{
-    /* Close at page load. */
-    document.getElementById('similar_div').style.animationName =
-    document.getElementById('similar_div').style.webkitAnimationName = 'similar_foldup';
-
-    ev_init_animation({
-        clickable_id: 'similar_label_div',
-        main_id: 'similar_div',
-        hide_keyframes: 'similar_foldup',
-        before_hide: function ()
-            {
-                var rule = html_find_css_rule('similar_foldup', CSSRule.KEYFRAMES_RULE, '0%');
-
-                rule.style.height = document.getElementById('similar_div').scrollHeight + 'px';
-            },
-        after_hide: function ()
-            {
-                document.getElementById('similar_label_hide_span').style.display = 'none';
-                document.getElementById('similar_label_show_span').style.display = 'inline';
-            },
-        show_keyframes: 'similar_folddown',
-        before_show: function ()
-            {
-                var rule = html_find_css_rule('similar_folddown', CSSRule.KEYFRAMES_RULE, '100%');
-
-                rule.style.height = document.getElementById('similar_div').scrollHeight + 'px';
-            },
-        after_show: function ()
-            {
-                document.getElementById('similar_label_show_span').style.display = 'none';
-                document.getElementById('similar_label_hide_span').style.display = 'inline';
-            }
-    });
 }
 /* @} */
 
@@ -453,8 +363,6 @@ function ev_init()
     ev_init_task();
 
     ev_init_share();
-
-    ev_init_similar_sites();
 
     ev_init_menu_toggle();
 

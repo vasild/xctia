@@ -199,20 +199,11 @@ td {
     padding: 32px 4px;
 }
 
-#menu_toggle_span,
-#similar_bottom_div,
-#similar_label_div,
-#task_bottom_div,
-#task_label_div,
-#waypoints_bottom_div,
-#waypoints_label_div {
+#menu_toggle_span {
     background-color: #DDDDDD;
 }
 
-#menu_toggle_span:hover,
-#similar_label_div:hover,
-#task_label_div:hover,
-#waypoints_label_div:hover {
+#menu_toggle_span:hover {
     background-color: #EEEEEE;
 }
 
@@ -234,14 +225,6 @@ td {
     height: 100%;
     overflow: hide;
     position: relative;
-}
-
-#new_waypoint_button {
-    display: block;
-    margin-bottom: 4px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 4px;
 }
 
 #share_button {
@@ -276,130 +259,6 @@ td {
     width: 600px;
 }
 
-@keyframes similar_foldup {
-    0% {
-        height: 0px; /* will be set dynamically */
-    }
-    100% {
-        height: 0px;
-    }
-}
-
-@-webkit-keyframes similar_foldup {
-    0% {
-        height: 0px; /* will be set dynamically */
-    }
-    100% {
-        height: 0px;
-    }
-}
-
-@keyframes similar_folddown {
-    0% {
-        height: 0px;
-    }
-    100% {
-        height: 0px; /* will be set dynamically */
-    }
-}
-
-@-webkit-keyframes similar_folddown {
-    0% {
-        height: 0px;
-    }
-    100% {
-        height: 0px; /* will be set dynamically */
-    }
-}
-
-@keyframes task_foldup {
-    0% {
-        height: 0px; /* will be set dynamically */
-    }
-    100% {
-        height: 0px;
-    }
-}
-
-@-webkit-keyframes task_foldup {
-    0% {
-        height: 0px; /* will be set dynamically */
-    }
-    100% {
-        height: 0px;
-    }
-}
-
-@keyframes task_folddown {
-    0% {
-        height: 0px;
-    }
-    100% {
-        height: 0px; /* will be set dynamically */
-    }
-}
-
-@-webkit-keyframes task_folddown {
-    0% {
-        height: 0px;
-    }
-    100% {
-        height: 0px; /* will be set dynamically */
-    }
-}
-
-#similar_bottom_div,
-#task_bottom_div,
-#waypoints_bottom_div {
-    border-bottom: 1px solid black;
-    border-left: 1px solid black;
-    border-right: 1px solid black;
-    height: 0.5em;
-    margin-bottom: 4px;
-    text-align: center;
-}
-
-#similar_div {
-    text-align: center;
-}
-
-#similar_div,
-#task_div,
-#waypoints_div {
-    animation-duration: 1.5s;
-    -webkit-animation-duration: 1.5s;
-    animation-fill-mode: forwards;
-    -webkit-animation-fill-mode: forwards;
-    overflow: hidden;
-}
-
-#similar_label_div,
-#task_label_div,
-#waypoints_label_div {
-    border-bottom: 1px dashed #BBBBBB;
-    border-left: 1px solid black;
-    border-right: 1px solid black;
-    border-top: 1px solid black;
-    position: relative;
-    text-align: center;
-}
-
-#similar_label_hide_span,
-#similar_label_show_span,
-#task_label_hide_span,
-#task_label_show_span,
-#waypoints_label_hide_span,
-#waypoints_label_show_span {
-    position: absolute;
-    right: 0;
-}
-
-#task_save_button {
-    margin-bottom: 4px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
 #task_summary_div {
     margin: 4px;
     text-align: center;
@@ -408,57 +267,6 @@ td {
 #task_table {
     margin-left: auto;
     margin-right: auto;
-}
-
-#task_buttons_table,
-#waypoints_buttons_table {
-    width: 100%;
-}
-
-#task_buttons_table,
-#task_buttons_table td,
-#waypoints_buttons_table,
-#waypoints_buttons_table td {
-    border-width: 0px;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-}
-
-@keyframes waypoints_foldup {
-    0% {
-        height: 0px; /* will be set dynamically */
-    }
-    100% {
-        height: 0px;
-    }
-}
-
-@-webkit-keyframes waypoints_foldup {
-    0% {
-        height: 0px; /* will be set dynamically */
-    }
-    100% {
-        height: 0px;
-    }
-}
-
-@keyframes waypoints_folddown {
-    0% {
-        height: 0px;
-    }
-    100% {
-        height: 0px; /* will be set dynamically */
-    }
-}
-
-@-webkit-keyframes waypoints_folddown {
-    0% {
-        height: 0px;
-    }
-    100% {
-        height: 0px; /* will be set dynamically */
-    }
 }
 
 #waypoints_table {
