@@ -227,13 +227,6 @@ td {
     position: relative;
 }
 
-#share_button {
-    display: block;
-    margin-bottom: 4px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
 #share_table {
     background-color: rgba(0, 0, 0, 0.6);
     display: none;
