@@ -465,10 +465,10 @@ function waypoint_t(
         trs_container.removeChild(tr);
 
         /* Hide the waypoints table if the last row in it has been removed.
-         * There are two rows in a no-waypoints table: 1 heading row and 1
+         * There is one extra row in a no-waypoints table's <tbody>: the
          * invisible row template.
          */
-        if (trs_container.getElementsByTagName('tr').length <= 2) {
+        if (trs_container.getElementsByTagName('tr').length <= 1) {
             document.getElementById('waypoints_table').classList.add('invisible');
         }
     }
