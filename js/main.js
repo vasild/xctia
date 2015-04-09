@@ -213,7 +213,6 @@ function parser_task(
         );
 
         task.add_turnpoint(
-            document.getElementById('turnpoint_insert_last_td').parentNode,
             [
                 waypoint_id,
                 radius,

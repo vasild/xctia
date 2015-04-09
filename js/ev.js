@@ -146,16 +146,10 @@ function ev_init_waypoints()
 /* Initialize the events around the task buttons. @{ */
 function ev_init_task()
 {
-    document.getElementById('turnpoint_insert_last_td').onclick =
-        function ()
-        {
-            task.add_turnpoint(this.parentNode);
-        };
-
     document.getElementById('new_turnpoint_a').onclick =
         function ()
         {
-            document.getElementById('turnpoint_insert_last_td').click();
+            task.add_turnpoint();
         };
 
     document.getElementById('open_task_tsk_input').onchange =
@@ -175,6 +169,13 @@ function ev_init_task()
         {
             task.save();
         };
+
+    $('#turnpoints_div').on(
+        'stop.uk.sortable',
+        function () {
+            task.redraw_task();
+        }
+    );
 }
 /* @} */
 

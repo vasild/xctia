@@ -88,7 +88,7 @@ function turnpoint_t()
                     next_waypoint.lat(), next_waypoint.lng());
 
             } else if (prev_turnpoint != null) {
-                /* next_turnpoint is null */
+                /* next_turnpoint is null, this is the last */
                 var prev_waypoint = waypoints.get_by_id(prev_turnpoint.waypoint_id());
 
                 angle_deg = coord_vector_angle_from_y(
@@ -96,7 +96,7 @@ function turnpoint_t()
                     waypoint.lat(), waypoint.lng());
 
             } else if (next_turnpoint != null) {
-                /* prev_turnpoint is null */
+                /* prev_turnpoint is null, this is the first */
                 var next_waypoint = waypoints.get_by_id(next_turnpoint.waypoint_id());
 
                 angle_deg = coord_vector_angle_from_y(
@@ -248,6 +248,68 @@ function task_t()
     var m_map_path = null;
     var m_map_legs_labels = new Array();
 
+    /* Get the index of a turnpoint in m_turnpoints[] from a row in the task table. @{
+     * @return index of the turnpoint in m_turnpoints[]
+     */
+    function turnpoint_row_get_index_in_array(
+        /* in: row in the HTML task table */
+        row)
+    {
+        return(row.getElementsByTagName('div')[0].getAttribute('turnpoint-index'));
+    }
+    /* @} */
+
+    /* Set the index from m_turnpoints[] of a turnpoint in a row in the task table. @{ */
+    function turnpoint_row_set_index_in_array(
+        /* in: row in the HTML task table. */
+        row,
+        /* in: index of the turnpoint in m_turnpoints[] */
+        index)
+    {
+        row.getElementsByTagName('div')[0].setAttribute('turnpoint-index', index);
+    }
+    /* @} */
+
+    /* Get the turnpoint object from m_turnpoints[] from a row in the task table. @{
+     * @return turnpoint object
+     */
+    function get_turnpoint_from_row(
+        /* in: row in the HTML task table. */
+        row)
+    {
+        var i = turnpoint_row_get_index_in_array(row);
+        return(m_turnpoints[i]);
+    }
+    /* @} */
+
+    /* Get a HTMLCollection of all rows in the HTML task table. @{
+     * @return HTMLCollection of all rows
+     */
+    function get_rows()
+    {
+        return(document.getElementById('turnpoints_div').getElementsByClassName('turnpoint_row'));
+    }
+    /* @} */
+
+    /* Decrement some rows' turnpoint index. @{
+     * For rows that have a turnpoint index greater than the specified one -
+     * decrement them with one. This is used after an entry is deleted from
+     * m_turnpoints[] to bring the references in the table rows back in sync.
+     */
+    function rows_dec_array_indexes_after_del(
+        /* in: array in m_turnpoints[] of the deleted turnpoint. */
+        array_deleted_index)
+    {
+        var rows = get_rows();
+        for (var i = 0; i < rows.length; i++) {
+            array_index = turnpoint_row_get_index_in_array(rows[i]);
+            if (array_index > array_deleted_index) {
+                turnpoint_row_set_index_in_array(rows[i], array_index - 1);
+            }
+        }
+    }
+    /* @} */
+
     /* Redraw the task on the map. @{ */
     function redraw_task()
     {
@@ -268,17 +330,41 @@ function task_t()
 
         var latlngs = new Array();
         var prev_latlng = null;
-        for (var i = 0; i < m_turnpoints.length; i++) {
+        var rows = get_rows();
+        for (var i = 0; i < rows.length; i++) {
 
-            var turnpoint = m_turnpoints[i];
+            var turnpoint = get_turnpoint_from_row(rows[i]);
             var waypoint = waypoints.get_by_id(turnpoint.waypoint_id());
 
             if (waypoint == null) {
                 continue;
             }
 
-            var prev_turnpoint = i > 0 ? m_turnpoints[i - 1] : null;
-            var next_turnpoint = i < m_turnpoints.length - 1 ? m_turnpoints[i + 1] : null;
+            /* Find the first turnpoint before the current one that has
+             * a valid waypoint.
+             */
+            var prev_turnpoint = null;
+            for (var j = i - 1; j >= 0; j--) {
+                var t = get_turnpoint_from_row(rows[j]);
+                var w = waypoints.get_by_id(t.waypoint_id());
+                if (w) {
+                    prev_turnpoint = t;
+                    break;
+                }
+            }
+
+            /* Find the first turnpoint after the current one that has
+             * a valid waypoint.
+             */
+            var next_turnpoint = null;
+            for (var j = i + 1; j < rows.length; j++) {
+                var t = get_turnpoint_from_row(rows[j]);
+                var w = waypoints.get_by_id(t.waypoint_id());
+                if (w) {
+                    next_turnpoint = t;
+                    break;
+                }
+            }
 
             turnpoint.redraw_turnpoint(prev_turnpoint, next_turnpoint);
 
@@ -345,34 +431,12 @@ function task_t()
     }
     /* @} */
 
-    /* Calculate how many turnpoints are before a given <tr>. @{ */
-    function n_turnpoints_before(
-        /* in: insert or data <tr> (both will work) */
-        tr)
-    {
-        var pos = 0;
-        for (var i = 0; i < tr.parentNode.children.length; i++) {
-            var child = tr.parentNode.children[i];
-            if (tr == child) {
-                break;
-            }
-            if (child.getAttribute('turnpoint_data_row')) {
-                pos++;
-            }
-        }
-        return(pos);
-    }
-    /* @} */
-
     /* Add a new turnpoint to the task. @{
-     * Create a new <tr>s for the new turnpoint and insert a new element
-     * in m_turnpoints[] to the correct position. The waypoint that
-     * corresponds to this turnpoint is left uninitialized if the second
-     * argument is not given.
+     * Create a new row for the new turnpoint and append a new element
+     * in m_turnpoints[]. The waypoint that corresponds to this turnpoint
+     * is left uninitialized if the argument is not given.
      */
     function add_turnpoint(
-        /* in: reference <tr>, insertion is done before it */
-        ref_tr,
         /* in: optional, array to import the turnpoint data from */
         arr)
     {
@@ -384,41 +448,27 @@ function task_t()
             turnpoint_has_data = true;
         }
 
-        /* Find the position in m_turnpoints[] to insert the new turnpoint.
-         * Since rows can be inserted in the middle of the table, we must
-         * also insert in the middle of the array, obeying the same order
-         * of the turnpoints in the HTML table and in m_turnpoints[].
-         */
-        var pos = n_turnpoints_before(ref_tr);
+        /* Make the task elements visible if this is the first added point. */
+        if (m_turnpoints.length == 0) {
+            document.getElementById('turnpoints_heading_div').classList.remove('invisible');
+            document.getElementById('task_summary_div').classList.remove('invisible');
+        }
 
-        m_turnpoints.splice(pos, 0, turnpoint);
+        /* Create the turnpoint row. */
 
-        /* Create the 'insert new turnpoint' row. */
+        var row = document.createElement('div');
+        row.innerHTML = document.getElementById('turnpoint_row_template_div').innerHTML;
+        row.classList.add('turnpoint_row');
+        row.classList.add('uk-grid');
+        row.classList.add('uk-grid-collapse');
+        row.classList.add('uk-text-center');
 
-        var tr_ins_inner = document.getElementById('turnpoint_insert_template_tr').innerHTML;
+        var turnpoint_index = m_turnpoints.push(turnpoint) - 1;
 
-        var tr_ins = document.createElement('tr');
-        tr_ins.innerHTML = tr_ins_inner;
-
-        /* Setup the 'add new turnpoint' event. */
-        tr_ins.getElementsByClassName('turnpoint_add')[0].onclick =
-            function ()
-            {
-                task.add_turnpoint(this.parentNode);
-            };
-
-        ref_tr.parentNode.insertBefore(tr_ins, ref_tr);
-
-        /* Create the data fields row. */
-
-        var tr_data_inner = document.getElementById('turnpoint_data_template_tr').innerHTML;
-
-        var tr_data = document.createElement('tr');
-        tr_data.setAttribute('turnpoint_data_row', true);
-        tr_data.innerHTML = tr_data_inner;
+        turnpoint_row_set_index_in_array(row, turnpoint_index);
 
         /* Setup the name dropdown menu. */
-        var tp_name_select = tr_data.getElementsByClassName('turnpoint_name')[0];
+        var tp_name_select = row.getElementsByClassName('turnpoint_name')[0];
         tp_name_select.onchange =
             function ()
             {
@@ -439,7 +489,7 @@ function task_t()
         tp_name_select.selectedIndex = selected_index;
 
         /* Setup the radius input. */
-        var tp_radius_input = tr_data.getElementsByClassName('turnpoint_radius')[0];
+        var tp_radius_input = row.getElementsByClassName('turnpoint_radius')[0];
         tp_radius_input.onchange =
             function ()
             {
@@ -456,7 +506,7 @@ function task_t()
         }
 
         /* Setup the type dropdown menu. */
-        var tp_type_select = tr_data.getElementsByClassName('turnpoint_type')[0];
+        var tp_type_select = row.getElementsByClassName('turnpoint_type')[0];
         selected_index = 0;
         var i = 0;
         for (t in turnpoint_types) {
@@ -481,29 +531,40 @@ function task_t()
         }
 
         /* Setup the delete action. */
-        tr_data.getElementsByClassName('turnpoint_del')[0].onclick =
+        row.getElementsByClassName('turnpoint_del')[0].onclick =
             function ()
             {
-                var data_tr = this.parentNode;
-                var ins_tr = data_tr.previousElementSibling;
+                /* <div><div><span class="turnpoint_del">
+                 * the parent of the parent of the span is the row.
+                 */
+                var tp_row = this.parentNode.parentNode;
 
-                var pos = n_turnpoints_before(data_tr);
-                m_turnpoints[pos].remove_from_map();
-                m_turnpoints.splice(pos, 1);
+                var i = turnpoint_row_get_index_in_array(tp_row);
+                m_turnpoints[i].remove_from_map();
+                m_turnpoints.splice(i, 1);
+
+                /* If the last turnpoint has been deleted, then hide the
+                 * task table elements.
+                 */
+                if (m_turnpoints.length == 0) {
+                    document.getElementById('turnpoints_heading_div').classList.add('invisible');
+                    document.getElementById('task_summary_div').classList.add('invisible');
+                }
+
+                document.getElementById('turnpoints_div').removeChild(tp_row);
+
+                rows_dec_array_indexes_after_del(i);
 
                 redraw_task();
-
-                var p = data_tr.parentNode;
-                p.removeChild(data_tr);
-                p.removeChild(ins_tr);
             };
 
         var none_was_selected = tp_name_select.selectedIndex == -1;
 
-        ref_tr.parentNode.insertBefore(tr_data, ref_tr);
+        document.getElementById('turnpoints_div').appendChild(row);
+
         /* Workaround an issue in Chrome: selectedIndex gets reset from -1
-         * to 0 by the insertBefore() call. tp_name_select is a child of
-         * tr_data.
+         * to 0 by the appendChild() call. tp_name_select is a child of
+         * row.
          */
         if (none_was_selected) {
             tp_name_select.selectedIndex = -1;
@@ -511,19 +572,16 @@ function task_t()
     }
     /* @} */
 
-    /* Add a newly added waypoint's title to the name <select>s. @{ */
+    /* Add a newly added waypoint's title to the name <select>s. @{
+     * The row template <select> is also extended.
+     */
     function refresh_after_waypoint_add(
         /* in: newly added waypoint object */
         added_waypoint)
     {
-        var task_table = document.getElementById('task_table');
-        /* All HTML <select> elements for waypoint names. */
-        var name_selects = task_table.getElementsByClassName('turnpoint_name');
-
-        /* For all <select>s for waypoint names. */
-        for (var i = 0; i < name_selects.length; i++) {
-            var cur_select = name_selects[i];
-
+        function append_option_to_select(
+            cur_select)
+        {
             var none_was_selected = cur_select.selectedIndex == -1;
 
             html_append_obj_with_text(
@@ -538,10 +596,23 @@ function task_t()
                 cur_select.selectedIndex = -1;
             }
         }
+
+        var task_table = document.getElementById('turnpoints_div');
+
+        /* All HTML <select> elements for waypoint names. */
+        var name_selects = task_table.getElementsByClassName('turnpoint_name');
+
+        for (var i = 0; i < name_selects.length; i++) {
+            append_option_to_select(name_selects[i]);
+        }
+
+        var template_div = document.getElementById('turnpoint_row_template_div');
+        append_option_to_select(template_div.getElementsByClassName('turnpoint_name')[0]);
     }
     /* @} */
 
     /* Delete a waypoint from the name <select>s. @{
+     * The waypoint's name is deleted also from the template row.
      * Also select-none if the deleted waypoint has been selected in some
      * of the <select>s.
      */
@@ -549,13 +620,9 @@ function task_t()
         /* in: deleted waypoint id */
         waypoint_id)
     {
-        var task_table = document.getElementById('task_table');
-        /* All HTML <select> elements for waypoint names. */
-        var name_selects = task_table.getElementsByClassName('turnpoint_name');
-
-        /* For all <select>s for waypoint names. */
-        for (var i = 0; i < name_selects.length; i++) {
-            var cur_select = name_selects[i];
+        function del_waypoint_name_from_select(
+            cur_select)
+        {
             var cur_select_options = cur_select.getElementsByTagName('option');
             /* For all <option>s in each <select>. */
             for (var j = 0; j < cur_select_options.length; j++) {
@@ -585,9 +652,11 @@ function task_t()
                     if (selected_deleted) {
                         cur_select.selectedIndex = -1;
 
-                        /* <tr><td><select> */
-                        var pos = n_turnpoints_before(cur_select.parentNode.parentNode);
-                        m_turnpoints[pos].remove_from_map();
+                        /* <div><div><select>
+                         * the parent of the parent of the <select> is the row
+                         */
+                        var turnpoint = get_turnpoint_from_row(cur_select.parentNode.parentNode);
+                        turnpoint.remove_from_map();
                     }
 
                     /* Only one <option> could be with the given waypoint_id
@@ -599,22 +668,32 @@ function task_t()
             }
         }
 
-        redraw_task();
-    }
-    /* @} */
-
-    /* Rename a waypoint in the name <select>s. @{ */
-    function refresh_after_waypoint_rename(
-        /* in: renamed waypoint id */
-        waypoint_id)
-    {
-        var task_table = document.getElementById('task_table');
+        var task_table = document.getElementById('turnpoints_div');
         /* All HTML <select> elements for waypoint names. */
         var name_selects = task_table.getElementsByClassName('turnpoint_name');
 
         /* For all <select>s for waypoint names. */
         for (var i = 0; i < name_selects.length; i++) {
-            var cur_select = name_selects[i];
+            del_waypoint_name_from_select(name_selects[i]);
+        }
+
+        var template_div = document.getElementById('turnpoint_row_template_div');
+        del_waypoint_name_from_select(template_div.getElementsByClassName('turnpoint_name')[0]);
+
+        redraw_task();
+    }
+    /* @} */
+
+    /* Rename a waypoint in the name <select>s. @{
+     * The waypoint in the template row is also renamed.
+     */
+    function refresh_after_waypoint_rename(
+        /* in: renamed waypoint id */
+        waypoint_id)
+    {
+        function rename_waypoint_in_select(
+            cur_select)
+        {
             var cur_select_options = cur_select.getElementsByTagName('option');
             /* For all <option>s in each <select>. */
             for (var j = 0; j < cur_select_options.length; j++) {
@@ -626,6 +705,18 @@ function task_t()
                 }
             }
         }
+
+        var task_table = document.getElementById('turnpoints_div');
+        /* All HTML <select> elements for waypoint names. */
+        var name_selects = task_table.getElementsByClassName('turnpoint_name');
+
+        /* For all <select>s for waypoint names. */
+        for (var i = 0; i < name_selects.length; i++) {
+            rename_waypoint_in_select(name_selects[i]);
+        }
+
+        var template_div = document.getElementById('turnpoint_row_template_div');
+        rename_waypoint_in_select(template_div.getElementsByClassName('turnpoint_name')[0]);
     }
     /* @} */
 
@@ -636,8 +727,12 @@ function task_t()
     {
         var arr = new Array();
 
-        for (var i = 0; i < m_turnpoints.length; i++) {
-            arr.push(m_turnpoints[i].export_as_array());
+        var rows = get_rows();
+        for (var i = 0; i < rows.length; i++) {
+
+            var turnpoint = get_turnpoint_from_row(rows[i]);
+
+            arr.push(turnpoint.export_as_array());
         }
 
         return(arr);
@@ -649,9 +744,8 @@ function task_t()
         /* in: array with data */
         arr)
     {
-        var ins_tr = document.getElementById('turnpoint_insert_last_td').parentNode;
         for (var i = 0; i < arr.length; i++) {
-            add_turnpoint(ins_tr, arr[i]);
+            add_turnpoint(arr[i]);
         }
         redraw_task();
     }
@@ -687,9 +781,10 @@ function task_t()
 
         var file_name = 'empty-task';
 
-        for (var i = 0; i < m_turnpoints.length; i++) {
+        var rows = get_rows();
+        for (var i = 0; i < rows.length; i++) {
 
-            var turnpoint = m_turnpoints[i];
+            var turnpoint = get_turnpoint_from_row(rows[i]);
             var waypoint = waypoints.get_by_id(turnpoint.waypoint_id());
 
             if (waypoint == null) {
@@ -703,7 +798,7 @@ function task_t()
                 point_type = 'Start';
                 file_name = waypoint.name();
                 break;
-            case m_turnpoints.length - 1:
+            case rows.length - 1:
                 point_type = 'Finish';
                 file_name += '-' + waypoint.name();
                 break;

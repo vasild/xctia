@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <script type="text/javascript" src="//maps.google.com/maps/api/js?v=3&sensor=false"></script>
         <script type="text/javascript" src="//pg.v5d.org/lib/str.js"></script>
         <script type="text/javascript" src="external/uikit-2.18.0/js/uikit.min.js"></script>
+        <script type="text/javascript" src="external/uikit-2.18.0/js/components/sortable.min.js"></script>
         <script type="text/javascript" src="external/leaflet-plugins-1.2.1/layer/tile/Google.js"></script>
         <script type="text/javascript" src="external/Leaflet-semicircle/Semicircle.js"></script>
         <script type="text/javascript" src="external/lz-string.js"></script>
@@ -184,53 +185,52 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                     </nav>
                     <!-- @} -->
 
-                    <!-- Task table @{ -->
-                    <table id="task_table">
-                        <tr>
-                            <th class="no_border">&nbsp;</th>
-                            <th rowspan="2">Point</th>
-                            <th rowspan="2">Radius[m]</th>
-                            <th rowspan="2">Type</th>
-                            <th rowspan="2">&nbsp;</th>
-                        </tr>
-                        <!-- Turnpoint rows templates @{ -->
-                        <tr class="invisible" id="turnpoint_insert_template_tr">
-                            <!-- the turnpoint_add class is used by JS to find this element -->
-                            <td rowspan="2" class="clickable no_border turnpoint_add">
-                                <span class="turnpoint_insert_symbol" title="insert new turnpoint">&#10753;</span>
-                            </td>
-                        </tr>
-                        <tr class="invisible" id="turnpoint_data_template_tr">
-                            <td rowspan="2">
-                                <!-- the turnpoint_name class is used by JS to find this element -->
-                                <select class="turnpoint_name"></select>
-                            </td>
-                            <td rowspan="2">
-                                <!-- the turnpoint_radius class is used by JS to find this element -->
-                                <input type="number" required min="0" value="1000" class="meters turnpoint_radius">
-                            </td>
-                            <td rowspan="2">
-                                <!-- the turnpoint_type class is used by JS to find this element -->
-                                <select class="turnpoint_type"></select>
-                            </td>
-                            <!-- the turnpoint_del class is used by JS to find this element -->
-                            <td rowspan="2" class="clickable del_row turnpoint_del">
-                                <span title="delete this turnpoint">&#10007;</span>
-                            </td>
-                        </tr>
-                        <!-- @} -->
-                        <tr>
-                            <td rowspan="2" id="turnpoint_insert_last_td" class="clickable no_border">
-                                <span class="turnpoint_insert_symbol" title="insert new turnpoint below">&#10753;</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="4" class="no_border">&nbsp;</td>
-                        </tr>
-                    </table>
-                    <!-- @} -->
+                    <div id="turnpoints_heading_div" class="uk-grid uk-grid-collapse uk-text-center uk-text-bold invisible">
+                        <div class="uk-width-1-10"><!-- move up/down --></div>
+                        <div class="uk-width-3-10">Point</div>
+                        <div class="uk-width-2-10">Radius[m]</div>
+                        <div class="uk-width-3-10">Type</div>
+                        <div class="uk-width-1-10"><!-- del --></div>
+                        <hr class="task_table_row_sparator">
+                    </div>
+                    <div id="turnpoints_div" class="uk-sortable" data-uk-sortable="{handleClass:'uk-icon-arrows-v', dragCustomClass:'uk-grid uk-grid-collapse uk-text-center uk-hidden'}">
+                        <!-- <div>s like #turnpoint_row_template_div are inserted here -->
+                    </div>
+                    <div class="invisible" id="turnpoint_row_template_div">
 
-                    <div id="task_summary_div"></div>
+                        <!-- The first <div> is holding the index of this
+                        turnpoint in the turnpoints array. -->
+                        <div class="invisible" turnpoint-index="-1"></div>
+
+                        <div class="uk-width-1-10">
+                            <i class="uk-icon-arrows-v movable_updown"></i>
+                        </div>
+
+                        <div class="uk-width-3-10">
+                            <!-- the turnpoint_name class is used by JS to find this element -->
+                            <select class="turnpoint_name"></select>
+                        </div>
+
+                        <div class="uk-width-2-10">
+                            <!-- the turnpoint_radius class is used by JS to find this element -->
+                            <input type="number" required min="0" value="1000" class="meters turnpoint_radius">
+                        </div>
+
+                        <div class="uk-width-3-10">
+                            <!-- the turnpoint_type class is used by JS to find this element -->
+                            <select class="turnpoint_type"></select>
+                        </div>
+
+                        <div class="uk-width-1-10">
+                            <!-- the turnpoint_del class is used by JS to find this element -->
+                            <span class="clickable del_row turnpoint_del" title="delete this turnpoint">&#10007;</span>
+                        </div>
+
+                        <hr class="task_table_row_sparator">
+
+                    </div>
+
+                    <div id="task_summary_div" class="invisible"></div>
 
                 </div>
                 <!-- @} -->
