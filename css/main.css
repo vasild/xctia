@@ -121,10 +121,10 @@ button, input, select, textarea {
 
 @-webkit-keyframes cat_run {
     0% {
-        left: 0;
+        left: -300px;
     }
     100% {
-        right: 0;
+        left: 100%;
     }
 }
 
