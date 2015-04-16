@@ -233,37 +233,11 @@ function ev_init_share()
 /* Initialize the events around the 'menu toggle' element. @{ */
 function ev_init_menu_toggle()
 {
-    /* Pospone a bunch of actions that redraw the map (to fix its state
-     * after the container element has been resized) and keep its center
-     * to what it was when this function was called.
-     */
-    function map_smooth_resize()
-    {
-        var menu_wrap_div = document.getElementById('menu_wrap_div');
-        var computed_style = document.defaultView.getComputedStyle(menu_wrap_div);
-        var dur = parseFloat(computed_style['animation-duration'] || computed_style['-webkit-animation-duration']);
-
-        var steps = 16;
-
-        var center = map.center();
-
-        for (var i = 1; i < steps; i++) {
-            window.setTimeout(
-                function ()
-                {
-                    map.set_center(center);
-                    map.redraw();
-                },
-                dur * 1000 / steps * i
-            );
-        }
-    }
-
     ev_init_animation({
         clickable_id: 'menu_toggle_span',
         main_id: 'menu_wrap_div',
         hide_keyframes: 'menu_hide',
-        before_hide: map_smooth_resize,
+        before_hide: null,
         after_hide: function ()
             {
                 document.getElementById('menu_toggle_hide_span').style.display = 'none';
@@ -271,7 +245,7 @@ function ev_init_menu_toggle()
                 map.redraw();
             },
         show_keyframes: 'menu_show',
-        before_show: map_smooth_resize,
+        before_show: null,
         after_show: function ()
             {
                 document.getElementById('menu_toggle_show_span').style.display = 'none';
