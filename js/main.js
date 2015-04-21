@@ -26,11 +26,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Global variables */
 
+var map;
+
 var waypoints;
 
 var task;
 
-var map;
+var flights;
 
 /* Create object of type 'new_obj_type', set its innerHTML to 'text' and
  * append it to 'dest'.
@@ -230,6 +232,121 @@ function parser_task(
 }
 /* @} */
 
+/* Parse the contents of a flight file in the "IGC" format. @{
+ * See http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/
+ * @return object of type flight_t
+ */
+function parser_igc(
+    /* in: file contents as a string */
+    str,
+    /* in: file name */
+    file_name)
+{
+    var records_array = str.split(/\r?\n/);
+
+    var begin_clock;
+    var begin_date;
+    var glider;
+    var pilot;
+
+    for (var i = 0; i < records_array.length; i++) {
+        var rec = records_array[i];
+        var res;
+
+        if (begin_clock != undefined &&
+            begin_date != undefined &&
+            glider != undefined &&
+            pilot != undefined) {
+
+            break;
+        }
+
+        res = /^HFDTE([0-9]{2})([0-9]{2})([0-9]{2})/i.exec(rec);
+        if (res != null) {
+            var y = Number(res[3]);
+            begin_date = {
+                yyyy: ((y > 50 ? 1900 : 2000) + y).toString(),
+                mm: res[2],
+                dd: res[1],
+            };
+            continue;
+        }
+
+        /* Prefer HFPLTPILOTINCHARGE: instead of HFPLTPILOT: */
+
+        res = /^HFPLTPILOTINCHARGE:(.+)/i.exec(rec);
+        if (res != null) {
+            pilot = res[1];
+            continue;
+        }
+
+        res = /^HFPLTPILOT:(.+)/i.exec(rec);
+        if (res != null && pilot == undefined) {
+            pilot = res[1];
+            continue;
+        }
+
+        res = /^HFGIDGLIDERID:(.+)/i.exec(rec);
+        if (res != null) {
+            glider = res[1];
+            continue;
+        }
+
+        res = /^B([0-9]{2})([0-9]{2})([0-9]{2})/i.exec(rec);
+        if (res != null && begin_clock == undefined) {
+            begin_clock = {
+                hh: res[1],
+                mm: res[2],
+                ss: res[3],
+            };
+            continue;
+        }
+    }
+
+    var begin_timestamp = new Date(Date.UTC(
+        begin_date.yyyy,
+        Number(begin_date.mm) - 1,
+        begin_date.dd,
+        begin_clock.hh,
+        begin_clock.mm,
+        begin_clock.ss
+    ));
+
+    var points = new Array();
+
+    for (var i = 0; i < records_array.length; i++) {
+        var rec = records_array[i];
+        var res = /^B([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{7}[NS])([0-9]{8}[EW])A([0-9]{5})([0-9]{5})/i.exec(rec);
+        if (res != null) {
+            var p = {
+                timestamp:
+                    new Date(Date.UTC(
+                            begin_timestamp.getFullYear(),
+                            begin_timestamp.getMonth(),
+                            begin_timestamp.getDate(),
+                            res[1],
+                            res[2],
+                            res[3]
+                    )),
+                lat: coord_convert_ddmmmmmN2ddd(res[4]),
+                lng: coord_convert_ddmmmmmN2ddd(res[5]),
+                alt_baro: Number(res[6]),
+                alt_gps: Number(res[7]),
+            };
+
+            points.push(p);
+        }
+    }
+
+    return({
+        file_name: file_name,
+        pilot: pilot,
+        glider: glider,
+        points: points,
+    });
+}
+/* @} */
+
 /* Generic function to parse a file in JavaScript, uploaded in a HTML form.
  * The 'file' parameter must come from the files[] array from a HTML
  * input type
@@ -240,9 +357,9 @@ function parse_file(
      */
     file,
 
-    /* in,out: a parser function which is given one parameter - the contents
-     * of the file as a string and it returns an object that is passed to the
-     * process_result() function
+    /* in,out: a parser function which is given two parameters - the contents
+     * of the file as a string and the file name and it returns an object
+     * that is passed to the process_result() function
      */
     parser,
 
@@ -256,7 +373,7 @@ function parse_file(
     reader.onloadend = function (e) {
         var str = this.result;
 
-        var result = parser(str);
+        var result = parser(str, file.name);
 
         if (process_result != null) {
             process_result(result);
@@ -390,6 +507,8 @@ function init()
     waypoints = waypoints_set_t();
 
     task = task_t();
+
+    flights = flights_set_t();
 
     if (params != null) {
         waypoints.import_from_array(params[0]);

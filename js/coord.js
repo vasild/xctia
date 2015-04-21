@@ -90,6 +90,48 @@ function coord_convert_ddd2ddmmssN(
 }
 /* @} */
 
+/* Convert [D]DDMMMMM[NSEW] to [-]DD.DDDDDD @{
+ * For example ([D]DDMMMMM[NSEW] stands for [D]DD MM.MMM [NSEW]):
+ * '4230000N' -> 42.5
+ * '02315000E' -> 23.25
+ * '1020000S' -> -10.333333
+ * @return fractional number [degrees]
+ */
+function coord_convert_ddmmmmmN2ddd(
+    /* in: [D]DDMMMMM[NSEW] */
+    ddmmmmmN)
+{
+    var dir = ddmmmmmN[ddmmmmmN.length - 1].toUpperCase();
+    var deg;
+    var min;
+    var sign;
+
+    if (dir != 'N' && dir != 'S' && dir != 'E' && dir != 'W') {
+        alert('Unknown direction: ' + dir + ' found coordinate ' + ddmmmmmN);
+        return(0.0);
+    }
+
+    if (dir == 'N' || dir == 'E') {
+        sign = 1;
+    } else {
+        sign = -1;
+    }
+
+    if (dir == 'N' || dir == 'S') {
+        deg = ddmmmmmN.substr(0, 2);
+        min = ddmmmmmN.substr(2, 5);
+    } else {
+        deg = ddmmmmmN.substr(0, 3);
+        min = ddmmmmmN.substr(3, 5);
+    }
+
+    deg = Number(deg);
+    min = Number(min) / 1000;
+
+    return(sign * (deg + min / 60));
+}
+/* @} */
+
 /* Calculate the position of the middle of a line. @{
  * @return an array [mid_lat, mid_lng]
  */

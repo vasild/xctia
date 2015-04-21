@@ -179,6 +179,23 @@ function ev_init_task()
 }
 /* @} */
 
+/* Initialize the events around the flight buttons. @{ */
+function ev_init_flight()
+{
+    document.getElementById('open_flight_igc_input').onchange =
+        function ()
+        {
+            parse_file(this.files[0], parser_igc, flights.add_flight);
+        };
+
+    document.getElementById('open_flight_igc_a').onclick =
+        function ()
+        {
+            document.getElementById('open_flight_igc_input').click();
+        };
+}
+/* @} */
+
 /* Initialize the events around the share action. @{ */
 function ev_init_share()
 {
@@ -336,6 +353,8 @@ function ev_init()
     ev_init_waypoints();
 
     ev_init_task();
+
+    ev_init_flight();
 
     ev_init_share();
 

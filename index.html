@@ -48,6 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <script type="text/javascript" src="js/compr.js"></script>
         <script type="text/javascript" src="js/coord.js"></script>
         <script type="text/javascript" src="js/ev.js"></script>
+        <script type="text/javascript" src="js/flights.js"></script>
         <script type="text/javascript" src="js/map.js"></script>
         <script type="text/javascript" src="js/task.js"></script>
         <script type="text/javascript" src="js/waypoints.js"></script>
@@ -235,6 +236,34 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 </div>
                 <!-- @} -->
 
+                <!-- Flight @{ -->
+                <button class="uk-button uk-button-primary uk-width-1-1" data-uk-toggle="{target:'#flight_wrap_div', animation:'uk-animation-scale-up, uk-animation-scale-up'}">
+                    Flight
+                </button>
+
+                <div id="flight_wrap_div">
+                    <!-- Flight menu @{ -->
+                    <nav class="uk-navbar">
+                        <ul class="uk-navbar-nav">
+                            <li class="uk-parent" data-uk-dropdown>
+                                <a href="#">File <i class="uk-icon-caret-down"></i></a>
+                                <div class="uk-dropdown uk-dropdown-navbar uk-dropdown-small">
+                                    <ul class="uk-nav uk-nav-navbar">
+                                        <li>
+                                            <a id="open_flight_igc_a">
+                                                <i class="uk-icon-folder-open"></i>
+                                                Open (*.igc)
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </nav>
+                    <!-- @} -->
+                </div>
+                <!-- @} -->
+
                 <!-- Share @{ -->
                 <button id="share_button" class="uk-button uk-button-primary uk-width-1-1">
                     Share
@@ -272,6 +301,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <form class="invisible"><input id="open_waypoints_dat_input" type="file"/></form>
 
         <form class="invisible"><input id="open_task_tsk_input" type="file"/></form>
+
+        <form class="invisible"><input id="open_flight_igc_input" type="file"/></form>
 
         <a id="save_a" href="" download="" class="invisible"></a>
 
