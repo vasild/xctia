@@ -370,7 +370,7 @@ function task_t()
 
             var latlng = map_latlng_t(waypoint.lat(), waypoint.lng());
 
-            latlngs.push([latlng.lat(), latlng.lng()]);
+            latlngs.push(latlng);
 
             if (prev_latlng != null) {
 

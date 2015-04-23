@@ -234,7 +234,23 @@ function parser_task(
 
 /* Parse the contents of a flight file in the "IGC" format. @{
  * See http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/
- * @return object of type flight_t
+ * @return object of type
+ * {
+ *     file_name: ...,
+ *     pilot: ...,
+ *     glider: ...,
+ *     points:
+ *     [
+ *         {
+ *             timestamp: Date object,
+ *             lat: ...,
+ *             lng: ...,
+ *             alt_baro: ...,
+ *             alt_gps: ...,
+ *         },
+ *         ...
+ *     ]
+ * }
  */
 function parser_igc(
     /* in: file contents as a string */

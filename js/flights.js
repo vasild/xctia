@@ -26,21 +26,30 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* Flight point type @{ */
 function flight_point_t(
-    timestamp,
-    lat,
-    lng,
-    alt_baro,
-    alt_gps)
+    /* in: Date object, containing the timestamp of the point */
+    timestamp_arg,
+    /* in: map_latlng_t object */
+    latlng_arg,
+    /* in: barometric altitude */
+    alt_baro_arg,
+    /* in: gps altitude */
+    alt_gps_arg)
 {
-    var m_fields = {
-        timestamp: timestamp,
-        lat: lat,
-        lng: lng,
-        alt_baro: alt_baro,
-        alt_gps: alt_gps,
-    };
+    var m_timestamp = timestamp_arg;
+    var m_latlng = latlng_arg;
+    var m_alt_baro = alt_baro_arg;
+    var m_alt_gps = alt_gps_arg;
 
-    return(m_fields);
+    function latlng()
+    {
+        return(m_latlng);
+    }
+
+    return(
+        {
+            latlng: latlng,
+        }
+    );
 }
 /* @} */
 
@@ -52,7 +61,7 @@ function flight_t(
     pilot,
     /* glider name/description */
     glider,
-    /* array of flight points of type flight_point_t XXX */
+    /* array of flight points of type flight_point_t */
     points)
 {
     var m_file_name = file_name;
@@ -60,14 +69,97 @@ function flight_t(
     var m_glider = glider;
     var m_points = points;
 
-    /* Show the flight on the map. @{ */
-    function show_on_map()
+    var m_map_shapes = new Array();
+
+    /* Get the flight's bounds. @{ */
+    function bounds()
     {
-        for (var i = 1; i < m_points.length; i++) {
+        if (m_points.length == 0) {
+            return(null);
+        }
+
+        var bounds = map_bounds_t();
+        for (var i = 0; i < m_points.length; i++) {
+            var latlng = m_points[i].latlng();
+            bounds.expand(map_bounds_t(latlng, latlng));
+        }
+
+        return(bounds);
+    }
+    /* @} */
+
+    /* Calculate the number of points inside an area. @{ */
+    function n_points_in_bounds(
+        /* in: bounds */
+        bounds)
+    {
+        var n = 0;
+
+        for (var i = 0; i < m_points.length; i++) {
+            if (bounds.contains_latlng(m_points[i].latlng())) {
+                n++;
+            }
+        }
+
+        return(n);
+    }
+    /* @} */
+
+    /* Show the flight on the map. @{ */
+    function redraw_on_map()
+    {
+        /* Clean up any previous map shapes. */
+        for (var i = 0; i < m_map_shapes.length; i++) {
+            map.delete_shape(m_map_shapes[i]);
+        }
+        m_map_shapes = [];
+
+        var map_bounds = map.bounds();
+
+        var n_points_visible = n_points_in_bounds(map_bounds);
+
+        var max_lines_to_draw = 512;
+
+        var every_nth = n_points_visible < max_lines_to_draw
+            ? 1
+            : Math.round(n_points_visible / max_lines_to_draw);
+
+        var prev_point = m_points[0];
+        var prev_point_visible = map_bounds.contains_latlng(prev_point.latlng());
+
+        for (var i = every_nth; i < m_points.length; i += every_nth) {
+
+            var cur_point = m_points[i];
+            var cur_point_visible = map_bounds.contains_latlng(cur_point.latlng());
+
+            if (!prev_point_visible && !cur_point_visible) {
+                prev_point = cur_point;
+                prev_point_visible = cur_point_visible;
+                continue;
+            }
+
+            /* Draw a line between a point and the previous one if the
+             * previous or the point itself is visible.
+             */
+
+            var bg_line = map_polyline_t({
+                points: [
+                    prev_point.latlng(),
+                    cur_point.latlng()
+                ],
+                color: 'black',
+                opacity: 1.0,
+                width: 4,
+            });
+
+            map.add_shape(bg_line);
+
+            m_map_shapes.push(bg_line);
+
             var line = map_polyline_t({
                 points: [
-                    [m_points[i - 1].lat, m_points[i - 1].lng],
-                    [m_points[i].lat, m_points[i].lng]
+                    prev_point.latlng(),
+                    cur_point.latlng()
                 ],
                 color: 'red',
                 opacity: 1.0,
@@ -75,6 +167,11 @@ function flight_t(
             });
 
             map.add_shape(line);
+
+            m_map_shapes.push(line);
+
+            prev_point = cur_point;
+            prev_point_visible = cur_point_visible;
         }
     }
     /* @} */
@@ -82,7 +179,8 @@ function flight_t(
     /* Export some of the methods as public. @{ */
     return(
         {
-            show_on_map: show_on_map,
+            bounds: bounds,
+            redraw_on_map: redraw_on_map,
         }
     );
     /* @} */
@@ -98,16 +196,40 @@ function flights_set_t()
     function add_flight(
         data)
     {
+        var flight_points = new Array();
+        for (var i = 0; i < data.points.length; i++) {
+            var p = data.points[i];
+            flight_points.push(
+                flight_point_t(
+                    p.timestamp,
+                    map_latlng_t(p.lat, p.lng),
+                    p.alt_baro,
+                    p.alt_gps
+                )
+            );
+        }
+
         var flight = flight_t(
             data.file_name,
             data.pilot,
             data.glider,
-            data.points
+            flight_points
         );
 
         m_flights.push(flight);
 
-        flight.show_on_map();
+        flight.redraw_on_map();
+
+        map.fit_bounds(flight.bounds());
+    }
+    /* @} */
+
+    /* Redraw all flights on the map. @{ */
+    function redraw_all_flights()
+    {
+        for (var i = 0; i < m_flights.length; i++) {
+            m_flights[i].redraw_on_map();
+        }
     }
     /* @} */
 
@@ -115,6 +237,7 @@ function flights_set_t()
     return(
         {
             add_flight: add_flight,
+            redraw_all_flights: redraw_all_flights,
         }
     );
     /* @} */

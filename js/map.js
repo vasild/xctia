@@ -60,10 +60,10 @@ function map_latlng_t(
 
     return(
         {
+            distance_to: distance_to,
             internal: function () {
                 return(m_latlng);
             },
-            distance_to: distance_to,
             lat: lat,
             lng: lng,
         }
@@ -75,16 +75,28 @@ function map_latlng_t(
  * @return a bounds object
  */
 function map_bounds_t(
-    /* in: internal implementation's bounds, or undefined */
-    internal)
+    /* in: southwest map_latlng_t or undefined */
+    sw,
+    /* in: northeast map_latlng_t or undefined */
+    ne)
 {
+    /* L.latLngBounds */
     var m_bounds;
 
-    if (internal) {
-        m_bounds = internal;
+    if (sw && ne) {
+        m_bounds = L.latLngBounds(sw.internal(), ne.internal());
     } else {
         m_bounds = null;
     }
+
+    /* Assess whether the bounds contain a given point. @{ */
+    function contains_latlng(
+        /* in: point coordinates, map_latlng_t */
+        latlng)
+    {
+        return(m_bounds.contains(latlng.internal()));
+    }
+    /* @} */
 
     /* Expand. @{ */
     function expand(
@@ -101,10 +113,11 @@ function map_bounds_t(
 
     return(
         {
+            contains_latlng: contains_latlng,
+            expand: expand,
             internal: function () {
                 return(m_bounds);
             },
-            expand: expand,
         }
     );
 }
@@ -201,10 +214,15 @@ function map_circle_t(
     }
     /* @} */
 
-    /* Get circle's bounds. @{ */
+    /* Get circle's bounds. @{
+     * @return map_bounds_t object
+     */
     function bounds()
     {
-        return(map_bounds_t(m_circle.getBounds()));
+        var b = m_circle.getBounds();
+        var sw = map_latlng_t(b.getSouthWest().lat, b.getSouthWest().lng);
+        var ne = map_latlng_t(b.getNorthEast().lat, b.getNorthEast().lng);
+        return(map_bounds_t(sw, ne));
     }
     /* @} */
 
@@ -224,22 +242,44 @@ function map_circle_t(
  * @return a polyline
  */
 function map_polyline_t(
-    /* in: polyline options */
+    /* in: polyline options:
+     * {
+     *     color: string (e.g. '#0000FF'),
+     *     opacity: number (e.g. 0.5),
+     *     points:
+     *     [
+     *         map_latlng_t object,
+     *         ...
+     *     ],
+     *     width: number (line width in pixels),
+     * }
+     */
     opt)
 {
+    var leaflet_latlngs = new Array();
+    for (var i = 0; i < opt.points.length; i++) {
+        leaflet_latlngs.push(opt.points[i].internal());
+    }
+
     var m_polyline = L.polyline(
-        opt.points,
+        leaflet_latlngs,
         {
             color: opt.color,
             opacity: opt.opacity,
             weight: opt.width,
+            lineCap: 'butt',
         }
     );
 
-    /* Get bounds. @{ */
+    /* Get polyline's bounds. @{
+     * @return map_bounds_t object
+     */
     function bounds()
     {
-        return(map_bounds_t(m_polyline.getBounds()));
+        var b = m_polyline.getBounds();
+        var sw = map_latlng_t(b.getSouthWest().lat, b.getSouthWest().lng);
+        var ne = map_latlng_t(b.getNorthEast().lat, b.getNorthEast().lng);
+        return(map_bounds_t(sw, ne));
     }
     /* @} */
 
@@ -415,6 +455,18 @@ function map_t(
     }
     /* @} */
 
+    /* Get map's bounds. @{
+     * @return map_bounds_t object
+     */
+    function bounds()
+    {
+        var b = m_map.getBounds();
+        var sw = map_latlng_t(b.getSouthWest().lat, b.getSouthWest().lng);
+        var ne = map_latlng_t(b.getNorthEast().lat, b.getNorthEast().lng);
+        return(map_bounds_t(sw, ne));
+    }
+    /* @} */
+
     /* Fit map to bounds. @{ */
     function fit_bounds(
         /* in: map_bounds_t bounds object */
@@ -579,6 +631,14 @@ function map_t(
                 m_map_current_base_layer_name = layer.name;
             }
         );
+
+        m_map.on(
+            'moveend',
+            function (e)
+            {
+                flights.redraw_all_flights();
+            }
+        );
     }
     /* @} */
 
@@ -594,6 +654,8 @@ function map_t(
             add_shape: add_shape,
             delete_shape: delete_shape,
             onshape_drag_get_latlng: onshape_drag_get_latlng,
+            bounds: bounds,
+            fit_bounds: fit_bounds,
             latlng_to_pixels: latlng_to_pixels,
         }
     );
