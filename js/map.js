@@ -523,7 +523,7 @@ function map_t(
         var layer_opentopomap = L.tileLayer(
             'http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
             {
-                attribution: 'Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org/">OpenTopoMap</a>',
+                attribution: 'Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende SRTM | Kartendarstellung: © <a href="http://opentopomap.org/">OpenTopoMap</a>',
                 maxNativeZoom: 16,
                 maxZoom: max_zoom,
                 subdomains: ["a", "b", "c"],
@@ -533,7 +533,7 @@ function map_t(
         var layer_hike = L.tileLayer(
             'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
             {
-                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a> Imagery © <a href="http://mapbox.com">Mapbox</a>',
                 id: 'mapbox.run-bike-hike',
                 maxNativeZoom: 25,
                 maxZoom: max_zoom,
@@ -564,11 +564,14 @@ function map_t(
 
         var layer_satellite_google = new L.Google();
 
+        var layer_terrain_google = new L.Google('TERRAIN');
+
         var base_layers = {
             'Relief': layer_relief, /* the first one will be used by default */
             'Topo XC': layer_topoxc,
             'OpenTopoMap': layer_opentopomap,
             'Hike': layer_hike,
+            'Terrain Google': layer_terrain_google,
             'Satellite Google': layer_satellite_google,
             'Satellite MapQuest': layer_satellite_mapquest,
             'Satellite Here.com': layer_satellite_herecom,
@@ -583,7 +586,7 @@ function map_t(
         var layer_countries = L.tileLayer(
             'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
             {
-                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a> Imagery © <a href="http://mapbox.com">Mapbox</a>',
                 id: 'xctia.e542c64c',
                 opacity: 1.0,
                 maxNativeZoom: 22,
@@ -596,7 +599,7 @@ function map_t(
         var layer_contours = L.tileLayer(
             'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
             {
-                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a> Imagery © <a href="http://mapbox.com">Mapbox</a>',
                 id: 'vasild.4f35a6b9',
                 opacity: 1.0,
                 maxNativeZoom: 22,
@@ -606,9 +609,33 @@ function map_t(
             }
         );
 
+        var layer_skyways = L.tileLayer(
+            'http://thermal.kk7.ch/php/tile.php?typ=skyways&t=all&z={z}&x={x}&y={y}&src=pg.v5d.org',
+            {
+                attribution: '<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a> by Michael von Känel <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA</a>',
+                opacity: 1,
+                maxNativeZoom: 12,
+                maxZoom: max_zoom,
+                tms: true,
+            }
+        );
+
+        var layer_thermals = L.tileLayer(
+            'http://thermal.kk7.ch/php/tile.php?typ=thermals&t=all&z={z}&x={x}&y={y}&src=pg.v5d.org',
+            {
+                attribution: '<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a> by Michael von Känel <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA</a>',
+                opacity: 1,
+                maxNativeZoom: 12,
+                maxZoom: max_zoom,
+                tms: true,
+            }
+        );
+
         var overlay_layers = {
             'Country borders': layer_countries,
             'Isolines (contours)': layer_contours,
+            'Skyways (<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a>)': layer_skyways,
+            'Thermals (<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a>)': layer_thermals,
         };
 
         L.control.layers(base_layers, overlay_layers).addTo(m_map);
