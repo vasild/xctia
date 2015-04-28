@@ -106,19 +106,14 @@ function flight_point_t(
 /* Flight type @{ */
 function flight_t(
     /* in: file name of the flight */
-    file_name,
+    file_name_arg,
     /* in: pilot name */
-    pilot,
+    pilot_arg,
     /* glider name/description */
-    glider,
+    glider_arg,
     /* array of flight points of type flight_point_t */
-    points)
+    points_arg)
 {
-    var m_file_name = file_name;
-    var m_pilot = pilot;
-    var m_glider = glider;
-    var m_points = points;
-
     var m_vario_color_scale = new Array(
         /* val: vario reading [m/s], color: HTML color code */
         { val:-18, color: 0x000000 /* black */},
@@ -131,7 +126,73 @@ function flight_t(
         { val: 12, color: 0xFF8800 /* orange */}
     );
 
+    var m_file_name = file_name_arg;
+    var m_pilot = pilot_arg;
+    var m_glider = glider_arg;
+    var m_points = points_arg;
+
+    var m_linear_distance_km = 0;
+
+    var first_latlng = m_points[0].latlng();
+    for (var i = 1; i < m_points.length; i++) {
+        var cur_latlng = m_points[i].latlng();
+
+        m_linear_distance_km = Math.max(
+            m_linear_distance_km,
+            first_latlng.distance_to(cur_latlng) / 1000);
+    }
+
     var m_map_shapes = new Array();
+
+    /* Get the flight's file name. @{ */
+    function file_name()
+    {
+        return(m_file_name);
+    }
+    /* @} */
+
+    /* Get the flight's pilot name. @{ */
+    function pilot()
+    {
+        return(m_pilot);
+    }
+    /* @} */
+
+    /* Get the flight's glider name. @{ */
+    function glider()
+    {
+        return(m_glider);
+    }
+    /* @} */
+
+    /* Get the flight's date. @{
+     * @return a string in the format 'YYYY.MM.DD'
+     */
+    function date()
+    {
+        return(format_date_into_yyyymmdd(m_points[0].timestamp()));
+    }
+    /* @} */
+
+    /* Get the flight's duration. @{
+     * @return a string in the format 'hh:mm:ss'
+     */
+    function duration()
+    {
+        var first = m_points[0];
+        var last = m_points[m_points.length - 1];
+        return(format_sec_into_hhmmss(last.secs_since(first)));
+    }
+    /* @} */
+
+    /* Get the flight's linear distance. @{
+     * @return a fractional number in kilometers, e.g. 123.4
+     */
+    function linear_distance()
+    {
+        return(m_linear_distance_km.toFixed(1));
+    }
+    /* @} */
 
     /* Get the flight's bounds. @{ */
     function bounds()
@@ -245,6 +306,12 @@ function flight_t(
     /* Export some of the methods as public. @{ */
     return(
         {
+            file_name: file_name,
+            pilot: pilot,
+            glider: glider,
+            date: date,
+            duration: duration,
+            linear_distance: linear_distance,
             bounds: bounds,
             redraw_on_map: redraw_on_map,
         }
@@ -285,6 +352,32 @@ function flights_set_t()
         m_flights.push(flight);
 
         flight.redraw_on_map();
+
+        /* Add the flight to the flights table. */
+
+        var template = document.getElementById('flight_details_template');
+        var d = document.createElement('div');
+        d.innerHTML = template.innerHTML;
+
+        d.getElementsByClassName('uk-panel-title')[0].innerHTML = flight.file_name();
+
+        d.getElementsByClassName('flight_details_pilot')[0].innerHTML = flight.pilot();
+
+        d.getElementsByClassName('flight_details_glider')[0].innerHTML = flight.glider();
+
+        d.getElementsByClassName('flight_details_date')[0].innerHTML = flight.date();
+
+        d.getElementsByClassName('flight_details_duration')[0].innerHTML = flight.duration();
+
+        d.getElementsByClassName('flight_details_linear_distance')[0].innerHTML = flight.linear_distance() + ' km';
+
+        var show = d.getElementsByClassName('flight_details_show')[0];
+
+        var checkbox_id = 'flight_details_show_checkbox_' + m_flights.length;
+        show.getElementsByTagName('input')[0].setAttribute('id', checkbox_id);
+        show.getElementsByTagName('label')[0].setAttribute('for', checkbox_id);
+
+        template.parentNode.appendChild(d);
 
         map.fit_bounds(flight.bounds());
     }

@@ -290,19 +290,19 @@ function parser_igc(
 
         /* Prefer HFPLTPILOTINCHARGE: instead of HFPLTPILOT: */
 
-        res = /^HFPLTPILOTINCHARGE:(.+)/i.exec(rec);
+        res = /^H[FO]PLTPILOTINCHARGE:(.+)/i.exec(rec);
         if (res != null) {
             pilot = res[1];
             continue;
         }
 
-        res = /^HFPLTPILOT:(.+)/i.exec(rec);
+        res = /^H[FO]PLTPILOT:(.+)/i.exec(rec);
         if (res != null && pilot == undefined) {
             pilot = res[1];
             continue;
         }
 
-        res = /^HFGIDGLIDERID:(.+)/i.exec(rec);
+        res = /^H[FO]GIDGLIDERID:(.+)/i.exec(rec);
         if (res != null) {
             glider = res[1];
             continue;
@@ -356,8 +356,8 @@ function parser_igc(
 
     return({
         file_name: file_name,
-        pilot: pilot,
-        glider: glider,
+        pilot: pilot || 'not set',
+        glider: glider || 'not set',
         points: points,
     });
 }

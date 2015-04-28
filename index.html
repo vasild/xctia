@@ -236,13 +236,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                 </div>
                 <!-- @} -->
 
-                <!-- Flight @{ -->
-                <button class="uk-button uk-button-primary uk-width-1-1" data-uk-toggle="{target:'#flight_wrap_div', animation:'uk-animation-scale-up, uk-animation-scale-up'}">
-                    Flight
+                <!-- Flights @{ -->
+                <button class="uk-button uk-button-primary uk-width-1-1" data-uk-toggle="{target:'#flights_wrap_div', animation:'uk-animation-scale-up, uk-animation-scale-up'}">
+                    Flights
                 </button>
 
-                <div id="flight_wrap_div">
-                    <!-- Flight menu @{ -->
+                <div id="flights_wrap_div">
+                    <!-- Flights menu @{ -->
                     <nav class="uk-navbar">
                         <ul class="uk-navbar-nav">
                             <li class="uk-parent" data-uk-dropdown>
@@ -260,6 +260,46 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                             </li>
                         </ul>
                     </nav>
+                    <!-- @} -->
+
+                    <!-- Flights table @{ -->
+                    <div id="flight_details_template" class="uk-hidden">
+                        <div class="uk-panel uk-panel-box uk-panel-header">
+                            <h3 class="uk-panel-title"></h3>
+                            <div class="uk-grid">
+                                <div class="uk-width-1-2">Pilot</div>
+                                <div class="uk-width-1-2 flight_details_pilot"></div>
+
+                                <div class="uk-width-1-2">Glider</div>
+                                <div class="uk-width-1-2 flight_details_glider"></div>
+
+                                <div class="uk-width-1-2">Date</div>
+                                <div class="uk-width-1-2 flight_details_date"></div>
+
+                                <div class="uk-width-1-2">Duration</div>
+                                <div class="uk-width-1-2 flight_details_duration"></div>
+
+                                <div class="uk-width-1-2">
+                                    <div class="uk-visible-hover">
+                                        Linear distance
+                                        <img class="uk-hidden uk-border-rounded uk-position-absolute"
+                                            src="http://www.paraglidingforum.com/leonardo/img/help_openDistance.gif">
+                                    </div>
+                                </div>
+                                <div class="uk-width-1-2 flight_details_linear_distance"></div>
+
+                                <div class="uk-width-1-1">
+                                    <button class="uk-button" type="button">Fit to map</button>
+                                </div>
+
+                                <div class="uk-width-1-1 flight_details_show">
+                                    <label class="uk-text-middle">Show on map</label>
+                                    <input class="uk-text-middle" type="checkbox" checked></input>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
                     <!-- @} -->
                 </div>
                 <!-- @} -->
