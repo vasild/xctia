@@ -621,7 +621,7 @@ function map_t(
         );
 
         var layer_thermals = L.tileLayer(
-            'http://thermal.kk7.ch/php/tile.php?typ=thermals&t=all&z={z}&x={x}&y={y}&src=pg.v5d.org',
+            'http://thermal.kk7.ch/php/tile.php?typ=thermals&t=all&z={z}&x={x}&y={y}&src=' + window.location.hostname,
             {
                 attribution: '<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a> by Michael von Känel <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA</a>',
                 opacity: 1,
