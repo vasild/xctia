@@ -50,6 +50,10 @@ button, input, select, textarea {
     display: none;
 }
 
+.snap_to_the_right {
+    right: 0;
+}
+
 .meters {
     text-align: right;
     width: 4em;

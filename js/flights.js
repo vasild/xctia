@@ -133,6 +133,7 @@ function flight_t(
 
     var m_linear_distance_km = 0;
 
+    /* Initialize m_linear_distance_km, it is a constant. */
     var first_latlng = m_points[0].latlng();
     for (var i = 1; i < m_points.length; i++) {
         var cur_latlng = m_points[i].latlng();
@@ -143,6 +144,8 @@ function flight_t(
     }
 
     var m_map_shapes = new Array();
+
+    var m_is_shown_on_map = false;
 
     /* Get the flight's file name. @{ */
     function file_name()
@@ -228,14 +231,24 @@ function flight_t(
     }
     /* @} */
 
+    /* Remove the flight from the map. @{ */
+    function remove_from_map()
+    {
+        for (var i = 0; i < m_map_shapes.length; i++) {
+            map.delete_shape(m_map_shapes[i]);
+        }
+
+        m_map_shapes = [];
+
+        m_is_shown_on_map = false;
+    }
+    /* @} */
+
     /* Show the flight on the map. @{ */
     function redraw_on_map()
     {
         /* Clean up any previous map shapes. */
-        for (var i = 0; i < m_map_shapes.length; i++) {
-            map.delete_shape(m_map_shapes[i]);
-        }
-        m_map_shapes = [];
+        remove_from_map();
 
         var map_bounds = map.bounds();
 
@@ -300,6 +313,15 @@ function flight_t(
             prev_point = cur_point;
             prev_point_visible = cur_point_visible;
         }
+
+        m_is_shown_on_map = true;
+    }
+    /* @} */
+
+    /* Check if the flight is shown on the map. @{ */
+    function is_shown_on_map()
+    {
+        return(m_is_shown_on_map);
     }
     /* @} */
 
@@ -313,7 +335,9 @@ function flight_t(
             duration: duration,
             linear_distance: linear_distance,
             bounds: bounds,
+            remove_from_map: remove_from_map,
             redraw_on_map: redraw_on_map,
+            is_shown_on_map: is_shown_on_map,
         }
     );
     /* @} */
@@ -371,11 +395,35 @@ function flights_set_t()
 
         d.getElementsByClassName('flight_details_linear_distance')[0].innerHTML = flight.linear_distance() + ' km';
 
-        var show = d.getElementsByClassName('flight_details_show')[0];
+        var zoom_to_button = d.getElementsByClassName('flight_details_zoom_to')[0];
 
-        var checkbox_id = 'flight_details_show_checkbox_' + m_flights.length;
-        show.getElementsByTagName('input')[0].setAttribute('id', checkbox_id);
-        show.getElementsByTagName('label')[0].setAttribute('for', checkbox_id);
+        zoom_to_button.onclick =
+            function ()
+            {
+                if (flight.is_shown_on_map()) {
+                    map.fit_bounds(flight.bounds());
+                }
+            };
+
+        var show_on_map = d.getElementsByClassName('flight_details_show_on_map')[0];
+
+        var checkbox_id = 'flight_details_show_on_map_checkbox_' + m_flights.length;
+        var checkbox_input = show_on_map.getElementsByTagName('input')[0];
+        var checkbox_label = show_on_map.getElementsByTagName('label')[0];
+        checkbox_input.setAttribute('id', checkbox_id);
+        checkbox_label.setAttribute('for', checkbox_id);
+
+        checkbox_input.onchange =
+            function ()
+            {
+                if (this.checked) {
+                    flight.redraw_on_map();
+                    zoom_to_button.removeAttribute('disabled');
+                } else {
+                    flight.remove_from_map();
+                    zoom_to_button.setAttribute('disabled', true);
+                }
+            };
 
         template.parentNode.appendChild(d);
 
