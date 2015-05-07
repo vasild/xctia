@@ -641,7 +641,7 @@ function map_t(
         L.control.layers(base_layers, overlay_layers).addTo(m_map);
 
         /* Setup the default visible layers. */
-        base_layers[m_map_current_base_layer_name].addTo(m_map);
+        m_map.addLayer(base_layers[m_map_current_base_layer_name]);
         layer_countries.addTo(m_map);
 
         L.control.scale(
