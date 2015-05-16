@@ -244,6 +244,34 @@ function flight_t(
     }
     /* @} */
 
+    /* Generate a track leg's tooltip string. @{
+     * @return the tooltip contents as a string.
+     */
+    function gen_track_leg_tooltip(
+        /* in: first point from the track log (flight_point_t) */
+        first_point,
+        /* in: previous point (flight_point_t) */
+        prev_point,
+        /* in: current point (flight_point_t) */
+        cur_point,
+        /* in: vario reading */
+        vario)
+    {
+        var speed_kmh = cur_point.latlng().distance_to(prev_point.latlng()) /
+            cur_point.secs_since(prev_point) * 3.6;
+
+        var take_off_distance_km = cur_point.latlng().distance_to(first_point.latlng()) / 1000;
+
+        return(
+            'Elevation: ' + cur_point.alt_gps() + ' m<br/>' +
+            'Speed: ' + speed_kmh.toFixed(1) + ' km/h<br/>' +
+            'Vario: ' + vario.toFixed(1) + ' m/s<br/>' +
+            'Take off distance: ' + take_off_distance_km.toFixed(1) + ' km<br/>' +
+            'Flying time: ' + format_sec_into_hhmmss(cur_point.secs_since(first_point)) + '<br/>' +
+            'Clock: ' + format_date_into_yyyymmddhhmmsstz(cur_point.timestamp())
+        );
+    }
+
     /* Show the flight on the map. @{ */
     function redraw_on_map()
     {
@@ -304,6 +332,8 @@ function flight_t(
                 color: color,
                 opacity: 1.0,
                 width: 2,
+                tooltip_text: gen_track_leg_tooltip(
+                    m_points[0], prev_point, cur_point, vario),
             });
 
             map.add_shape(line);

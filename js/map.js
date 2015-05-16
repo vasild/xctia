@@ -49,7 +49,9 @@ function map_latlng_t(
     }
     /* @} */
 
-    /* Calculate distance to a given another point. @{ */
+    /* Calculate distance to a given another point. @{
+     * @return distance in meters
+     */
     function distance_to(
         /* in: another map_latlng_t */
         other)
@@ -251,6 +253,7 @@ function map_polyline_t(
      *         map_latlng_t object,
      *         ...
      *     ],
+     *     tooltip_text: string (optional)
      *     width: number (line width in pixels),
      * }
      */
@@ -270,6 +273,23 @@ function map_polyline_t(
             lineCap: 'butt',
         }
     );
+
+    if (opt.tooltip_text) {
+        m_polyline.bindPopup(
+            opt.tooltip_text,
+            {
+                closeButton: false,
+            }
+        );
+
+        m_polyline.on(
+            'mouseover',
+            function (e)
+            {
+                m_polyline.openPopup();
+            }
+        );
+    }
 
     /* Get polyline's bounds. @{
      * @return map_bounds_t object
