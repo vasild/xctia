@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <script type="text/javascript" src="//code.jquery.com/jquery-2.1.3.min.js"></script>
         <script type="text/javascript" src="//cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
         <script type="text/javascript" src="//maps.google.com/maps/api/js?v=3&sensor=false"></script>
+        <script type="text/javascript" src="//code.highcharts.com/4.1/highcharts.js"></script>
         <script type="text/javascript" src="external/uikit-2.20.1/js/uikit.min.js"></script>
         <script type="text/javascript" src="external/uikit-2.20.1/js/components/sortable.min.js"></script>
         <script type="text/javascript" src="external/leaflet-plugins-1.2.1/layer/tile/Google.js"></script>
@@ -50,6 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         <script type="text/javascript" src="js/ev.js"></script>
         <script type="text/javascript" src="js/flights.js"></script>
         <script type="text/javascript" src="js/map.js"></script>
+        <script type="text/javascript" src="js/profile.js"></script>
         <script type="text/javascript" src="js/task.js"></script>
         <script type="text/javascript" src="js/waypoints.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
@@ -343,6 +345,64 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         </div>
 
         <div id="map_div"></div>
+
+        <div id="profile_chart_div"></div>
+        <div id="profile_stats_point_div">
+            <div class="uk-grid uk-text-small">
+                <div class="uk-width-1-1 uk-text-center">
+                    <span class="uk-badge">Point stats</span>
+                </div>
+
+                <div class="uk-width-1-2">Elevation</div>
+                <div class="uk-width-1-2 profile_stats_elevation"></div>
+
+                <div class="uk-width-1-2">Speed</div>
+                <div class="uk-width-1-2 profile_stats_speed"></div>
+
+                <div class="uk-width-1-2">Vario</div>
+                <div class="uk-width-1-2 profile_stats_vario"></div>
+
+                <div class="uk-width-1-2">Take off distance</div>
+                <div class="uk-width-1-2 profile_stats_takeoff_distance"></div>
+
+                <div class="uk-width-1-2">Flying time</div>
+                <div class="uk-width-1-2 profile_stats_flying_time"></div>
+
+                <div class="uk-width-1-2">Clock</div>
+                <div class="uk-width-1-2 profile_stats_clock"></div>
+            </div>
+        </div>
+        <div id="profile_stats_selection_div">
+            <div class="uk-grid uk-text-small">
+                <div class="uk-width-1-1 uk-text-center">
+                    <span class="uk-badge">Selection stats</span>
+                </div>
+
+                <div class="uk-width-1-2">Avg glide</div>
+                <div class="uk-width-1-2 profile_stats_avg_glide"></div>
+
+                <div class="uk-width-1-2">Avg speed</div>
+                <div class="uk-width-1-2 profile_stats_avg_speed"></div>
+
+                <div class="uk-width-1-2">Avg vario</div>
+                <div class="uk-width-1-2 profile_stats_avg_vario"></div>
+
+                <div class="uk-width-1-2">Distance</div>
+                <div class="uk-width-1-2 profile_stats_distance"></div>
+
+                <div class="uk-width-1-2">Duration</div>
+                <div class="uk-width-1-2 profile_stats_duration"></div>
+
+                <div class="uk-width-1-2">Elevation diff</div>
+                <div class="uk-width-1-2 profile_stats_elevation_diff"></div>
+
+                <div class="uk-width-1-2">Begin</div>
+                <div class="uk-width-1-2 profile_stats_selection_beg"></div>
+
+                <div class="uk-width-1-2">End</div>
+                <div class="uk-width-1-2 profile_stats_selection_end"></div>
+            </div>
+        </div>
 
         <table id="share_table">
             <tr>

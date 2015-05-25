@@ -244,34 +244,6 @@ function flight_t(
     }
     /* @} */
 
-    /* Generate a track leg's tooltip string. @{
-     * @return the tooltip contents as a string.
-     */
-    function gen_track_leg_tooltip(
-        /* in: first point from the track log (flight_point_t) */
-        first_point,
-        /* in: previous point (flight_point_t) */
-        prev_point,
-        /* in: current point (flight_point_t) */
-        cur_point,
-        /* in: vario reading */
-        vario)
-    {
-        var speed_kmh = cur_point.latlng().distance_to(prev_point.latlng()) /
-            cur_point.secs_since(prev_point) * 3.6;
-
-        var take_off_distance_km = cur_point.latlng().distance_to(first_point.latlng()) / 1000;
-
-        return(
-            'Elevation: ' + cur_point.alt_gps() + ' m<br/>' +
-            'Speed: ' + speed_kmh.toFixed(1) + ' km/h<br/>' +
-            'Vario: ' + vario.toFixed(1) + ' m/s<br/>' +
-            'Take off distance: ' + take_off_distance_km.toFixed(1) + ' km<br/>' +
-            'Flying time: ' + format_sec_into_hhmmss(cur_point.secs_since(first_point)) + '<br/>' +
-            'Clock: ' + format_date_into_yyyymmddhhmmsstz(cur_point.timestamp())
-        );
-    }
-
     /* Show the flight on the map. @{ */
     function redraw_on_map()
     {
@@ -332,8 +304,6 @@ function flight_t(
                 color: color,
                 opacity: 1.0,
                 width: 2,
-                tooltip_text: gen_track_leg_tooltip(
-                    m_points[0], prev_point, cur_point, vario),
             });
 
             map.add_shape(line);
@@ -381,6 +351,24 @@ function flights_set_t()
 
     /* Create a new flight from raw data and add it to the set. @{ */
     function add_flight(
+        /* in: object returned by parser_igc():
+         * {
+         *     file_name: ...,
+         *     pilot: ...,
+         *     glider: ...,
+         *     points:
+         *     [
+         *         {
+         *             timestamp: Date object,
+         *             lat: ...,
+         *             lng: ...,
+         *             alt_baro: ...,
+         *             alt_gps: ...,
+         *         },
+         *         ...
+         *     ]
+         * }
+         */
         data)
     {
         var flight_points = new Array();
@@ -435,9 +423,11 @@ function flights_set_t()
                 }
             };
 
+        var flight_id = m_flights.length;
+
         var show_on_map = d.getElementsByClassName('flight_details_show_on_map')[0];
 
-        var checkbox_id = 'flight_details_show_on_map_checkbox_' + m_flights.length;
+        var checkbox_id = 'flight_details_show_on_map_checkbox_' + flight_id;
         var checkbox_input = show_on_map.getElementsByTagName('input')[0];
         var checkbox_label = show_on_map.getElementsByTagName('label')[0];
         checkbox_input.setAttribute('id', checkbox_id);
@@ -452,6 +442,26 @@ function flights_set_t()
                 } else {
                     flight.remove_from_map();
                     zoom_to_button.setAttribute('disabled', true);
+                }
+            };
+
+        var show_profile = d.getElementsByClassName('flight_details_show_profile')[0];
+
+        checkbox_id = 'flight_details_show_profile_checkbox_' + flight_id;
+        checkbox_input = show_profile.getElementsByTagName('input')[0];
+        checkbox_label = show_profile.getElementsByTagName('label')[0];
+        checkbox_input.setAttribute('id', checkbox_id);
+        checkbox_label.setAttribute('for', checkbox_id);
+
+        profile_draw(flight_id, flight_points);
+
+        checkbox_input.onchange =
+            function ()
+            {
+                if (this.checked) {
+                    profile_show(flight_id);
+                } else {
+                    profile_hide(flight_id);
                 }
             };
 

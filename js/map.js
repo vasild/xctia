@@ -153,6 +153,8 @@ function map_html_icon_t(
 {
     var m_html_icon = L.divIcon({
         className: opt.class_name,
+        iconAnchor: opt.icon_anchor,
+        iconSize: opt.icon_size,
         html: opt.html,
     });
 

@@ -34,6 +34,16 @@ button, input, select, textarea {
     font-family: inherit;
 }
 
+.aircraft {
+    color: #5600DF;
+    font-size: 20px;
+    text-shadow:
+         1px  1px 0px #FFFFFF,
+        -2px  2px 0px #FFAA00,
+         1px -1px 0px #FFFFFF,
+        -1px -1px 0px #FFFFFF;
+}
+
 .clickable {
     cursor: pointer;
 }
@@ -214,6 +224,28 @@ button, input, select, textarea {
     height: 100%;
     overflow: hide;
     position: relative;
+}
+
+#profile_chart_div {
+    float: left;
+    height: 0;
+    position: relative;
+    width: 85%;
+}
+
+#profile_stats_point_div {
+    float: right;
+    height: 0;
+    position: relative;
+    width: 15%;
+}
+
+#profile_stats_selection_div {
+    display: none;
+    float: right;
+    height: 0;
+    position: relative;
+    width: 15%;
 }
 
 #share_table {
