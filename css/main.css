@@ -105,10 +105,18 @@ button, input, select, textarea {
     width: 5em;
 }
 
-#cat_peek_img {
-    bottom: -40px;
+#cat_peek_wrap_div {
+    bottom: 0;
     display: none;
     position: absolute;
+    right: 0;
+    width: 500px;
+    height: 364px;
+}
+
+#cat_peek_img {
+    bottom: -40px;
+    position: relative;
     right: -75px;
 }
 

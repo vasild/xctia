@@ -296,19 +296,20 @@ function ev_init_cats()
 
     function play_peeking_cat()
     {
+        var cat_wrap = document.getElementById('cat_peek_wrap_div');
         var cat = document.getElementById('cat_peek_img');
 
         /* Reset the .gif so its animation begins now. */
         cat.src = cat.src;
 
         /* Show the cat. */
-        cat.style.display = 'block';
+        cat_wrap.style.display = 'block';
 
         /* Hide the cat when the animation ends. */
         window.setTimeout(
             function ()
             {
-                cat.style.display = 'none';
+                cat_wrap.style.display = 'none';
             },
             1400
         );

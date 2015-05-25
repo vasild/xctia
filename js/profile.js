@@ -36,6 +36,9 @@ function profile_div_set_height(
     document.getElementById('menu_wrap_div').style.height =
     document.getElementById('map_div').style.height = remain + '%';
 
+    document.getElementById('cat_peek_wrap_div').style.bottom =
+    document.getElementById('cat_run_img').style.bottom = h + '%';
+
     document.getElementById('profile_chart_div').style.height =
     document.getElementById('profile_stats_point_div').style.height =
     document.getElementById('profile_stats_selection_div').style.height = h + '%';
