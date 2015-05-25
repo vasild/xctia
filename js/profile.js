@@ -530,8 +530,22 @@ function profile_draw(
         chart: null,
     };
 
-    /* Make it visible before drawing, otherwise it is confused by the zero height. */
+    /* Make it visible before drawing, otherwise Highcharts is confused by
+     * the zero height.
+     */
     profile_div_set_visibility();
+
+    /* Destroy all others until a way is implemented to display more than
+     * one profile.
+     */
+    var keys = Object.keys(profiles);
+    for (var i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        if (profiles[k].chart != null) {
+            profiles[k].chart.destroy();
+            profiles[k].chart = null;
+        }
+    }
 
     profiles[flight_id].chart = new Highcharts.Chart(chart_options);
 }
