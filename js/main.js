@@ -418,10 +418,12 @@ function save_str_as_file(
 function gen_url()
 {
     /* Extract
-     * http://pg.v5d.org/task/ out of
-     * http://pg.v5d.org/task/?whatever...
+     * http://foo.bar.com/baz/ out of
+     * http://foo.bar.com/baz/#whatever... or
+     * http://foo.bar.com/baz/?whatever... (legacy) or
+     * http://foo.bar.com/baz/ (no parameters)
      */
-    var url = document.URL.replace(/^([^?]+).*$/, '$1');
+    var url = document.URL.replace(/^([^?#]+).*$/, '$1');
 
     var arr = new Array();
     arr[0] = waypoints.export_as_array();
@@ -430,26 +432,35 @@ function gen_url()
 
     var arr_json = JSON.stringify(arr);
 
-    return(url + '?v=1&d=' + compr_compress_to_uri(arr_json));
+    return(url + '#v=1&d=' + compr_compress_to_uri(arr_json));
 }
 /* @} */
 
 /* Load the waypoints and the task from the URL of the current page. @{ */
 function parse_url()
 {
-    if (window.location.search == "") {
+    var url = window.location.href;
+
+    /* Get everything after the first # or ? */
+    var params = url.replace(/^[^#?]+[#?](.+)$/, '$1');
+    if (params == url) {
+        /* No match. */
         return(null);
     }
 
-    var uri = window.location.search.replace(/^.*[?&]d=([^&]+)(&.*$|$)/, '$1');
-    if (uri == window.location.search) {
+    /* Get 'foo' from 'whatever&d=foo&whatever' or there may be nothing
+     * before or after 'd=foo'.
+     */
+    var raw = params.replace(/^(.*&)?d=([^&]+)(&.*)?$/, '$2');
+    if (raw == params) {
+        /* No match. */
         return(null);
     }
 
-    var arr_json = compr_decompress_from_uri(uri);
+    var arr_json = compr_decompress_from_uri(raw);
     if (!arr_json) {
         alert('Unable to decompress my URL. Was it truncated? ' +
-              'URL (' + document.URL.length + ' bytes): ' + document.URL);
+              'URL (' + url.length + ' bytes): ' + url);
         return(null);
     }
 
