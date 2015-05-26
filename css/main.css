@@ -269,16 +269,16 @@ button, input, select, textarea {
 
 #share_qr_img {
     display: block;
-    height: 600px;
+    height: 500px;
     margin: auto;
-    width: 600px;
+    width: 500px;
 }
 
 #share_url_short_input, #share_url_long_input {
     display: block;
     margin: auto;
-    margin-top: 48px;
-    width: 600px;
+    margin-bottom: 48px;
+    width: 500px;
 }
 
 #task_summary_div {

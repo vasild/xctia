@@ -216,7 +216,7 @@ function ev_init_share()
                     document.getElementById('share_qr_img').src =
                         'http://api.qrserver.com/v1/create-qr-code/' +
                         '?data=' + encodeURIComponent(short_url) +
-                        '&size=600x600' +
+                        '&size=500x500' +
                         '&qzone=1' +
                         '&format=png';
                 },
