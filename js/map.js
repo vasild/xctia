@@ -678,6 +678,7 @@ function map_t(
             function (layer)
             {
                 m_map_current_base_layer_name = layer.name;
+                regen_url_hash();
             }
         );
 
@@ -686,6 +687,7 @@ function map_t(
             function (e)
             {
                 flights.redraw_all_flights();
+                regen_url_hash();
             }
         );
     }

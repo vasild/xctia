@@ -174,6 +174,7 @@ function ev_init_task()
         'stop.uk.sortable',
         function () {
             task.redraw_task();
+            regen_url_hash();
         }
     );
 }

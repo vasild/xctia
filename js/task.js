@@ -474,6 +474,7 @@ function task_t()
             {
                 turnpoint.set_waypoint_id(this.options[this.selectedIndex].value);
                 redraw_task();
+                regen_url_hash();
             };
         var selected_index = -1;
         if (turnpoint_has_data) {
@@ -494,6 +495,7 @@ function task_t()
             function ()
             {
                 turnpoint.set_radius(this.value);
+                regen_url_hash();
             };
         if (turnpoint_has_data) {
             /* tp_radius_input.value has a preset value of 1000 from the
@@ -524,6 +526,7 @@ function task_t()
             {
                 turnpoint.set_type(this.options[this.selectedIndex].value);
                 redraw_task();
+                regen_url_hash();
             };
         if (!turnpoint_has_data) {
             /* Use the first type by default if the caller did not provide one. */
@@ -556,6 +559,7 @@ function task_t()
                 rows_dec_array_indexes_after_del(i);
 
                 redraw_task();
+                regen_url_hash();
             };
 
         var none_was_selected = tp_name_select.selectedIndex == -1;
@@ -569,6 +573,8 @@ function task_t()
         if (none_was_selected) {
             tp_name_select.selectedIndex = -1;
         }
+
+        regen_url_hash();
     }
     /* @} */
 

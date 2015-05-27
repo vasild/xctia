@@ -399,8 +399,12 @@ function waypoint_t(
                  * redraw the map elements.
                  */
                 if (m_waypoint_data.set_latlng(wp_lat.value, wp_lng.value)) {
+
                     m_marker.set_location([wp_lat.value, wp_lng.value]);
+
                     task.redraw_task();
+
+                    regen_url_hash();
                 }
             }
 
@@ -408,24 +412,28 @@ function waypoint_t(
             function ()
             {
                 m_waypoint_data.set_altitude(this.value);
+                regen_url_hash();
             }
 
         document.getElementById('wp_type_' + m_waypoint_data.id()).onchange =
             function ()
             {
                 m_waypoint_data.set_type(this.value);
+                regen_url_hash();
             }
 
         document.getElementById('wp_name_' + m_waypoint_data.id()).onchange =
             function ()
             {
                 set_name(this.value);
+                regen_url_hash();
             }
 
         document.getElementById('wp_comment_' + m_waypoint_data.id()).onchange =
             function ()
             {
                 set_comment(this.value);
+                regen_url_hash();
             }
 
         document.getElementById('wp_del_' + m_waypoint_data.id()).onclick =
@@ -436,6 +444,8 @@ function waypoint_t(
                 delete_table_row();
 
                 waypoints.del(m_waypoint_data.id());
+
+                regen_url_hash();
             }
 
         document.getElementById('wp_name_' + m_waypoint_data.id()).value = m_waypoint_data.name();
@@ -519,6 +529,8 @@ function waypoint_t(
                     m_waypoint_data.set_latlng(ll.lat, ll.lng);
 
                     task.redraw_task();
+
+                    regen_url_hash();
                 },
             title: m_waypoint_data.title(),
         });
@@ -629,6 +641,8 @@ function waypoints_set_t()
         waypoint.create_marker();
 
         task.refresh_after_waypoint_add(waypoint);
+
+        regen_url_hash();
     }
     /* @} */
 
@@ -645,6 +659,8 @@ function waypoints_set_t()
                 m_waypoints[i] = null;
 
                 task.refresh_after_waypoint_del(waypoint_id);
+
+                regen_url_hash();
 
                 break;
             }

@@ -414,6 +414,20 @@ function save_str_as_file(
 }
 /* @} */
 
+/* Generate a=1&b=2&c=3 parameters that contain the app state. @{ */
+function gen_url_params()
+{
+    var arr = new Array();
+    arr[0] = waypoints.export_as_array();
+    arr[1] = task.export_as_array();
+    arr[2] = map.export_state_as_array();
+
+    var arr_json = JSON.stringify(arr);
+
+    return('v=1&d=' + compr_compress_to_uri(arr_json));
+}
+/* @} */
+
 /* Generate an URL which contains all data (share). @{ */
 function gen_url()
 {
@@ -423,16 +437,19 @@ function gen_url()
      * http://foo.bar.com/baz/?whatever... (legacy) or
      * http://foo.bar.com/baz/ (no parameters)
      */
-    var url = document.URL.replace(/^([^?#]+).*$/, '$1');
+    var url_prefix = document.URL.replace(/^([^?#]+).*$/, '$1');
 
-    var arr = new Array();
-    arr[0] = waypoints.export_as_array();
-    arr[1] = task.export_as_array();
-    arr[2] = map.export_state_as_array();
+    return(url_prefix + '#' + gen_url_params());
+}
+/* @} */
 
-    var arr_json = JSON.stringify(arr);
-
-    return(url + '#v=1&d=' + compr_compress_to_uri(arr_json));
+/* Regenerate the hash of the current URL. @{
+ * Update the string after # in the current URL, e.g. http://foo.bar/sub/#this
+ * to describe the current application's state (map position, zoom level, etc).
+ */
+function regen_url_hash()
+{
+    window.location.hash = gen_url_params();
 }
 /* @} */
 
