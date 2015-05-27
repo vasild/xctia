@@ -371,18 +371,29 @@ function map_t(
 {
     var m_map;
     var m_map_current_base_layer_name;
+    var m_map_overlay_layers;
 
     /* Export the current state of the map as an array. @{
      * @return [lat, lng, zoom, current_base_layer_name]
      */
     function export_state_as_array()
     {
+        var overlay_layers_short_names = new Array();
+
+        for (var i = 0; i < m_map_overlay_layers.length; i++) {
+            var obj = m_map_overlay_layers[i];
+            if (obj.visible) {
+                overlay_layers_short_names.push(obj.short_name);
+            }
+        }
+
         return(
             [
                 parseFloat(m_map.getCenter().lat.toFixed(5)),
                 parseFloat(m_map.getCenter().lng.toFixed(5)),
                 m_map.getZoom(),
                 m_map_current_base_layer_name,
+                overlay_layers_short_names,
             ]
         );
     }
@@ -404,6 +415,7 @@ function map_t(
                 center_lng: arr[1],
                 zoom: arr[2],
                 base_layer_name: arr[3],
+                overlay_layers_short_names: arr[4] ? arr[4] : null,
             });
         } else {
             return({
@@ -412,6 +424,7 @@ function map_t(
                 center_lng: 25.268555,
                 zoom: 8,
                 base_layer_name: null,
+                overlay_layers_short_names: null,
             });
         }
     }
@@ -605,6 +618,8 @@ function map_t(
             m_map_current_base_layer_name = Object.keys(base_layers)[0];
         }
 
+        /* Overlay layers */
+
         var layer_countries = L.tileLayer(
             'http://{s}.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={token}',
             {
@@ -653,18 +668,111 @@ function map_t(
             }
         );
 
-        var overlay_layers = {
-            'Country borders': layer_countries,
-            'Isolines (contours)': layer_contours,
-            'Skyways (<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a>)': layer_skyways,
-            'Thermals (<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a>)': layer_thermals,
-        };
+        /* Define the overlay layers. They are shown in the layers control
+         * in this order. Description of the fields:
+         * short_name: used in the export/import of the map state, must be
+         *             short because it is stored in the URL
+         * long_name: the text that is displayed in the layers control
+         * layer: the map layer object itself
+         * visible: true if the layer is visible right now, used by the export
+         *          of the map state - the short_names of the ones that have
+         *          visible=true are exported
+         * visible_by_default: if no state is specified initially via the URL,
+         *                     then all layers that have this set to true are
+         *                     visualized
+         */
+        m_map_overlay_layers = [
+            {
+                short_name: 'countries',
+                long_name: 'Country borders',
+                layer: layer_countries,
+                visible: false,
+                visible_by_default: true,
+            },
+            {
+                short_name: 'isolines',
+                long_name: 'Isolines (contours)',
+                layer: layer_contours,
+                visible: false,
+                visible_by_default: false,
+            },
+            {
+                short_name: 'skyways',
+                long_name: 'Skyways (<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a>)',
+                layer: layer_skyways,
+                visible: false,
+                visible_by_default: false,
+            },
+            {
+                short_name: 'thermals',
+                long_name: 'Thermals (<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a>)',
+                layer: layer_thermals,
+                visible: false,
+                visible_by_default: false,
+            },
+        ];
 
-        L.control.layers(base_layers, overlay_layers).addTo(m_map);
+        /* Contains references to the above objects hashed by 'short_name', e.g.
+         * overlay_layers_obj_by_short_name['thermals'].visible = true.
+         */
+        var overlay_layers_obj_by_short_name = {};
 
-        /* Setup the default visible layers. */
+        /* Contains references to the above objects hashed by 'long_name', e.g.
+         * overlay_layers_obj_by_long_name['Country borders'].visible = true.
+         */
+        var overlay_layers_obj_by_long_name = {};
+
+        /* Contains references to the layers themselves hashed by 'long_name', e.g.
+         * overlay_layers_layer_by_long_name['Country borders'] ==
+         * overlay_layers_obj_by_long_name['Country borders'].layer.
+         */
+        var overlay_layers_layer_by_long_name = {};
+
+        for (var i = 0; i < m_map_overlay_layers.length; i++) {
+            var obj = m_map_overlay_layers[i];
+
+            overlay_layers_obj_by_short_name[obj.short_name] = obj;
+
+            overlay_layers_obj_by_long_name[obj.long_name] = obj;
+
+            overlay_layers_layer_by_long_name[obj.long_name] = obj.layer;
+        }
+
+        L.control.layers(
+            base_layers, overlay_layers_layer_by_long_name).addTo(m_map);
+
+        /* Setup the default visible base layer. */
         m_map.addLayer(base_layers[m_map_current_base_layer_name]);
-        layer_countries.addTo(m_map);
+
+        /* Setup the default visible overlay layers. */
+        if (state.overlay_layers_short_names != null) {
+            /* Make visible the overlay layers whose short names are in
+             * state.overlay_layers_short_names[] (import the state from
+             * the URL).
+             */
+            for (var i = 0; i < state.overlay_layers_short_names.length; i++) {
+                var short_name = state.overlay_layers_short_names[i];
+                var obj = overlay_layers_obj_by_short_name[short_name];
+
+                obj.visible = true;
+
+                obj.layer.addTo(m_map);
+            }
+        } else {
+            /* Make visible the overlay layers whose 'visible_by_default'
+             * attribute is set to true in m_map_overlay_layers[] (use the
+             * defaults, since nothing was specified via the URL).
+             */
+            for (var i = 0; i < m_map_overlay_layers.length; i++) {
+                var obj = m_map_overlay_layers[i];
+                if (obj.visible_by_default) {
+
+                    obj.visible = true;
+
+                    obj.layer.addTo(m_map);
+                }
+            }
+        }
 
         L.control.scale(
             {
@@ -678,6 +786,24 @@ function map_t(
             function (layer)
             {
                 m_map_current_base_layer_name = layer.name;
+                regen_url_hash();
+            }
+        );
+
+        m_map.on(
+            'overlayadd',
+            function (layer)
+            {
+                overlay_layers_obj_by_long_name[layer.name].visible = true;
+                regen_url_hash();
+            }
+        );
+
+        m_map.on(
+            'overlayremove',
+            function (layer)
+            {
+                overlay_layers_obj_by_long_name[layer.name].visible = false;
                 regen_url_hash();
             }
         );
