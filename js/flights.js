@@ -536,11 +536,18 @@ function flights_set_t(
         store_ids)
     {
         for (var i = 0; i < store_ids.length; i++) {
-            var id = store_ids[i];
             store_flight_get(
-                id,
+                store_ids[i],
                 /* success callback */
                 function(
+                    /* in: store id, same as store_ids[i] which is passed as
+                     * the first argument to this call to store_flight_get(),
+                     * but bound properly. If we use store_ids[i] directly
+                     * into the function body below, then when this function
+                     * executes, store_ids[i] will be either the last one from
+                     * all for() loop iterations or undefined.
+                     */
+                    store_id,
                     /* in: file name */
                     file_name,
                     /* in: raw IGC contents */
@@ -552,7 +559,7 @@ function flights_set_t(
                         return;
                     }
 
-                    add_flight(id, igc_obj, false);
+                    add_flight(store_id, igc_obj, false);
                 }
             );
         }

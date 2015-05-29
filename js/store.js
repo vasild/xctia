@@ -111,8 +111,8 @@ function store_flight_put(
 function store_flight_get(
     /* in: store id of the flight */
     store_id,
-    /* in, out: function to call on a success, passing it two arguments:
-     * file_name and igc_raw.
+    /* in, out: function to call on a success, passing it 3 arguments:
+     * store_id, file_name and igc_raw.
      */
     success_cb)
 {
@@ -136,7 +136,15 @@ function store_flight_get(
                 {
                     if (this.readyState == this.DONE) {
                         if (this.status == 200) {
-                            success_cb(res.get('igc_file_name'), this.responseText);
+                            if (this.responseText) {
+                                success_cb(store_id,
+                                           res.get('igc_file_name'),
+                                           this.responseText);
+                            } else {
+                                alert('Cannot fetch flight\'s IGC file from ' +
+                                      url + ', got HTTP status code OK (200) ' +
+                                      'but the response text is empty');
+                            }
                         } else {
                             alert('Cannot fetch flight\'s IGC file from ' +
                                   url + ', got HTTP status code ' + this.status);
