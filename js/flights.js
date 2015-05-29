@@ -497,6 +497,8 @@ function flights_set_t(
         if (fit_map_to_flight) {
             map.fit_bounds(flight.bounds());
         }
+
+        regen_url_hash();
     }
     /* @} */
 
