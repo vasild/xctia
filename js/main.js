@@ -234,7 +234,7 @@ function parser_task(
 
 /* Parse the contents of a flight file in the "IGC" format. @{
  * See http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/
- * @return object of type
+ * @return object of the following type or null
  * {
  *     file_name: ...,
  *     pilot: ...,
@@ -317,6 +317,10 @@ function parser_igc(
             };
             continue;
         }
+    }
+
+    if (begin_clock == undefined || begin_date == undefined) {
+        return(null);
     }
 
     var begin_timestamp = new Date(Date.UTC(
