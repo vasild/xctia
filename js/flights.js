@@ -475,13 +475,18 @@ function flights_set_t(
         checkbox_input.setAttribute('id', checkbox_id);
         checkbox_label.setAttribute('for', checkbox_id);
 
-        profile_draw(flight_id, flight_points);
+        var profile_is_drawn = false;
 
         checkbox_input.onchange =
             function ()
             {
                 if (this.checked) {
-                    profile_show(flight_id);
+                    if (!profile_is_drawn) {
+                        profile_draw(flight_id, flight_points);
+                        profile_is_drawn = true;
+                    } else {
+                        profile_show(flight_id);
+                    }
                 } else {
                     profile_hide(flight_id);
                 }
