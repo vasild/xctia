@@ -105,6 +105,8 @@ function flight_point_t(
 
 /* Flight type @{ */
 function flight_t(
+    /* in: unique id under which this flight is accounted under in the flights' store */
+    store_id_arg,
     /* in: file name of the flight */
     file_name_arg,
     /* in: pilot name */
@@ -126,6 +128,7 @@ function flight_t(
         { val: 12, color: 0xFF8800 /* orange */}
     );
 
+    var m_store_id = store_id_arg;
     var m_file_name = file_name_arg;
     var m_pilot = pilot_arg;
     var m_glider = glider_arg;
@@ -146,6 +149,13 @@ function flight_t(
     var m_map_shapes = new Array();
 
     var m_is_shown_on_map = false;
+
+    /* Get the flight's store id. @{ */
+    function store_id()
+    {
+        return(m_store_id);
+    }
+    /* @} */
 
     /* Get the flight's file name. @{ */
     function file_name()
@@ -328,6 +338,7 @@ function flight_t(
     /* Export some of the methods as public. @{ */
     return(
         {
+            store_id: store_id,
             file_name: file_name,
             pilot: pilot,
             glider: glider,
@@ -345,12 +356,20 @@ function flight_t(
 /* @} */
 
 /* Flights set (type). @{ */
-function flights_set_t()
+function flights_set_t(
+    /* in: array of flights' store ids or undefined or null */
+    store_ids)
 {
     var m_flights = new Array();
 
+    if (store_ids) {
+        import_from_ids_array(store_ids);
+    }
+
     /* Create a new flight from raw data and add it to the set. @{ */
     function add_flight(
+        /* in: flight store id or null if putting into the store failed */
+        store_id,
         /* in: object returned by parser_igc():
          * {
          *     file_name: ...,
@@ -369,7 +388,9 @@ function flights_set_t()
          *     ]
          * }
          */
-        data)
+        data,
+        /* in: if true then fit the map around the flight after displaying it */
+        fit_map_to_flight)
     {
         var flight_points = new Array();
         for (var i = 0; i < data.points.length; i++) {
@@ -385,6 +406,7 @@ function flights_set_t()
         }
 
         var flight = flight_t(
+            store_id,
             data.file_name,
             data.pilot,
             data.glider,
@@ -467,7 +489,9 @@ function flights_set_t()
 
         template.parentNode.appendChild(d);
 
-        map.fit_bounds(flight.bounds());
+        if (fit_map_to_flight) {
+            map.fit_bounds(flight.bounds());
+        }
     }
     /* @} */
 
@@ -480,11 +504,60 @@ function flights_set_t()
     }
     /* @} */
 
+    /* Export all flights' store ids into an array. @{ */
+    function export_ids_as_array()
+    {
+        var ids = new Array();
+
+        for (var i = 0; i < m_flights.length; i++) {
+            var id = m_flights[i].store_id();
+            /* id can be null if putting of the flight into the store failed,
+             * in this case just skip that flight from the export.
+             */
+            if (id) {
+                ids.push(id);
+            }
+        }
+
+        return(ids);
+    }
+    /* @} */
+
+    /* Import flights by store ids. @{ */
+    function import_from_ids_array(
+        /* in: store ids array */
+        store_ids)
+    {
+        for (var i = 0; i < store_ids.length; i++) {
+            var id = store_ids[i];
+            store_flight_get(
+                id,
+                /* success callback */
+                function(
+                    /* in: file name */
+                    file_name,
+                    /* in: raw IGC contents */
+                    igc_raw)
+                {
+                    var igc_obj = parser_igc(igc_raw, file_name);
+
+                    if (igc_obj == null) {
+                        return;
+                    }
+
+                    add_flight(id, igc_obj, false);
+                }
+            );
+        }
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
             add_flight: add_flight,
             redraw_all_flights: redraw_all_flights,
+            export_ids_as_array: export_ids_as_array,
         }
     );
     /* @} */

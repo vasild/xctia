@@ -186,7 +186,37 @@ function ev_init_flight()
     document.getElementById('open_flight_igc_input').onchange =
         function ()
         {
-            parse_file(this.files[0], parser_igc, flights.add_flight);
+            parse_file(
+                this.files[0],
+                /* Parser of the contents. */
+                function(
+                    /* in: raw IGC contents */
+                    igc_str,
+                    /* in: IGC file name */
+                    file_name)
+                {
+                    var igc_obj = parser_igc(igc_str, file_name);
+
+                    if (igc_obj == null) {
+                        return;
+                    }
+
+                    store_flight_put(
+                        file_name,
+                        igc_str,
+                        /* Callback */
+                        function(
+                            /* in: flight id in the store or null if putting
+                             * into the store failed.
+                             */
+                            store_id)
+                        {
+                            flights.add_flight(store_id, igc_obj, true);
+                        }
+                    );
+                },
+                null
+            );
         };
 
     document.getElementById('open_flight_igc_a').onclick =

@@ -425,6 +425,7 @@ function gen_url_params()
     arr[0] = waypoints.export_as_array();
     arr[1] = task.export_as_array();
     arr[2] = map.export_state_as_array();
+    arr[3] = flights.export_ids_as_array();
 
     var arr_json = JSON.stringify(arr);
 
@@ -457,7 +458,9 @@ function regen_url_hash()
 }
 /* @} */
 
-/* Load the waypoints and the task from the URL of the current page. @{ */
+/* Parse the URL of the current page. @{
+ * Parse it into an array that describes the application state. See gen_url().
+ */
 function parse_url()
 {
     var url = window.location.href;
@@ -556,7 +559,7 @@ function init()
 
     task = task_t();
 
-    flights = flights_set_t();
+    flights = flights_set_t(params != null ? params[3] : null);
 
     if (params != null) {
         waypoints.import_from_array(params[0]);
