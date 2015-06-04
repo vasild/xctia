@@ -48,37 +48,39 @@ function store_flight_put(
     /* in: file name */
     file_name,
     /* in: file contents (IGC) */
-    igc_raw,
+    file_contents,
+    /* in: file md5 checksum */
+    file_md5,
     /* in, out: function to call when completed, on success it will be passed
-     * the store id of the flight, if some failure occured, then it will be
-     * passed null. */
+     * the store id of the inserted flight. If some failure occured,
+     * then the callback will still be called but will be passed null. */
     callback)
 {
-    parse_init_if_not();
-
     /* First store the bare file. */
-    var parse_file = new Parse.File(file_name, { base64: base64_encode(igc_raw) });
+    var parse_file = new Parse.File(file_name,
+                                    { base64: base64_encode(file_contents) });
 
     parse_file.save().then(
         /* success callback */
         function()
         {
             /* Store of the bare file succeeded. The object 'parse_file' now
-             * corresponds to an existing file on the cloud.
+             * corresponds to an existent file on the cloud.
              */
 
-            /* Create a new Parse object of type 'Flight'. */
             var parse_flight_t = Parse.Object.extend('Flight');
             var parse_flight = new parse_flight_t();
 
-            /* Store this new object into the cloud with two properties:
+            /* Store this new object into the cloud with 3 properties:
              * igc: the file itself (object)
              * igc_file_name: the file name (string).
+             * igc_file_md5: the md5 checksum of the file (string).
              */
             parse_flight.save(
                 {
                     igc: parse_file,
                     igc_file_name: file_name,
+                    igc_file_md5: file_md5,
                 },
                 {
                     success: function(obj)
@@ -105,6 +107,53 @@ function store_flight_put(
 }
 /* @} */
 
+/* Put a flight file (IGC) into the store or retrieve an existent one's id. @{ */
+function store_flight_put_or_get_existent_id(
+    /* in: file name */
+    file_name,
+    /* in: file contents (IGC) */
+    file_contents,
+    /* in, out: function to call when completed, on success it will be passed
+     * the store id of the inserted flight or of an existent flight, if one
+     * exists with the same file name and contents. If some failure occured,
+     * then the callback will still be called but will be passed null. */
+    callback)
+{
+    parse_init_if_not();
+
+    var file_md5 = md5(file_contents);
+
+    /* Look up if an existing file is present with the same file name
+     * and contents and if it is, then return its id.
+     */
+    var parse_flight_t = Parse.Object.extend('Flight');
+    var query = new Parse.Query(parse_flight_t);
+
+    query.equalTo('igc_file_md5', file_md5);
+    query.equalTo('igc_file_name', file_name);
+    query.find({
+        success: function (objects)
+        {
+            if (objects.length > 0) {
+                /* Found. */
+                callback(objects[0].id);
+            } else {
+                /* Empty result set, not found. */
+                store_flight_put(file_name, file_contents, file_md5, callback);
+            }
+        },
+        error: function (error)
+        {
+            alert('Error looking up if the flight file has already been ' +
+                  'uploaded before, will not attempt to save it now. ' +
+                  'As a result it will now show up if the link is shared. ' +
+                  'The error is: [' + error.code + '] ' + error.message);
+            callback(null);
+        },
+    });
+}
+/* @} */
+
 /* Retrieve a flight file's content (IGC) and file name from the store. @{
  * Calls a callback function if the flight is found.
  */
@@ -112,15 +161,13 @@ function store_flight_get(
     /* in: store id of the flight */
     store_id,
     /* in, out: function to call on a success, passing it 3 arguments:
-     * store_id, file_name and igc_raw.
+     * store_id, file_name and file_contents.
      */
     success_cb)
 {
     parse_init_if_not();
 
-    /* Create a new Parse object of type 'Flight'. */
     var parse_flight_t = Parse.Object.extend('Flight');
-
     var query = new Parse.Query(parse_flight_t);
 
     query.get(

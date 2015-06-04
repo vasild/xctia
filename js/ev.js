@@ -201,7 +201,7 @@ function ev_init_flight()
                         return;
                     }
 
-                    store_flight_put(
+                    store_flight_put_or_get_existent_id(
                         file_name,
                         igc_str,
                         /* Callback */
