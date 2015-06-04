@@ -64,7 +64,7 @@ function store_flight_put(
         function()
         {
             /* Store of the bare file succeeded. The object 'parse_file' now
-             * corresponds on a existing file on the cloud.
+             * corresponds to an existing file on the cloud.
              */
 
             /* Create a new Parse object of type 'Flight'. */
@@ -106,7 +106,7 @@ function store_flight_put(
 /* @} */
 
 /* Retrieve a flight file's content (IGC) and file name from the store. @{
- * @return an object like { file_name: ..., igc_raw: ... }
+ * Calls a callback function if the flight is found.
  */
 function store_flight_get(
     /* in: store id of the flight */
