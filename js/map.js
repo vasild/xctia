@@ -419,10 +419,10 @@ function map_t(
             });
         } else {
             return({
-                /* Center the map in the middle of Bulgaria. */
-                center_lat: 42.751046,
-                center_lng: 25.268555,
-                zoom: 8,
+                /* Show Europe by default. */
+                center_lat: 50,
+                center_lng: 19,
+                zoom: 5,
                 base_layer_name: null,
                 overlay_layers_short_names: null,
             });
