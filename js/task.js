@@ -255,7 +255,7 @@ function task_t()
         /* in: row in the HTML task table */
         row)
     {
-        return(row.getElementsByTagName('div')[0].getAttribute('turnpoint-index'));
+        return(Number(row.getElementsByTagName('div')[0].getAttribute('turnpoint-index')));
     }
     /* @} */
 
