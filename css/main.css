@@ -48,6 +48,35 @@ button, input, select, textarea {
     cursor: pointer;
 }
 
+.layer_preview {
+    display: inline;
+    margin: 2px;
+    position: relative;
+}
+
+.layer_preview img {
+    border-radius: 4px;
+    height: 30px;
+    margin: 2px;
+    width: 140px;
+}
+
+.layer_preview span {
+    color: #000000;
+    font-size: 0.8em;
+    margin-left: 1em;
+    position: absolute;
+    text-shadow:
+         1px  0px 0px #FFFFFF,
+        -1px  0px 0px #FFFFFF,
+         0px  1px 0px #FFFFFF,
+         0px -1px 0px #FFFFFF,
+         1px  1px 0px #FFFFFF,
+        -1px -1px 0px #FFFFFF,
+        -1px  1px 0px #FFFFFF,
+         1px -1px 0px #FFFFFF;
+}
+
 .movable_updown {
     cursor: ns-resize;
 }

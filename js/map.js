@@ -370,11 +370,11 @@ function map_t(
     state_arr)
 {
     var m_map;
-    var m_map_current_base_layer_name;
+    var m_map_current_base_layer_short_name;
     var m_map_overlay_layers;
 
     /* Export the current state of the map as an array. @{
-     * @return [lat, lng, zoom, current_base_layer_name]
+     * @return [lat, lng, zoom, current_base_layer_short_name]
      */
     function export_state_as_array()
     {
@@ -392,7 +392,7 @@ function map_t(
                 parseFloat(m_map.getCenter().lat.toFixed(5)),
                 parseFloat(m_map.getCenter().lng.toFixed(5)),
                 m_map.getZoom(),
-                m_map_current_base_layer_name,
+                m_map_current_base_layer_short_name,
                 overlay_layers_short_names,
             ]
         );
@@ -403,7 +403,7 @@ function map_t(
      * Or generate a default state, if the argument is null (no parameters came
      * from the URL) or undefined (an old URL was given that does not contain
      * those parameters).
-     * @return an object with properties: center_lat, center_lng, zoom, base_layer_name
+     * @return an object with properties: center_lat, center_lng, zoom, base_layer_short_name
      */
     function state_from_array(
         /* in: array returned by export_state_as_array() */
@@ -414,7 +414,7 @@ function map_t(
                 center_lat: arr[0],
                 center_lng: arr[1],
                 zoom: arr[2],
-                base_layer_name: arr[3],
+                base_layer_short_name: arr[3],
                 overlay_layers_short_names: arr[4] ? arr[4] : null,
             });
         } else {
@@ -423,7 +423,7 @@ function map_t(
                 center_lat: 50,
                 center_lng: 19,
                 zoom: 5,
-                base_layer_name: null,
+                base_layer_short_name: null,
                 overlay_layers_short_names: null,
             });
         }
@@ -537,6 +537,8 @@ function map_t(
 
         var max_zoom = 25;
 
+        /* Base layers */
+
         var layer_relief = L.tileLayer(
             'http://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg',
             {
@@ -601,21 +603,118 @@ function map_t(
 
         var layer_terrain_google = new L.Google('TERRAIN');
 
-        var base_layers = {
-            'Relief': layer_relief, /* the first one will be used by default */
-            'Topo XC': layer_topoxc,
-            'OpenTopoMap': layer_opentopomap,
-            'Hike': layer_hike,
-            'Terrain Google': layer_terrain_google,
-            'Satellite Google': layer_satellite_google,
-            'Satellite MapQuest': layer_satellite_mapquest,
-            'Satellite Here.com': layer_satellite_herecom,
-        };
+        /* Define the base layers. They are shown in the layers control
+         * in this order. Description of the fields:
+         * short_name: used in the export/import of the map state, must be
+         *             short because it is stored in the URL
+         * long_name: the text that is displayed in the layers control
+         * layer: the map layer object itself
+         */
+        base_layers = [
+            /* the first one will be shown by default */
+            {
+                short_name: 'Relief',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>Relief</span>' +
+                    '<img src="img/map_preview_relief.jpg">' +
+                    '</div>',
+                layer: layer_relief,
+            },
+            {
+                short_name: 'Topo XC',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>Topo XC</span>' +
+                    '<img src="img/map_preview_topoxc.jpg">' +
+                    '</div>',
+                layer: layer_topoxc,
+            },
+            {
+                short_name: 'OpenTopoMap',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>OpenTopoMap</span>' +
+                    '<img src="img/map_preview_opentopo.jpg">' +
+                    '</div>',
+                layer: layer_opentopomap,
+            },
+            {
+                short_name: 'Hike',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>Hike</span>' +
+                    '<img src="img/map_preview_hike.jpg">' +
+                    '</div>',
+                layer: layer_hike,
+            },
+            {
+                short_name: 'Terrain Google',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>Terrain Google</span>' +
+                    '<img src="img/map_preview_terrain.jpg">' +
+                    '</div>',
+                layer: layer_terrain_google,
+            },
+            {
+                short_name: 'Satellite Google',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>Satellite Google</span>' +
+                    '<img src="img/map_preview_satgoog.jpg">' +
+                    '</div>',
+                layer: layer_satellite_google,
+            },
+            {
+                short_name: 'Satellite MapQuest',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>Satellite MapQuest</span>' +
+                    '<img src="img/map_preview_satmapq.jpg">' +
+                    '</div>',
+                layer: layer_satellite_mapquest,
+            },
+            {
+                short_name: 'Satellite Here.com',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>Satellite Here.com</span>' +
+                    '<img src="img/map_preview_sathere.jpg">' +
+                    '</div>',
+                layer: layer_satellite_herecom,
+            },
+        ];
 
-        if (state.base_layer_name != null) {
-            m_map_current_base_layer_name = state.base_layer_name
+        /* Contains references to the above objects hashed by 'short_name', e.g.
+         * base_layers_obj_by_short_name['relief'] == base_layers[0].
+         */
+        var base_layers_obj_by_short_name = {};
+
+        /* Contains references to the above objects hashed by 'long_name', e.g.
+         * base_layers_obj_by_long_name['<div>...Relief...'] == base_layers[0].
+         */
+        var base_layers_obj_by_long_name = {};
+
+        /* Contains references to the layers themselves hashed by 'long_name', e.g.
+         * base_layers_layer_by_long_name['<div>...Relief...'] == base_layers[0].layer
+         */
+        var base_layers_layer_by_long_name = {};
+
+        for (var i = 0; i < base_layers.length; i++) {
+            var obj = base_layers[i];
+
+            base_layers_obj_by_short_name[obj.short_name] = obj;
+
+            base_layers_obj_by_long_name[obj.long_name] = obj;
+
+            base_layers_layer_by_long_name[obj.long_name] = obj.layer;
+        }
+
+        if (state.base_layer_short_name != null) {
+            m_map_current_base_layer_short_name = state.base_layer_short_name;
         } else {
-            m_map_current_base_layer_name = Object.keys(base_layers)[0];
+            m_map_current_base_layer_short_name = base_layers[0].short_name;
         }
 
         /* Overlay layers */
@@ -739,10 +838,13 @@ function map_t(
         }
 
         L.control.layers(
-            base_layers, overlay_layers_layer_by_long_name).addTo(m_map);
+            base_layers_layer_by_long_name,
+            overlay_layers_layer_by_long_name).addTo(m_map);
 
         /* Setup the default visible base layer. */
-        m_map.addLayer(base_layers[m_map_current_base_layer_name]);
+        m_map.addLayer(
+            base_layers_obj_by_short_name[m_map_current_base_layer_short_name].layer
+        );
 
         /* Setup the default visible overlay layers. */
         if (state.overlay_layers_short_names != null) {
@@ -785,7 +887,9 @@ function map_t(
             'baselayerchange',
             function (layer)
             {
-                m_map_current_base_layer_name = layer.name;
+                var long_name = layer.name;
+                m_map_current_base_layer_short_name =
+                    base_layers_obj_by_long_name[long_name].short_name;
                 regen_url_hash();
             }
         );
