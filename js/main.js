@@ -290,19 +290,19 @@ function parser_igc(
 
         /* Prefer HFPLTPILOTINCHARGE: instead of HFPLTPILOT: */
 
-        res = /^H[FO]PLTPILOTINCHARGE:(.+)/i.exec(rec);
+        res = /^H[A-Z]PLTPILOTINCHARGE:(.+)/i.exec(rec);
         if (res != null) {
             pilot = res[1];
             continue;
         }
 
-        res = /^H[FO]PLTPILOT:(.+)/i.exec(rec);
+        res = /^H[A-Z]PLTPILOT:(.+)/i.exec(rec);
         if (res != null && pilot == undefined) {
             pilot = res[1];
             continue;
         }
 
-        res = /^H[FO]GIDGLIDERID:(.+)/i.exec(rec);
+        res = /^H[A-Z]GIDGLIDERID:(.+)/i.exec(rec);
         if (res != null) {
             glider = res[1];
             continue;
