@@ -54,6 +54,13 @@ function flight_point_t(
     }
     /* @} */
 
+    /* Get the barometric altitude of this point (meters). @{ */
+    function alt_baro()
+    {
+        return(m_alt_baro);
+    }
+    /* @} */
+
     /* Get the GPS altitude of this point (meters). @{ */
     function alt_gps()
     {
@@ -79,7 +86,16 @@ function flight_point_t(
     }
     /* @} */
 
-    /* Calculate the vario reading compared to an earlier point. @{ */
+    /* Calculate the meters higher than a given lower point. @{ */
+    function meters_higher_baro(
+        /* in: lower flight_point_t */
+        lower)
+    {
+        return(m_alt_baro - lower.alt_baro());
+    }
+    /* @} */
+
+    /* Calculate the vario reading compared to an earlier point (GPS). @{ */
     function vario_since_gps(
         /* in: earlier flight_point_t */
         earlier)
@@ -88,14 +104,26 @@ function flight_point_t(
     }
     /* @} */
 
+    /* Calculate the vario reading compared to an earlier point (Baro). @{ */
+    function vario_since_baro(
+        /* in: earlier flight_point_t */
+        earlier)
+    {
+        return(meters_higher_baro(earlier) / secs_since(earlier));
+    }
+    /* @} */
+
     /* Export some of the methods as public. @{ */
     return(
         {
             timestamp: timestamp,
             latlng: latlng,
+            alt_baro: alt_baro,
             alt_gps: alt_gps,
             secs_since: secs_since,
+            meters_higher_baro: meters_higher_baro,
             meters_higher_gps: meters_higher_gps,
+            vario_since_baro: vario_since_baro,
             vario_since_gps: vario_since_gps,
         }
     );
@@ -302,7 +330,9 @@ function flight_t(
 
             m_map_shapes.push(bg_line);
 
-            var vario = cur_point.vario_since_gps(prev_point);
+            var vario =
+                cur_point.vario_since_gps(prev_point) ||
+                cur_point.vario_since_baro(prev_point);
 
             var color = color_gradient(vario, m_vario_color_scale);
 

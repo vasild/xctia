@@ -154,7 +154,7 @@ function profile_draw(
         var p = flight_points[i];
 
         var x = p.timestamp().getTime(); /* milliseconds since epoch */
-        var y = p.alt_gps();
+        var y = p.alt_gps() || p.alt_baro();
 
         chart_data.push([x, y]);
 
@@ -246,7 +246,9 @@ function profile_draw(
                             ? (Math.round(distance_m) + ' m')
                             : ((distance_m / 1000).toFixed(1) + ' km');
 
-                        var elevation_diff = end_point.meters_higher_gps(beg_point);
+                        var elevation_diff =
+                            end_point.meters_higher_gps(beg_point) ||
+                            end_point.meters_higher_baro(beg_point);
 
                         var duration_sec = end_point.secs_since(beg_point);
 
@@ -347,7 +349,10 @@ function profile_draw(
                                 var secs = this_p.secs_since(prev_p);
                                 speed = (meters / secs * 3.6).toFixed(1) + ' km/h';
 
-                                vario = this_p.vario_since_gps(prev_p).toFixed(1) + ' m/s';
+                                var v =
+                                    this_p.vario_since_gps(prev_p) ||
+                                    this_p.vario_since_baro(prev_p);
+                                vario = v.toFixed(1) + ' m/s';
                             } else {
                                 speed = '';
                                 vario = '';
