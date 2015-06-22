@@ -80,12 +80,18 @@ function profile_aircraft_show_at_point(
     /* in: previous flight_point_t, used to orient the aircraft, or undefined */
     point_prev)
 {
-    var angle = coord_vector_angle_from_y(
-        point_prev.latlng().lat(),
-        point_prev.latlng().lng(),
-        point.latlng().lat(),
-        point.latlng().lng()
-    );
+    var angle;
+    if (point_prev) {
+        angle = coord_vector_angle_from_y(
+            point_prev.latlng().lat(),
+            point_prev.latlng().lng(),
+            point.latlng().lat(),
+            point.latlng().lng()
+        );
+    } else {
+        angle = 0;
+    }
+
     /* The icon is rotated +45 deg by default. */
     var angle_in_css = (angle - 45).toFixed(2);
 
