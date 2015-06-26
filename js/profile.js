@@ -288,11 +288,11 @@ function profile_draw(
 
                         stats_div.getElementsByClassName(
                             'profile_stats_selection_beg')[0].innerHTML =
-                            format_date_into_hhmmsstz(new Date(beg_point.timestamp()));
+                            format_date_into_hhmmsstz(beg_point.timestamp());
 
                         stats_div.getElementsByClassName(
                             'profile_stats_selection_end')[0].innerHTML =
-                            format_date_into_hhmmsstz(new Date(end_point.timestamp()));
+                            format_date_into_hhmmsstz(end_point.timestamp());
 
                         profile_chart_div.style.width = '70%';
                         profile_stats_selection_div.style.display = 'block';
