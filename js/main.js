@@ -232,6 +232,57 @@ function parser_task(
 }
 /* @} */
 
+/* Get the UTC offset [minutes] of a given location, in a given point in time. @{
+ * @return offset in minutes
+ */
+function get_utc_offset_min(
+    /* in: latitude */
+    lat,
+    /* in: longitude */
+    lng,
+    /* in: number of seconds since epoch */
+    unix_timestamp,
+    /* in,out: function to call with the result */
+    cb)
+{
+    var xhr = new XMLHttpRequest();
+
+    var url = 'https://maps.googleapis.com/maps/api/timezone/json?location=' +
+        lat + ',' + lng + '&timestamp=' + unix_timestamp;
+
+    xhr.onreadystatechange =
+        function ()
+        {
+            if (this.readyState == this.DONE) {
+                if (this.status == 200) {
+                    try {
+                        var res = JSON.parse(this.responseText);
+                        if (res.status.toUpperCase() == 'OK') {
+                            cb((res.rawOffset + res.dstOffset) / 60);
+                        } else {
+                            alert('Got an error from ' + url + ': ' + res);
+                            cb(0);
+                        }
+                    } catch (e) {
+                        alert('Cannot parse the reply from ' + url + ': ' + e +
+                              this.responseText);
+                        cb(0);
+                    }
+                } else {
+                    alert('Erroneous HTTP response from ' + url + ': ' +
+                          'status=' + this.status +
+                          ', text=' + this.responseText);
+                    cb(0);
+                }
+            }
+        };
+
+    xhr.open('GET', url, true /* async */);
+
+    xhr.send();
+}
+/* @} */
+
 /* Parse the contents of a flight file in the "IGC" format. @{
  * See http://carrier.csi.cam.ac.uk/forsterlewis/soaring/igc_file_format/
  * @return object of the following type or null
@@ -242,7 +293,7 @@ function parser_task(
  *     points:
  *     [
  *         {
- *             timestamp: Date object,
+ *             timestamp: moment() object, see http://momentjs.com/docs/
  *             lat: ...,
  *             lng: ...,
  *             alt_baro: ...,
@@ -256,12 +307,16 @@ function parser_igc(
     /* in: file contents as a string */
     str,
     /* in: file name */
-    file_name)
+    file_name,
+    /* in,out: function to call with the result */
+    cb)
 {
     var records_array = str.split(/\r?\n/);
 
     var begin_clock;
     var begin_date;
+    var begin_lat;
+    var begin_lng;
     var glider;
     var pilot;
 
@@ -277,14 +332,9 @@ function parser_igc(
             break;
         }
 
-        res = /^HFDTE([0-9]{2})([0-9]{2})([0-9]{2})/i.exec(rec);
+        res = /^HFDTE([0-9]{6})/i.exec(rec);
         if (res != null) {
-            var y = Number(res[3]);
-            begin_date = {
-                yyyy: ((y > 50 ? 1900 : 2000) + y).toString(),
-                mm: res[2],
-                dd: res[1],
-            };
+            begin_date = res[1];
             continue;
         }
 
@@ -308,62 +358,64 @@ function parser_igc(
             continue;
         }
 
-        res = /^B([0-9]{2})([0-9]{2})([0-9]{2})/i.exec(rec);
+        res = /^B([0-9]{6})([0-9]{7}[NS])([0-9]{8}[EW])/i.exec(rec);
         if (res != null && begin_clock == undefined) {
-            begin_clock = {
-                hh: res[1],
-                mm: res[2],
-                ss: res[3],
-            };
+            begin_clock = res[1];
+            begin_lat = coord_convert_ddmmmmmN2ddd(res[2]);
+            begin_lng = coord_convert_ddmmmmmN2ddd(res[3]);
             continue;
         }
     }
 
     if (begin_clock == undefined || begin_date == undefined) {
-        return(null);
+        alert('Cannot determine the flight\'s begin date and time' +
+              ' from the IGC file ' + file_name);
+        return;
     }
-
-    var begin_timestamp = new Date(Date.UTC(
-        begin_date.yyyy,
-        Number(begin_date.mm) - 1,
-        begin_date.dd,
-        begin_clock.hh,
-        begin_clock.mm,
-        begin_clock.ss
-    ));
 
     var points = new Array();
 
-    for (var i = 0; i < records_array.length; i++) {
-        var rec = records_array[i];
-        var res = /^B([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{7}[NS])([0-9]{8}[EW])A([0-9]{5})([0-9]{5})/i.exec(rec);
-        if (res != null) {
-            var p = {
-                timestamp:
-                    new Date(Date.UTC(
-                            begin_timestamp.getFullYear(),
-                            begin_timestamp.getMonth(),
-                            begin_timestamp.getDate(),
-                            res[1],
-                            res[2],
-                            res[3]
-                    )),
-                lat: coord_convert_ddmmmmmN2ddd(res[4]),
-                lng: coord_convert_ddmmmmmN2ddd(res[5]),
-                alt_baro: Number(res[6]),
-                alt_gps: Number(res[7]),
-            };
+    /* Function to continue execution asynchronously. */
+    function continue_execution(
+        /* in: UTC offset in minutes */
+        utc_offset_min)
+    {
+        for (var i = 0; i < records_array.length; i++) {
+            var rec = records_array[i];
+            var res = /^B([0-9]{6})([0-9]{7}[NS])([0-9]{8}[EW])A([0-9]{5})([0-9]{5})/i.exec(rec);
+            if (res != null) {
+                /* http://momentjs.com/docs/#/parsing/utc/ */
+                var timestamp = moment.utc(begin_date + res[1], 'DDMMYYHHmmss');
 
-            points.push(p);
+                /* http://momentjs.com/docs/#/manipulating/utc-offset/ */
+                timestamp.utcOffset(utc_offset_min);
+
+                var p = {
+                    timestamp: timestamp,
+                    lat: coord_convert_ddmmmmmN2ddd(res[2]),
+                    lng: coord_convert_ddmmmmmN2ddd(res[3]),
+                    alt_baro: Number(res[4]),
+                    alt_gps: Number(res[5]),
+                };
+
+                points.push(p);
+            }
         }
+
+        cb({
+            file_name: file_name,
+            pilot: pilot || 'not set',
+            glider: glider || 'not set',
+            points: points,
+        });
     }
 
-    return({
-        file_name: file_name,
-        pilot: pilot || 'not set',
-        glider: glider || 'not set',
-        points: points,
-    });
+    /* UTC offset in minutes. */
+    var utc_offset_min = get_utc_offset_min(
+        begin_lat,
+        begin_lng,
+        moment.utc(begin_date + begin_clock, 'DDMMYYHHmmss').unix(),
+        continue_execution);
 }
 /* @} */
 

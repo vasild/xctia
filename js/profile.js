@@ -162,7 +162,8 @@ function profile_draw(
     for (var i = 0; i < flight_points.length; i++) {
         var p = flight_points[i];
 
-        var x = p.timestamp().getTime(); /* milliseconds since epoch */
+        /* http://momentjs.com/docs/#/displaying/unix-offset/ */
+        var x = p.timestamp().valueOf(); /* milliseconds since epoch */
         var y = p.alt_gps() || p.alt_baro();
 
         chart_data.push([x, y]);
@@ -215,13 +216,15 @@ function profile_draw(
                         }
 
                         if (!beg_point) {
+                            var b = beg_msec_since_epoch;
+                            var e = beg_msec_since_epoch + seek_seconds * 1000;
+                            /* http://momentjs.com/docs/#/displaying/format/ */
+                            var fmt = 'YYYY.MM.DD HH:mm:ss';
                             alert('Cannot find the beginning of the selected ' +
                                   'section in the track log with a timestamp ' +
                                   'between ' +
-                                  format_date_into_yyyymmddhhmmsstz(
-                                      new Date(beg_msec_since_epoch)) + ' and ' +
-                                  format_date_into_yyyymmddhhmmsstz(
-                                      new Date(beg_msec_since_epoch + seek_seconds * 1000)));
+                                  moment.utc(b).format(fmt) + ' GMT and ' +
+                                  moment.utc(e).format(fmt) + ' GMT');
                             return;
                         }
 
@@ -240,13 +243,15 @@ function profile_draw(
                         }
 
                         if (!end_point) {
+                            var b = end_msec_since_epoch - seek_seconds * 1000;
+                            var e = end_msec_since_epoch;
+                            /* http://momentjs.com/docs/#/displaying/format/ */
+                            var fmt = 'YYYY.MM.DD HH:mm:ss';
                             alert('Cannot find the end of the selected ' +
                                   'section in the track log with a timestamp ' +
                                   'between ' +
-                                  format_date_into_yyyymmddhhmmsstz(
-                                      new Date(end_msec_since_epoch - seek_seconds * 1000)) + ' and ' +
-                                  format_date_into_yyyymmddhhmmsstz(
-                                      new Date(end_msec_since_epoch)));
+                                  moment.utc(b).format(fmt) + ' GMT and ' +
+                                  moment.utc(e).format(fmt) + ' GMT');
                             return;
                         }
 
@@ -289,13 +294,19 @@ function profile_draw(
                             'profile_stats_elevation_diff')[0].innerHTML =
                             Math.round(elevation_diff) + ' m';
 
+                        var t = beg_point.timestamp();
                         stats_div.getElementsByClassName(
                             'profile_stats_selection_beg')[0].innerHTML =
-                            format_date_into_hhmmsstz(beg_point.timestamp());
+                            /* http://momentjs.com/docs/#/displaying/format/ */
+                            t.format('HH:mm:ss') + ' GMT' +
+                            n_add_sign(t.utcOffset() / 60);
 
+                        t = end_point.timestamp();
                         stats_div.getElementsByClassName(
                             'profile_stats_selection_end')[0].innerHTML =
-                            format_date_into_hhmmsstz(end_point.timestamp());
+                            /* http://momentjs.com/docs/#/displaying/format/ */
+                            t.format('HH:mm:ss') + ' GMT' +
+                            n_add_sign(t.utcOffset() / 60);
 
                         profile_chart_div.style.width = '70%';
                         profile_stats_selection_div.style.display = 'block';
@@ -384,10 +395,12 @@ function profile_draw(
                                 'profile_stats_flying_time')[0].innerHTML =
                                 format_sec_into_hhmmss(this_p.secs_since(first_p));
 
-                            var date = new Date(this.x);
+                            var t = this_p.timestamp();
                             stats_div.getElementsByClassName(
                                 'profile_stats_clock')[0].innerHTML =
-                                format_date_into_hhmmsstz(date);
+                                /* http://momentjs.com/docs/#/displaying/format/ */
+                                t.format('HH:mm:ss') + ' GMT' +
+                                n_add_sign(t.utcOffset() / 60);
 
                             profile_aircraft_show_at_point(flight_id, this_p, prev_p);
                         }

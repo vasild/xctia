@@ -195,23 +195,27 @@ function ev_init_flight()
                     /* in: IGC file name */
                     file_name)
                 {
-                    var igc_obj = parser_igc(igc_str, file_name);
-
-                    if (igc_obj == null) {
-                        return;
-                    }
-
-                    store_flight_put_or_get_existent_id(
-                        file_name,
+                    parser_igc(
                         igc_str,
+                        file_name,
                         /* Callback */
                         function(
-                            /* in: flight id in the store or null if putting
-                             * into the store failed.
-                             */
-                            store_id)
+                            /* in: parsed igc object */
+                            igc_obj)
                         {
-                            flights.add_flight(store_id, igc_obj, true);
+                            store_flight_put_or_get_existent_id(
+                                file_name,
+                                igc_str,
+                                /* Callback */
+                                function(
+                                    /* in: flight id in the store or null if putting
+                                     * into the store failed.
+                                     */
+                                    store_id)
+                                {
+                                    flights.add_flight(store_id, igc_obj, true);
+                                }
+                            );
                         }
                     );
                 },
