@@ -139,8 +139,11 @@ function profile_aircraft_remove(
     /* in: flight whose aircraft to remove */
     flight_id)
 {
-    map.delete_shape(profiles[flight_id].map_marker);
-    profiles[flight_id].map_marker = null;
+    var p = profiles[flight_id];
+    if (p.map_marker) {
+        map.delete_shape(p.map_marker);
+        p.map_marker = null;
+    }
 }
 /* @} */
 
