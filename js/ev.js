@@ -130,7 +130,7 @@ function ev_init_waypoints()
                             id: id,
                             lat: map_center.lat,
                             lng: map_center.lng,
-                            altitude: 0,
+                            altitude: null,
                             /* use the first waypoint type by default */
                             type: Object.keys(waypoint_types)[0],
                             comment: '',

@@ -342,6 +342,10 @@ function map_marker_t(
         m_marker.on('drag', opt.ondrag);
     }
 
+    if (opt.ondragend) {
+        m_marker.on('dragend', opt.ondragend);
+    }
+
     /* Set location. @{ */
     function set_location(
         /* in: [lat, lng] */

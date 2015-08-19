@@ -153,6 +153,11 @@ function waypoint_data_t(
     function set_altitude(
         altitude)
     {
+        if (altitude == null) {
+            m_altitude = null;
+            return;
+        }
+
         altitude = Number(altitude);
 
         if (isNaN(altitude)) {
@@ -320,6 +325,46 @@ function waypoint_t(
     }
     /* @} */
 
+    /* Update the altitude of the waypoint, based on its coordinates. @{
+     * The altitude of the ground at the waypoint's coordinates is fetched
+     * from the internet using a public API.
+     */
+    function altitude_update()
+    {
+        var wp_altitude_id = 'wp_altitude_' + m_waypoint_data.id();
+        var wp_altitude_input = document.getElementById(wp_altitude_id);
+
+        wp_altitude_input.setAttribute('disabled', true);
+
+        altitude_fetch(
+            [map_latlng_t(m_waypoint_data.lat(), m_waypoint_data.lng())],
+            function (res)
+            {
+                var el = document.getElementById(wp_altitude_id);
+                /* The waypoint could have been deleted while the
+                 * altitute retrieval is going on. In this case
+                 * getElementById() will not find it. Then do nothing.
+                 */
+                if (!el) {
+                    return;
+                }
+
+                if (res != null) {
+                    el.value = res[0];
+                } else {
+                    el.value = 0;
+                }
+
+                m_waypoint_data.set_altitude(el.value);
+
+                el.removeAttribute('disabled');
+
+                regen_url_hash();
+            }
+        );
+    }
+    /* @} */
+
     /* Set/change the name of the waypoint. @{ */
     function set_name(
         /* in: new name */
@@ -452,7 +497,14 @@ function waypoint_t(
         document.getElementById('wp_comment_' + m_waypoint_data.id()).value = m_waypoint_data.comment();
         document.getElementById('wp_lat_' + m_waypoint_data.id()).value = m_waypoint_data.lat().toFixed(5);
         document.getElementById('wp_lng_' + m_waypoint_data.id()).value = m_waypoint_data.lng().toFixed(5);
-        document.getElementById('wp_altitude_' + m_waypoint_data.id()).value = m_waypoint_data.altitude();
+
+        if (m_waypoint_data.altitude() != null) {
+            document.getElementById('wp_altitude_' + m_waypoint_data.id()).value =
+                m_waypoint_data.altitude();
+        } else {
+            /* Fetch the altitude of the ground from the internet. */
+            altitude_update();
+        }
 
         var select = document.getElementById('wp_type_' + m_waypoint_data.id());
         for (t in waypoint_types) {
@@ -532,6 +584,10 @@ function waypoint_t(
 
                     regen_url_hash();
                 },
+            ondragend: function (e)
+                {
+                    altitude_update();
+                },
             title: m_waypoint_data.title(),
         });
 
@@ -591,6 +647,7 @@ function waypoint_t(
             lat: lat,
             lng: lng,
             altitude: altitude,
+            altitude_update: altitude_update,
             set_name: set_name,
             name: name,
             set_comment: set_comment,
