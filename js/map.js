@@ -583,16 +583,6 @@ function map_t(
             }
         );
 
-        var layer_satellite_mapquest = L.tileLayer(
-            'http://otile{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg',
-            {
-                attribution: '<a href="http://mapquest.com">MapQuest Open Aerial Tiles</a>',
-                maxNativeZoom: 11,
-                maxZoom: max_zoom,
-                subdomains: ["1", "2", "3", "4"],
-            }
-        );
-
         var layer_satellite_herecom = L.tileLayer(
             'http://{s}.aerial.maps.cit.api.here.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?app_id=DemoAppId01082013GAL&app_code=AJKnXv84fjrb0KIHawS0Tg',
             {
@@ -606,6 +596,8 @@ function map_t(
         var layer_satellite_google = new L.Google();
 
         var layer_terrain_google = new L.Google('TERRAIN');
+
+        var layer_satellite_mapquest = MQ.satelliteLayer();
 
         /* Define the base layers. They are shown in the layers control
          * in this order. Description of the fields:
