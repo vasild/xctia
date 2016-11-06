@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Vasil Dimov, http://xctia.org.
+Copyright (c) 2014-2016, Vasil Dimov, http://xctia.org.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -175,8 +175,10 @@ function map_circle_t(
 {
     var m_circle = L.circle(
         [opt.lat, opt.lng],
-        opt.radius,
         {
+            color: '#0033ff',
+            opacity: 0.5,
+            radius: opt.radius,
             weight: opt.contour_width,
         }
     );
@@ -593,9 +595,9 @@ function map_t(
             }
         );
 
-        var layer_satellite_google = new L.Google();
+        var layer_satellite_google = L.gridLayer.googleMutant({type: 'satellite'});
 
-        var layer_terrain_google = new L.Google('TERRAIN');
+        var layer_terrain_google = L.gridLayer.googleMutant({type: 'terrain'});
 
         var layer_satellite_mapquest = MQ.satelliteLayer();
 

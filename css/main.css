@@ -249,7 +249,7 @@ button, input, select, textarea {
     right: -100px;
     top: 50%;
     width: 100px;
-    z-index: 1;
+    z-index: 1000;
 }
 
 #menu_wrap_div {
