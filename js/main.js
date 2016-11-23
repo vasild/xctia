@@ -254,24 +254,42 @@ function get_utc_offset_min(
         function ()
         {
             if (this.readyState == this.DONE) {
+                var common_error_msg =
+                    'The time of the flight will be in UTC. ' +
+                    'Try to reload the page to see if this error will go away.';
                 if (this.status == 200) {
                     try {
                         var res = JSON.parse(this.responseText);
                         if (res.status.toUpperCase() == 'OK') {
                             cb((res.rawOffset + res.dstOffset) / 60);
                         } else {
-                            alert('Got an error from ' + url + ': ' + res);
+                            var msg =
+                                'Got an error from ' + url + ': ' + res.status +
+                                '. ' + common_error_msg;
+                            alert(msg);
+                            console.log(msg);
+                            console.log(res);
                             cb(0);
                         }
                     } catch (e) {
-                        alert('Cannot parse the reply from ' + url + ': ' + e +
-                              this.responseText);
+                        var msg =
+                            'Cannot parse the reply from ' + url +
+                            ' (see the console for more details). ' +
+                            common_error_msg;
+                        alert(msg);
+                        console.log(msg);
+                        console.log('HTTP response body: ' + this.responseText);
+                        console.log(e);
                         cb(0);
                     }
                 } else {
-                    alert('Erroneous HTTP response from ' + url + ': ' +
-                          'status=' + this.status +
-                          ', text=' + this.responseText);
+                    var msg =
+                        'Erroneous HTTP status code (' + this.status +
+                        ') from ' + url + '. ' + common_error_msg;
+                    alert(msg);
+                    console.log(msg);
+                    console.log('HTTP response body: ' + this.responseText);
+                    console.log(this);
                     cb(0);
                 }
             }
