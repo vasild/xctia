@@ -765,6 +765,16 @@ function map_t(
             }
         );
 
+        var layer_ski_pistes = L.tileLayer(
+            'http://www.opensnowmap.org/tiles-pistes/{z}/{x}/{y}.png',
+            {
+                attribution: 'Courtesy of <a href="http://www.opensnowmap.org">www.opensnowmap.org</a>. &copy; <a href="http://www.openstreetmap.org">www.openstreetmap.org</a> & contributors',
+                opacity: 1,
+                maxNativeZoom: 16,
+                maxZoom: max_zoom,
+            }
+        );
+
         /* Define the overlay layers. They are shown in the layers control
          * in this order. Description of the fields:
          * short_name: used in the export/import of the map state, must be
@@ -804,6 +814,13 @@ function map_t(
                 short_name: 'thermals',
                 long_name: 'Thermals (<a href="http://thermal.kk7.ch/">thermal.kk7.ch</a>)',
                 layer: layer_thermals,
+                visible: false,
+                visible_by_default: false,
+            },
+            {
+                short_name: 'ski',
+                long_name: 'Ski pistes',
+                layer: layer_ski_pistes,
                 visible: false,
                 visible_by_default: false,
             },
