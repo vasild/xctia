@@ -141,6 +141,7 @@ button, input, select, textarea {
     right: 0;
     width: 500px;
     height: 364px;
+    z-index: 5000;
 }
 
 #cat_peek_img {
@@ -159,6 +160,7 @@ button, input, select, textarea {
     bottom: 0;
     left: -300px;
     position: absolute;
+    z-index: 5000;
 }
 
 @keyframes cat_run {
