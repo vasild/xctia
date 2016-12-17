@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015-2015, Vasil Dimov, http://xctia.org.
+Copyright (c) 2015-2016, Vasil Dimov, http://xctia.org.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -24,86 +24,15 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-var parse_has_been_initialized = false;
-
-/* Initialize Parse if it has not been initialized. @{ */
-function parse_init_if_not()
+/* Get the store URL prefix. @{ */
+function store_get_url_prefix()
 {
-    if (parse_has_been_initialized) {
-        return;
+    /* Derive http://foo.com/path from http://foo.com/path/#whatever. */
+    var url = window.location.toString().split(/[#?]/)[0];
+    if (url.substr(-1) == '/') {
+        url = url.substr(0, url.length - 1);
     }
-
-    Parse.initialize(
-        /* Application ID */
-        'ebICMeML2CFa7Qiez8JZINq3Oe7yn2js1z1z0GGd',
-        /* JavaScript Key */
-        'jFkXuzsWMcK6MoIEArwtyvlqQ33CDW27aMVNt5IZ');
-
-    parse_has_been_initialized = true;
-}
-/* @} */
-
-/* Put a flight file (IGC) into the store. @{ */
-function store_flight_put(
-    /* in: file name */
-    file_name,
-    /* in: file contents (IGC) */
-    file_contents,
-    /* in: file md5 checksum */
-    file_md5,
-    /* in, out: function to call when completed, on success it will be passed
-     * the store id of the inserted flight. If some failure occured,
-     * then the callback will still be called but will be passed null. */
-    callback)
-{
-    /* First store the bare file. */
-    var parse_file = new Parse.File(file_name,
-                                    { base64: base64_encode(file_contents) });
-
-    parse_file.save().then(
-        /* success callback */
-        function()
-        {
-            /* Store of the bare file succeeded. The object 'parse_file' now
-             * corresponds to an existent file on the cloud.
-             */
-
-            var parse_flight_t = Parse.Object.extend('Flight');
-            var parse_flight = new parse_flight_t();
-
-            /* Store this new object into the cloud with 3 properties:
-             * igc: the file itself (object)
-             * igc_file_name: the file name (string).
-             * igc_file_md5: the md5 checksum of the file (string).
-             */
-            parse_flight.save(
-                {
-                    igc: parse_file,
-                    igc_file_name: file_name,
-                    igc_file_md5: file_md5,
-                },
-                {
-                    success: function(obj)
-                    {
-                        callback(obj.id);
-                    },
-                    error: function(obj, error)
-                    {
-                        alert('Cannot save the flight object into the cloud: [' +
-                              + error.code + '] ' + error.message);
-                        callback(null);
-                    }
-                }
-            );
-        },
-        /* error callback */
-        function(error)
-        {
-            alert('Cannot save the flight file into the cloud: [' +
-                  + error.code + '] ' + error.message);
-            callback(null);
-        }
-    );
+    return url + '/store';
 }
 /* @} */
 
@@ -119,38 +48,48 @@ function store_flight_put_or_get_existent_id(
      * then the callback will still be called but will be passed null. */
     callback)
 {
-    parse_init_if_not();
+    var store_id = md5(file_name + file_contents);
 
-    var file_md5 = md5(file_contents);
+    var url = store_get_url_prefix() + '/new_flight/';
 
-    /* Look up if an existing file is present with the same file name
-     * and contents and if it is, then return its id.
-     */
-    var parse_flight_t = Parse.Object.extend('Flight');
-    var query = new Parse.Query(parse_flight_t);
+    var xhr = new XMLHttpRequest();
 
-    query.equalTo('igc_file_md5', file_md5);
-    query.equalTo('igc_file_name', file_name);
-    query.find({
-        success: function (objects)
-        {
-            if (objects.length > 0) {
-                /* Found. */
-                callback(objects[0].id);
+    xhr.onreadystatechange = function()
+    {
+        if (this.readyState == this.DONE) {
+            var errmsg_prefix =
+                'Could not save flight ' + file_name + ' to the store at ' +
+                url + '. If you share this page, the flight will not be shown.';
+            if (this.status == 200) {
+                var res = this.responseText;
+                if (res == 'OK' || res == 'DUPLICATE') {
+                    callback(store_id);
+                } else {
+                    alert(errmsg_prefix + ' Unexpected reply: ' + res + '.');
+                    callback(null);
+                }
             } else {
-                /* Empty result set, not found. */
-                store_flight_put(file_name, file_contents, file_md5, callback);
+                alert(errmsg_prefix + ' Got HTTP status code ' + this.status +
+                    '.');
+                callback(null);
             }
-        },
-        error: function (error)
-        {
-            alert('Error looking up if the flight file has already been ' +
-                  'uploaded before, will not attempt to save it now. ' +
-                  'As a result it will now show up if the link is shared. ' +
-                  'The error is: [' + error.code + '] ' + error.message);
-            callback(null);
-        },
-    });
+        }
+    }
+
+    xhr.open('POST', url, true /* async */);
+    //xhr.setRequestHeader("Content-Type", "multipart/form-data");
+
+    var store_blob = {
+        file_name: file_name,
+        file_contents: file_contents,
+        uploaded: (new Date()).toISOString(),
+    };
+
+    var form_data = new FormData();
+    form_data.set('id', store_id);
+    form_data.set('blob', JSON.stringify(store_blob));
+
+    xhr.send(form_data);
 }
 /* @} */
 
@@ -163,52 +102,49 @@ function store_flight_get(
     /* in, out: function to call on a success, passing it 3 arguments:
      * store_id, file_name and file_contents.
      */
-    success_cb)
+    success_cb,
+    /* in, out: function to call on a failure, passing it the error message as
+     * a string.
+     */
+    failure_cb)
 {
-    parse_init_if_not();
+    var url = store_get_url_prefix() + '/flights/' + store_id;
 
-    var parse_flight_t = Parse.Object.extend('Flight');
-    var query = new Parse.Query(parse_flight_t);
+    var xhr = new XMLHttpRequest();
 
-    query.get(
-        store_id,
-        {
-            success: function(res)
-            {
-                var url = res.get('igc').url();
-
-                var xhr = new XMLHttpRequest();
-
-                xhr.onreadystatechange = function()
-                {
-                    if (this.readyState == this.DONE) {
-                        if (this.status == 200) {
-                            if (this.responseText) {
-                                success_cb(store_id,
-                                           res.get('igc_file_name'),
-                                           this.responseText);
-                            } else {
-                                alert('Cannot fetch flight\'s IGC file from ' +
-                                      url + ', got HTTP status code OK (200) ' +
-                                      'but the response text is empty');
-                            }
-                        } else {
-                            alert('Cannot fetch flight\'s IGC file from ' +
-                                  url + ', got HTTP status code ' + this.status);
-                        }
+    xhr.onreadystatechange = function()
+    {
+        if (this.readyState == this.DONE) {
+            if (this.status == 200) {
+                try {
+                    var res = JSON.parse(this.responseText);
+                    if (!res.file_name || !res.file_contents) {
+                        throw 'Some of file_name or file_contents are ' +
+                            'not set in the response.';
                     }
+                    success_cb(store_id, res.file_name, res.file_contents);
+                } catch (e) {
+                    var msg =
+                        'Cannot fetch flight\'s IGC file. Error parsing ' +
+                        'the reply from ' + url + ' (see the console for ' +
+                        'more details). ';
+                    console.log(msg);
+                    console.log('HTTP response body: ' + this.responseText);
+                    console.log(e);
+                    failure_cb(msg);
                 }
-
-                xhr.open('GET', url, true /* async */);
-                xhr.send();
-            },
-            error: function(obj, error)
-            {
-                alert('Cannot retrieve the flight\'s object (id=' + store_id +
-                      ') from the cloud: [' + error.code + '] ' + error.message);
+            } else {
+                failure_cb('Cannot fetch flight\'s IGC file from ' +
+                    url + ', got HTTP status code ' + this.status);
             }
         }
-    );
+    }
+
+    xhr.open('GET', url, true /* async */);
+    // Silence a "not well-formed" warning in Firefox console if
+    // the server does not send any Content-Type in the response.
+    xhr.overrideMimeType("application/json");
+    xhr.send();
 }
 /* @} */
 

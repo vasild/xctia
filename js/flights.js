@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Vasil Dimov, http://xctia.org.
+Copyright (c) 2014-2016, Vasil Dimov, http://xctia.org.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -599,6 +599,13 @@ function flights_set_t(
                             add_flight(store_id, igc_obj, false);
                         }
                     );
+                },
+                /* failure callback */
+                function(
+                    /* in: error message string. */
+                    errmsg)
+                {
+                    alert(errmsg);
                 }
             );
         }
