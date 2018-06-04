@@ -563,6 +563,16 @@ function map_t(
             }
         );
 
+        var layer_xcskiestopo = L.tileLayer(
+            'http://tt{s}.xcskies.com/topo90/{z}/{x}_{y}{r}.jpg',
+            {
+                attribution: '<a href="http://xcskies.com">XCSkies Topo</a>',
+                maxNativeZoom: 13,
+                maxZoom: max_zoom,
+                subdomains: ["1", "2", "3"],
+            }
+        );
+
         var layer_opentopomap = L.tileLayer(
             'http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
             {
@@ -627,6 +637,15 @@ function map_t(
                     '<img src="img/map_preview_topoxc.jpg">' +
                     '</div>',
                 layer: layer_topoxc,
+            },
+            {
+                short_name: 'XCSkies Topo',
+                long_name:
+                    '<div class="layer_preview">' +
+                    '<span>XCSkies Topo</span>' +
+                    '<img src="img/map_preview_xcskiestopo.jpg">' +
+                    '</div>',
+                layer: layer_xcskiestopo,
             },
             {
                 short_name: 'OpenTopoMap',
