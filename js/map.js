@@ -173,7 +173,7 @@ function map_circle_t(
     /* in: circle options */
     opt)
 {
-    var m_circle = L.circle(
+    var m_circle = L.semiCircle(
         [opt.lat, opt.lng],
         {
             color: '#0033ff',
