@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014-2015, Vasil Dimov, http://xctia.org.
+Copyright (c) 2014-2019, Vasil Dimov, http://xctia.org.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -247,8 +247,8 @@ function get_utc_offset_min(
 {
     var xhr = new XMLHttpRequest();
 
-    var url = 'https://maps.googleapis.com/maps/api/timezone/json?location=' +
-        lat + ',' + lng + '&timestamp=' + unix_timestamp;
+    var url = 'http://api.geonames.org/timezoneJSON?username=xctia' +
+        '&lat=' + lat + '&lng=' + lng;
 
     xhr.onreadystatechange =
         function ()
@@ -260,12 +260,18 @@ function get_utc_offset_min(
                 if (this.status == 200) {
                     try {
                         var res = JSON.parse(this.responseText);
-                        if (res.status.toUpperCase() == 'OK') {
-                            cb((res.rawOffset + res.dstOffset) / 60);
+                        if (res.timezoneId) {
+                            /* https://momentjs.com/timezone/docs/#/zone-object/offset/ */
+                            var zone = moment.tz.zone(res.timezoneId);
+                            var offset = -1 * zone.utcOffset(unix_timestamp * 1000);
+                            console.log(res.timezoneId, zone, offset)
+                            cb(offset);
                         } else {
-                            var msg =
-                                'Got an error from ' + url + ': ' + res.status +
-                                '. ' + common_error_msg;
+                            var msg = 'Got an error from ' + url;
+                            if (res.status.message) {
+                                msg += ': ' + res.status.message;
+                            }
+                            msg += '. ' + common_error_msg;
                             alert(msg);
                             console.log(msg);
                             console.log(res);
